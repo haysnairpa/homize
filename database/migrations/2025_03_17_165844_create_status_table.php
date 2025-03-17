@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('order', function (Blueprint $table) {
+        Schema::create('status', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->foreignId("id_category")->index("fk_order_to_category");
-            $table->foreignId("id_customer")->index("fk_order_to_customer");
-            $table->string("customer_address");
-            $table->foreignId("id_services")->index("fk_order_to_shop_services");
-            $table->foreignId("id_status")->index("fk_order_to_status");
+            $table->string("status");
             $table->timestamps();
         });
     }
@@ -28,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('order');
+        Schema::dropIfExists('status');
     }
 };

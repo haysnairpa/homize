@@ -38,4 +38,10 @@ class Order extends Model
     {
         return $this->belongsTo("App\Models\ShopServices", "id_services", "id");
     }
+
+    // one to one from order to status
+    public function status()
+    {
+        return $this->belongsTo("App\Models\Status", "id_status", "id");
+    }
 }

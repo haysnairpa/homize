@@ -22,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table("category_form", function (Blueprint $table) {
+            $table->dropForeign("fk_category_form_to_category");
+        });
     }
 };
