@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('content', function (Blueprint $table) {
             $table->id();
-            $table->integer("id_room");
+            $table->foreignId("id_room")->index("fk_content_to_room");
             $table->integer("id_sender");
             $table->string("content");
             $table->string("media_url");

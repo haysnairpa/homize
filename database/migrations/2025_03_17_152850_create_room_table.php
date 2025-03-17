@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('room', function (Blueprint $table) {
             $table->id();
-            $table->integer("id_shop");
-            $table->integer("id_customer");
+            $table->foreignId("id_shop")->index("fk_room_to_shop");
+            $table->foreignId("id_customer")->index("fk_room_to_customer");
             $table->timestamps();
         });
     }

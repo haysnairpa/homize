@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('order', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->integer("id_category");
-            $table->integer("id_customer");
+            $table->foreignId("id_category")->index("fk_order_to_category");
+            $table->foreignId("id_customer")->index("fk_order_to_customer");
             $table->string("customer_address");
-            $table->integer("id_services");
+            $table->foreignId("id_services")->index("fk_order_to_shop_services");
             $table->timestamps();
         });
     }

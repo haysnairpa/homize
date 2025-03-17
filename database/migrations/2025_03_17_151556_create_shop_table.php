@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string("name");
             $table->string("email")->nullable();
             $table->string("address")->nullable();
-            $table->integer("id_category");
+            $table->foreignId("id_category")->index("fk_shop_to_category");
             $table->timestamps();
         });
     }

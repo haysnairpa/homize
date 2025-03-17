@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('shop_services', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->integer("id_shop");
-            $table->integer("id_services");
+            $table->foreignId("id_shop")->index("fk_shop_services_to_shop");
+            $table->foreignId("id_services")->index("fk_shop_services_to_services");
             $table->timestamps();
         });
     }
