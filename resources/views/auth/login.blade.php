@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="flex min-h-screen">
         <!-- Left side with background -->
-        <div class="flex-1 bg-[#38BDF8] p-12 relative">
+        <div class="flex-1 bg-homize-blue p-12 relative">
             <div class="absolute top-12 left-12">
                 <img src="{{ asset('images/homizelogo.png') }}" alt="Homize Logo" class="h-8">
             </div>
@@ -9,7 +9,7 @@
                 <div class="text-white">
                     <img src="{{ asset('images/homizelogo.png') }}" alt="Homize Icon" class="h-32 mb-6">
                     <h2 class="text-3xl font-medium mb-2">Solve your problem,</h2>
-                    <h2 class="text-3xl font-medium">From your <span class="text-[#FFA726]">home</span></h2>
+                    <h2 class="text-3xl font-medium">From your <span class="text-homize-orange">home</span></h2>
                 </div>
             </div>
         </div>
