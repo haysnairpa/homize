@@ -6,7 +6,8 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-mark class="block h-9 w-auto" />
+                        {{-- <x-application-mark class="block h-9 w-auto" /> --}}
+                        <img src="{{ asset('images/homizeiconblue.png') }}" alt="Homize Logo" class="h-8">
                     </a>
                 </div>
 
@@ -14,6 +15,14 @@
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link href="{{ route('transactions') }}" :active="request()->routeIs('transactions')">
+                        {{ __('Transaksi Saya') }}
+                    </x-nav-link>
+
+                    <x-nav-link href="{{ route('merchant') }}" :active="request()->routeIs('merchant')">
+                        {{ __('Merchant Saya') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -141,6 +150,14 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link href="{{ route('transactions') }}" :active="request()->routeIs('transactions')">
+                {{ __('Transaksi Saya') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link href="{{ route('merchant') }}" :active="request()->routeIs('merchant')">
+                {{ __('Merchant Saya') }}
             </x-responsive-nav-link>
         </div>
 
