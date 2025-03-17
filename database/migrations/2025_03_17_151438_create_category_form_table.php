@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('category_form', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->integer("id_category");
+            $table->foreignId("id_category")->index("fk_category_form_to_category");
             $table->string("form_name");
             $table->string("form_input");
             $table->timestamps();
