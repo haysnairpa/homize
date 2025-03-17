@@ -3,11 +3,11 @@
         <!-- Left side with background -->
         <div class="flex-1 bg-[#38BDF8] p-12 relative">
             <div class="absolute top-12 left-12">
-                <img src="{{ asset('images/homize-white.png') }}" alt="Homize Logo" class="h-8">
+                <img src="{{ asset('images/homizelogo.png') }}" alt="Homize Logo" class="h-8">
             </div>
             <div class="flex items-center justify-center h-full">
                 <div class="text-white">
-                    <img src="{{ asset('images/homize-icon-white.png') }}" alt="Homize Icon" class="h-32 mb-6">
+                    <img src="{{ asset('images/homizelogo.png') }}" alt="Homize Icon" class="h-32 mb-6">
                     <h2 class="text-3xl font-medium mb-2">Solve your problem,</h2>
                     <h2 class="text-3xl font-medium">From your <span class="text-[#FFA726]">home</span></h2>
                 </div>
