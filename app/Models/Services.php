@@ -11,6 +11,7 @@ class Services extends Model
     protected $fillable = [
         "name",
         "price",
+        "image_url",
     ];
 
     // one to one from services to shop services
