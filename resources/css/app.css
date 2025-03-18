@@ -5,3 +5,32 @@
 [x-cloak] {
     display: none;
 }
+
+#kategoriDropdown {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 0.75rem;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  #kategoriDropdown h3 {
+    color: #333;
+    font-size: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+  }
+  
+  #kategoriDropdown ul li {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  
+  #kategoriDropdown ul li a:hover {
+    color: #3b82f6;
+  }
+  
+  @media (max-width: 768px) {
+    #kategoriDropdown .grid {
+      grid-template-columns: 1fr;
+    }
+  } 
