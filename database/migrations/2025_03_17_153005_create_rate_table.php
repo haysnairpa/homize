@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('services', function (Blueprint $table) {
+        Schema::create('rate', function (Blueprint $table) {
             $table->id();
-            $table->string("name");
-            $table->integer("price");
-            $table->string("image_url")->nullable();
+            $table->softDeletes();
+            $table->foreignId("id_customer")->index("fk_rate_to_customer");
+            $table->foreignId("id_shop")->index("fk_rate_to_shop");
+            $table->integer("rate");
+            $table->string("message")->nullable();
+            $table->string("media_url")->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('services');
+        Schema::dropIfExists('rate');
     }
 };
