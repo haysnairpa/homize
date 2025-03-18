@@ -85,12 +85,18 @@
     <div class="border-t border-homize-blue-second">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex space-x-8 py-2 text-sm">
-                <a href="#" class="text-white hover:text-homize-orange">Samsung Note 10</a>
-                <a href="#" class="text-white hover:text-homize-orange">Charger Mobil</a>
-                <a href="#" class="text-white hover:text-homize-orange">Samsung A73</a>
-                <a href="#" class="text-white hover:text-homize-orange">Pull Up Bar</a>
-                <a href="#" class="text-white hover:text-homize-orange">Hdd 1tb</a>
-                <a href="#" class="text-white hover:text-homize-orange">Xbox Series X</a>
+                @php
+                    $randomNumbers = [];
+                    while (count($randomNumbers) < 3) {
+                        $randomNumber = rand(0, count($bottomNavigation) - 1);
+                        if (!in_array($randomNumber, $randomNumbers)) {
+                            $randomNumbers[] = $randomNumber;
+                        }
+                    }
+                @endphp
+                <a href="#" class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[0]]->category_name }}</a>
+                <a href="#" class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[1]]->category_name }}</a>
+                <a href="#" class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[2]]->category_name }}</a>
             </div>
         </div>
     </div>
@@ -98,20 +104,22 @@
     <!-- Kategori Dropdown (Full Width) -->
     <div id="kategoriDropdown" class="hidden absolute left-0 right-0 w-full bg-white shadow-lg z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="">
                 <!-- Jasa Rumah Tangga -->
-                <div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     @foreach ($navigation as $nav)
+                    <div class="space-y-2">
                         <h3 class="font-bold text-gray-900 mb-4">{{ $nav->jasa_name }}</h3>
                         <ul class="space-y-2">
                             @foreach (explode(',', $nav->category_names) as $category)
-                                <li>
-                                    <a href="#" class="text-gray-700 hover:text-homize-blue">
-                                        {{ trim($category) }} {{-- Trim removes extra spaces --}}
-                                    </a>
-                                </li>
+                            <li>
+                                <a href="#" class="text-gray-700 hover:text-homize-blue">
+                                    {{ trim($category) }} {{-- Trim removes extra spaces --}}
+                                </a>
+                            </li>
                             @endforeach
                         </ul>
+                    </div>
                     @endforeach
                 </div>
             </div>

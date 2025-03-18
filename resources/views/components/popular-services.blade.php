@@ -29,7 +29,7 @@
                             </svg>
                             <span class="ml-1 text-sm text-gray-600">4.9</span>
                         </div>
-                        <span class="text-homize-blue font-semibold">$20/hr</span>
+                        <span class="text-homize-blue font-semibold">Rp20.000/hr</span>
                     </div>
                 </div>
             </a>
@@ -52,7 +52,7 @@
                             </svg>
                             <span class="ml-1 text-sm text-gray-600">4.8</span>
                         </div>
-                        <span class="text-homize-blue font-semibold">$40/hr</span>
+                        <span class="text-homize-blue font-semibold">Rp40.000/hr</span>
                     </div>
                 </div>
             </a>
@@ -75,7 +75,7 @@
                             </svg>
                             <span class="ml-1 text-sm text-gray-600">4.7</span>
                         </div>
-                        <span class="text-homize-blue font-semibold">$35/hr</span>
+                        <span class="text-homize-blue font-semibold">Rp35.000/hr</span>
                     </div>
                 </div>
             </a>
@@ -98,7 +98,7 @@
                             </svg>
                             <span class="ml-1 text-sm text-gray-600">4.9</span>
                         </div>
-                        <span class="text-homize-blue font-semibold">$50/hr</span>
+                        <span class="text-homize-blue font-semibold">Rp50.000/hr</span>
                     </div>
                 </div>
             </a>

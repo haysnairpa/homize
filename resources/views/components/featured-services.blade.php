@@ -29,7 +29,7 @@
                             </svg>
                             <span class="ml-1 text-sm text-gray-600">4.9 (2.1k reviews)</span>
                         </div>
-                        <span class="text-homize-blue font-semibold">Starting at $15</span>
+                        <span class="text-homize-blue font-semibold">Starting at Rp15.000</span>
                     </div>
                 </div>
             </a>
@@ -52,7 +52,7 @@
                             </svg>
                             <span class="ml-1 text-sm text-gray-600">4.8 (1.8k reviews)</span>
                         </div>
-                        <span class="text-homize-blue font-semibold">Starting at $25</span>
+                        <span class="text-homize-blue font-semibold">Starting at Rp25.000</span>
                     </div>
                 </div>
             </div>
@@ -75,7 +75,7 @@
                             </svg>
                             <span class="ml-1 text-sm text-gray-600">4.9 (1.5k reviews)</span>
                         </div>
-                        <span class="text-homize-blue font-semibold">Starting at $30</span>
+                        <span class="text-homize-blue font-semibold">Starting at Rp30.000</span>
                     </div>
                 </div>
             </div>

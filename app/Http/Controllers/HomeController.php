@@ -13,8 +13,15 @@ class HomeController extends Controller
                                     GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ') AS category_names
                                 FROM jasa_category j
                                 JOIN category c ON c.id_category = j.id
-                                GROUP BY j.name;
-");
-        return view('home.home', compact('navigation'));
+                                GROUP BY j.name;");
+
+        $bottomNavigation = DB::select("SELECT c.name AS category_name
+                                        FROM category c");
+
+        
+
+        return view('home.home', compact('navigation', 'bottomNavigation'));
     }
+
+
 }
