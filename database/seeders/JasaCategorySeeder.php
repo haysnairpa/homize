@@ -13,7 +13,7 @@ class JasaCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        $jasa_categories = [
+        $jasa_category = [
             [
                 "name" => "Jasa Rumah Tangga",
             ],
@@ -37,6 +37,8 @@ class JasaCategorySeeder extends Seeder
             ],
         ];
 
-        JasaCategory::insert($jasa_categories);
+        foreach ($jasa_category as $category) {
+            JasaCategory::create($category);
+        }
     }
 }

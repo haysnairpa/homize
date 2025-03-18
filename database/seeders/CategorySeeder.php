@@ -13,7 +13,7 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        $categories = [
+        $category = [
             [
                 "name" => "Asisten Rumah Tangga",
                 "series_number" => "ART",
@@ -251,6 +251,8 @@ class CategorySeeder extends Seeder
             ]
         ];
 
-        Category::insert($categories);
+        foreach ($category as $categories) {
+            Category::create($categories);
+        }
     }
 }
