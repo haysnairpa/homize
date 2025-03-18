@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ShopServices;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -28,6 +29,14 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Patricia Thomas', 'email' => 'patricia.thomas@example.com'],
             ['name' => 'Mark Lee', 'email' => 'mark.lee@example.com'],
             ['name' => 'Laura Hernandez', 'email' => 'laura.hernandez@example.com'],
+        ]);
+        $this->call([
+            CustomerSeeder::class,
+            JasaCategorySeeder::class,
+            CategorySeeder::class,
+            ShopSeeder::class,
+            ServicesSeeder::class,
+            ShopServices::class,
         ]);
     }
 }

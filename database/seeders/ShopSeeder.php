@@ -32,7 +32,7 @@ class ShopSeeder extends Seeder
                 "name" => $shop->name,
                 "email" => $shop->email,
                 "address" => $addresses[$i], // Assigning a random address
-                "id_category" => rand(2, 5), // Random category from 1 to 5
+                "id_category" => rand(1, 5), // Random category from 1 to 5
                 "created_at" => $shop->created_at,
                 "updated_at" => now(),
             ];
