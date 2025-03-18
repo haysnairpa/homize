@@ -11,6 +11,7 @@ class Category extends Model
     protected $fillable = [
         "name",
         "series_number",
+        "id_category",
     ];
 
     // one to many from category to category form
@@ -28,6 +29,6 @@ class Category extends Model
     // one to one from category to jasa category
     public function jasa_category()
     {
-        return $this->belongsTo("App\Models\JasaaCategory", "id_category", "id");
+        return $this->belongsTo("App\Models\JasaCategory", "id_category", "id");
     }
 }
