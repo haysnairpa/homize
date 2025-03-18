@@ -24,4 +24,10 @@ class Category extends Model
     {
         return $this->belongsTo("App\Models\Shop", "id", "id_category");
     }
+
+    // one to one from category to jasa category
+    public function jasa_category()
+    {
+        return $this->belongsTo("App\Models\JasaaCategory", "id_category", "id");
+    }
 }
