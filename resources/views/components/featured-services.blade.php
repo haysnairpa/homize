@@ -12,7 +12,7 @@
 
         <div class="mt-12 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <!-- Service Card 1 -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">
+            <a href="{{ route('services.show', ['id' => 1]) }}" class="block bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">
                 <div class="relative">
                     <img src="{{ asset('images/service-laundry.jpg') }}" alt="Premium Laundry Service" class="w-full h-48 object-cover">
                     <div class="absolute top-0 right-0 bg-homize-orange text-white px-3 py-1 m-2 rounded-full text-xs font-semibold">
@@ -32,7 +32,7 @@
                         <span class="text-homize-blue font-semibold">Starting at $15</span>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- Service Card 2 -->
             <div class="bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">

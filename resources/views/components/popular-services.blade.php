@@ -12,7 +12,7 @@
 
         <div class="mt-12 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <!-- Service Card 1 -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">
+            <a href="{{ route('services.show', ['id' => 4]) }}" class="block bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">
                 <div class="relative">
                     <img src="{{ asset('images/service-tutoring.jpg') }}" alt="Math Tutoring" class="w-full h-40 object-cover">
                     <div class="absolute top-0 right-0 bg-homize-orange text-white px-3 py-1 m-2 rounded-full text-xs font-semibold">
@@ -32,10 +32,10 @@
                         <span class="text-homize-blue font-semibold">$20/hr</span>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- Service Card 2 -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">
+            <a href="{{ route('services.show', ['id' => 2]) }}" class="block bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">
                 <div class="relative">
                     <img src="{{ asset('images/service-repair.jpg') }}" alt="Appliance Repair" class="w-full h-40 object-cover">
                     <div class="absolute top-0 right-0 bg-homize-orange text-white px-3 py-1 m-2 rounded-full text-xs font-semibold">
@@ -55,10 +55,10 @@
                         <span class="text-homize-blue font-semibold">$40/hr</span>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- Service Card 3 -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">
+            <a href="{{ route('services.show', ['id' => 3]) }}" class="block bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">
                 <div class="relative">
                     <img src="{{ asset('images/service-gardening.jpg') }}" alt="Gardening" class="w-full h-40 object-cover">
                     <div class="absolute top-0 right-0 bg-homize-orange text-white px-3 py-1 m-2 rounded-full text-xs font-semibold">
@@ -78,10 +78,10 @@
                         <span class="text-homize-blue font-semibold">$35/hr</span>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- Service Card 4 -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">
+            <a href="{{ route('services.show', ['id' => 1]) }}" class="block bg-white overflow-hidden shadow-lg rounded-lg transition-all duration-300 hover:shadow-xl">
                 <div class="relative">
                     <img src="{{ asset('images/service-cooking.jpg') }}" alt="Personal Chef" class="w-full h-40 object-cover">
                     <div class="absolute top-0 right-0 bg-homize-orange text-white px-3 py-1 m-2 rounded-full text-xs font-semibold">
@@ -101,7 +101,7 @@
                         <span class="text-homize-blue font-semibold">$50/hr</span>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="mt-12 text-center">

@@ -23,7 +23,7 @@ export default {
             colors: {
                 'homize-blue': '#30A0E0',
                 'homize-blue-second': '#1c91c4',
-                'homize-orange': '#FFA726',
+                'homize-orange': '#FFC973',
                 'homize-white': '#FFFFFF',
                 'homize-gray': '#F4F4F4'
             }
