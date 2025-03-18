@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('category', function (Blueprint $table) {
+        Schema::create('jasa_category', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->string("name")->nullable();
-            $table->string("series_number");
-            $table->foreignId("id_category")->index("fk_category_to_jasa_category");
+            $table->string("name");
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('category');
+        Schema::dropIfExists('jasa_category');
     }
 };
