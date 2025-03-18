@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             ServicesSeeder::class,
             ShopServiceSeeder::class,
             RateSeeder::class,
+            StatusSeeder::class,
         ]);
     }
 }
