@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             ShopSeeder::class,
             ServicesSeeder::class,
-            ShopServices::class,
+            ShopServiceSeeder::class,
         ]);
     }
 }

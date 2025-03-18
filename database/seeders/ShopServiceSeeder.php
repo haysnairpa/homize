@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ShopServices;
 use Exception;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -36,6 +37,6 @@ class ShopServiceSeeder extends Seeder
         }
 
         // Insert into the pivot table
-        DB::table('shop_services')->insert($shop_services);
+        ShopServices::insert($shop_services);
     }
 }
