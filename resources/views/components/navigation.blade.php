@@ -116,14 +116,13 @@
                             <ul class="space-y-2">
                                 @foreach (explode(',', $nav->category_names) as $index => $category)
                                     <li>
-                                        @if (isset($ids[$index]->id))
-                                            <a href="{{ route('jasa', [$ids[$index]->id]) }}"
-                                                class="text-gray-700 hover:text-homize-blue">
-                                                {{ trim($category) }}
-                                            </a>
-                                        @endif
+                                        <a href="{{ route('jasa', [$ids[$index]->id]) }}"
+                                            class="text-gray-700 hover:text-homize-blue">
+                                            {{ trim($category) }}
+                                        </a>
                                     </li>
                                 @endforeach
+
                             </ul>
                         </div>
                     @endforeach

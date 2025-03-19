@@ -12,10 +12,11 @@ class ServiceController extends Controller
     public function show(Services $service)
     {
         $service->load(['shop_services.shop.category']);
-        
+        $ids = DB::select("SELECT `id` FROM `category`;");
+
         // Get shop IDs that offer this service
         $shopIds = $service->shop_services->pluck('shop.id');
-        
+
         // Get rates for these shops
         $rates = Rate::with(['customer'])
             ->whereIn('id_shop', $shopIds)
@@ -32,6 +33,6 @@ class ServiceController extends Controller
         $bottomNavigation = DB::select("SELECT c.name AS category_name 
                                         FROM category c");
 
-        return view('services.show', compact('service', 'rates', 'navigation', 'bottomNavigation'));
+        return view('services.show', compact('service', 'rates', 'navigation', 'bottomNavigation', 'ids'));
     }
 }
