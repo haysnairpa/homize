@@ -14,9 +14,22 @@ class Services extends Model
         "image_url",
     ];
 
-    // one to one from services to shop services
+    // Get all shop_services relationships
     public function shop_services()
     {
-        return $this->belongsTo("App\Models\ShopServices", "id", "id_services");
+        return $this->hasMany(ShopServices::class, 'id_services', 'id');
+    }
+
+    // Get shops through shop_services
+    public function shops()
+    {
+        return $this->hasManyThrough(
+            Shop::class,
+            ShopServices::class,
+            'id_services', // Foreign key on shop_services table
+            'id', // Foreign key on shops table
+            'id', // Local key on services table
+            'id_shop' // Local key on shop_services table
+        );
     }
 }

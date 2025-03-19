@@ -5,9 +5,9 @@
         <div class="flex h-16 gap-x-5 items-center">
             <!-- Left Section -->
             <div class="flex items-center space-x-4">
-                <div class="flex-shrink-0">
+                <a href="/home" class="flex-shrink-0">
                     <img class="h-8 w-auto" src="{{ asset('images/homizelogo.png') }}" alt="Homize">
-                </div>
+                </a>
                 <div class="relative">
                     <button id="kategoriButton"
                         class="text-white hover:text-homize-orange px-3 py-2 text-sm font-medium flex items-center">
