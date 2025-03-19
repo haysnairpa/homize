@@ -20,6 +20,7 @@ class Customer extends Model
     protected $fillable = [
         "name",
         "email",
+        "profile_url",
     ];
 
     // one to many from customer to desired shop

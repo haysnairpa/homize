@@ -16,6 +16,7 @@ return new class extends Migration
             $table->softDeletes();
             $table->string("name")->nullable();
             $table->string("email")->nullable();
+            $table->string("profile_url")->nullable();
             $table->timestamps();
         });
     }

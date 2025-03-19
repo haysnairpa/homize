@@ -13,6 +13,7 @@ class Shop extends Model
         "email",
         "address",
         "id_category",
+        "profile_url",
     ];
 
     // many to one from shop to desired shop
