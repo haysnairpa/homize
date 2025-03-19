@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\Shop; // Ensure you have this model
+use Faker\Factory as Faker;
 
 class ShopSeeder extends Seeder
 {
@@ -13,32 +14,28 @@ class ShopSeeder extends Seeder
      */
     public function run(): void
     {
-        // Fetch 5 random users from the `users` table
-        $shops = DB::select("SELECT `name`, `email`, `created_at` FROM `users` ORDER BY RAND() LIMIT 5");
+        $faker = Faker::create();
 
-        // Define some random addresses
-        $addresses = [
-            "123 Main Street, Jakarta",
-            "456 Green Avenue, Surabaya",
-            "789 Ocean Drive, Bali",
-            "101 Sunset Boulevard, Bandung",
-            "555 Mountain Road, Yogyakarta"
-        ];
+        // Fetch 40% of users to create shops
+        $users = DB::table('users')->inRandomOrder()->limit(40)->get();
 
-        $shopData = []; // Initialize array
+        $addresses = [];
+        for ($i = 0; $i < 40; $i++) {
+            $addresses[] = $faker->unique()->address;
+        }
 
-        foreach ($shops as $i => $shop) {
+        $shopData = [];
+        foreach ($users as $i => $user) {
             $shopData[] = [
-                "name" => $shop->name,
-                "email" => $shop->email,
-                "address" => $addresses[$i], // Assigning a random address
-                "id_category" => rand(1, 5), // Random category from 1 to 5
-                "created_at" => $shop->created_at,
+                "name" => $user->name,
+                "email" => $user->email,
+                "address" => $addresses[$i],
+                "id_category" => rand(1, 5),
+                "created_at" => $user->created_at,
                 "updated_at" => now(),
             ];
         }
 
-        // Insert into database
         Shop::insert($shopData);
     }
 }

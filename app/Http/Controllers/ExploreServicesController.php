@@ -9,7 +9,7 @@ class ExploreServicesController extends Controller
 {
     public function show_services($ids)
     {
-        $services = DB::select("SELECT se.name AS service_name, se.price AS service_price, se.image_url AS service_image,c.`name` AS category_name, s.name AS shop_name, s.profile_url AS shop_profile
+        $services = DB::select("SELECT se.name AS service_name, se.price AS service_price, se.image_url AS service_image, c.`name` AS category_name, s.name AS shop_name, s.profile_url AS shop_profile
                     FROM jasa_category jc
                     JOIN category c ON c.id_category = jc.id
                     JOIN shop s ON s.id_category = c.id

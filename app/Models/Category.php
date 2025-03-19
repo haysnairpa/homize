@@ -31,4 +31,9 @@ class Category extends Model
     {
         return $this->belongsTo("App\Models\JasaCategory", "id_category", "id");
     }
+
+    public function shops()
+    {
+        return $this->hasMany("App\Models\Shop", "id_category", "id");
+    }
 }

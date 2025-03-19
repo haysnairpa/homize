@@ -17,4 +17,9 @@ class JasaCategory extends Model
     {
         return $this->belongsTo("App\Models\Category", "id", "id_category");
     }
+
+    public function categories()
+    {
+        return $this->hasMany("App\Models\Category", "id_category", "id");
+    }
 }

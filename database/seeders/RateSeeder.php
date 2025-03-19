@@ -26,7 +26,7 @@ class RateSeeder extends Seeder
 
         $rates = [];
 
-        for ($i = 0; $i < 25; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             $rates[] = [
                 'id_customer' => $faker->randomElement($customers),
                 'id_shop' => $faker->randomElement($shops),
