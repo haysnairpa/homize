@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
             ShopServiceSeeder::class,
             RateSeeder::class,
             StatusSeeder::class,
+            OrderSeeder::class,
         ]);
     }
 }
