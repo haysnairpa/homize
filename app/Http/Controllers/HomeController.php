@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Services;
+use App\Models\ShopServices;
 
 class HomeController extends Controller
 {
@@ -19,18 +19,32 @@ class HomeController extends Controller
         $bottomNavigation = DB::select("SELECT c.name AS category_name
                                         FROM category c");
 
-        $featuredServices = Services::with(['shop_services.shop.category'])
-                            ->inRandomOrder()
-                            ->limit(3)
-                            ->get();
+        // Get featured services through shop_services relationship
+        $featuredServices = ShopServices::with([
+            'services' => function($query) {
+                $query->select('id', 'name', 'price', 'image_url');
+            },
+            'shop.category' => function($query) {
+                $query->select('id', 'name');
+            }
+        ])
+        ->inRandomOrder()
+        ->limit(3)
+        ->get();
 
-        $popularServices = Services::with(['shop_services.shop.category'])
-                            ->inRandomOrder()
-                            ->limit(4)
-                            ->get();
+        // Get popular services through shop_services relationship  
+        $popularServices = ShopServices::with([
+            'services' => function($query) {
+                $query->select('id', 'name', 'price', 'image_url');
+            },
+            'shop.category' => function($query) {
+                $query->select('id', 'name'); 
+            }
+        ])
+        ->inRandomOrder()
+        ->limit(4)
+        ->get();
 
         return view('home.home', compact('navigation', 'bottomNavigation', 'featuredServices', 'popularServices'));
     }
-
-
 }
