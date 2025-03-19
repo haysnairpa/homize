@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ExploreServicesController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JasaController;
 use App\Http\Controllers\ServiceController;
@@ -31,3 +32,4 @@ Route::middleware([
 
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
 Route::get('/jasa/{jasa}', [JasaController::class, 'get_jasa'])->name('jasa');
+Route::get('/show_services/{service}', [ExploreServicesController::class, 'show_services'])->name('service');
