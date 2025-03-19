@@ -4,6 +4,7 @@ use App\Http\Controllers\ExploreServicesController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JasaController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
