@@ -16,35 +16,37 @@ class HomeController extends Controller
                                 JOIN category c ON c.id_category = j.id
                                 GROUP BY j.name;");
 
+        $ids = DB::select("SELECT `id` FROM `category`;");
+
         $bottomNavigation = DB::select("SELECT c.name AS category_name
                                         FROM category c");
 
         // Get featured services through shop_services relationship
         $featuredServices = ShopServices::with([
-            'services' => function($query) {
+            'services' => function ($query) {
                 $query->select('id', 'name', 'price', 'image_url');
             },
-            'shop.category' => function($query) {
+            'shop.category' => function ($query) {
                 $query->select('id', 'name');
             }
         ])
-        ->inRandomOrder()
-        ->limit(3)
-        ->get();
+            ->inRandomOrder()
+            ->limit(3)
+            ->get();
 
         // Get popular services through shop_services relationship  
         $popularServices = ShopServices::with([
-            'services' => function($query) {
+            'services' => function ($query) {
                 $query->select('id', 'name', 'price', 'image_url');
             },
-            'shop.category' => function($query) {
-                $query->select('id', 'name'); 
+            'shop.category' => function ($query) {
+                $query->select('id', 'name');
             }
         ])
-        ->inRandomOrder()
-        ->limit(4)
-        ->get();
+            ->inRandomOrder()
+            ->limit(4)
+            ->get();
 
-        return view('home.home', compact('navigation', 'bottomNavigation', 'featuredServices', 'popularServices'));
+        return view('home.home', compact('navigation', 'bottomNavigation', 'featuredServices', 'popularServices', 'ids'));
     }
 }

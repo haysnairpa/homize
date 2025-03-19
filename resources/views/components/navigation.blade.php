@@ -124,9 +124,12 @@
                         }
                     }
                 @endphp
-                <a href="#" class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[0]]->category_name }}</a>
-                <a href="#" class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[1]]->category_name }}</a>
-                <a href="#" class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[2]]->category_name }}</a>
+                <a href="#"
+                    class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[0]]->category_name }}</a>
+                <a href="#"
+                    class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[1]]->category_name }}</a>
+                <a href="#"
+                    class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[2]]->category_name }}</a>
             </div>
         </div>
     </div>
@@ -138,18 +141,20 @@
                 <!-- Jasa Rumah Tangga -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     @foreach ($navigation as $nav)
-                    <div class="space-y-2">
-                        <h3 class="font-bold text-gray-900 mb-4">{{ $nav->jasa_name }}</h3>
-                        <ul class="space-y-2">
-                            @foreach (explode(',', $nav->category_names) as $category)
-                            <li>
-                                <a href="#" class="text-gray-700 hover:text-homize-blue">
-                                    {{ trim($category) }} {{-- Trim removes extra spaces --}}
-                                </a>
-                            </li>
-                            @endforeach
-                        </ul>
-                    </div>
+                        <div class="space-y-2">
+                            <h3 class="font-bold text-gray-900 mb-4">{{ $nav->jasa_name }}</h3>
+                            <ul class="space-y-2">
+                                @foreach (explode(',', $nav->category_names) as $index => $category)
+                                    <li>
+                                        <a href="{{ route('jasa', [$ids[$index]->id]) }}"
+                                            class="text-gray-700 hover:text-homize-blue">
+                                            {{ trim($category) }}
+                                        </a>
+                                    </li>
+                                @endforeach
+
+                            </ul>
+                        </div>
                     @endforeach
                 </div>
             </div>
