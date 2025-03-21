@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('id_merchant')->index('fk_booking_to_merchant')->references('id')->on('merchant')->onDelete('cascade');
             $table->foreignId('id_layanan')->index('fk_booking_to_layanan')->references('id')->on('layanan')->onDelete('cascade');
             $table->foreignId('id_status')->index('fk_booking_to_status')->references('id')->on('status')->onDelete('cascade');
+            $table->foreignId("id_booking_schedule")->index("fk_booking_to_booking_schedule")->references("id")->on("booking_schedule")->onDelete("CASCADE");
         });
     }
 
@@ -29,6 +30,7 @@ return new class extends Migration
             $table->dropForeign("fk_booking_to_merchant");
             $table->dropForeign("fk_booking_to_layanan");
             $table->dropForeign("fk_booking_to_status");
+            $table->dropForeign("fk_booking_to_booking_schedule");
         });
     }
 };

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('id_merchant')->index('fk_layanan_to_merchant');
             $table->foreignId('id_jam_operasional')->index('fk_layanan_to_jam_operasional');
-            $table->foreignId('id_kategori')->index('fk_layanan_to_kategori');
+            $table->foreignId('id_sub_kategori')->index('fk_layanan_to_sub_kategori');
             $table->string('nama_layanan');
             $table->string('deskripsi_layanan');
             $table->integer('pengalaman');
