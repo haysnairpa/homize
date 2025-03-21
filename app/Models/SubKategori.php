@@ -11,6 +11,7 @@ class SubKategori extends Model
     protected $fillable = [
         "id_kategori",
         "nama",
+        "seri_sub_kategori",
     ];
 
     // one to one from sub_kategori to merchant

@@ -16,22 +16,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $faker = Faker::create();
-
-        // Generate 100 unique users
-        $users = [];
-        for ($i = 0; $i < 100; $i++) {
-            $users[] = [
-                'name' => $faker->name,
-                'email' => $faker->unique()->safeEmail,
-                'password' => Hash::make('password'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        User::insert($users);
-
         // Call other seeders
         $this->call([
             KategoriSeeder::class,

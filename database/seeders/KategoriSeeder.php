@@ -15,25 +15,25 @@ class KategoriSeeder extends Seeder
     {
         $kategori = [
             [
-                "name" => "Jasa Rumah Tangga",
+                "nama" => "Jasa Rumah Tangga",
             ],
             [
-                "name" => "Jasa Perbaikan & Instalasi",
+                "nama" => "Jasa Perbaikan & Instalasi",
             ],
             [
-                "name" => "Jasa Pendidikan & Bimbingan",
+                "nama" => "Jasa Pendidikan & Bimbingan",
             ],
             [
-                "name" => "Jasa Kesehatan & Kecantikan",
+                "nama" => "Jasa Kesehatan & Kecantikan",
             ],
             [
-                "name" => "Jasa Kreatif & Digital"
+                "nama" => "Jasa Kreatif & Digital"
             ],
             [
-                "name" => "Jasa Event Organizer"
+                "nama" => "Jasa Event Organizer"
             ],
             [
-                "name" => "Jasa Penyewaan Barang",
+                "nama" => "Jasa Penyewaan Barang",
             ],
         ];
 

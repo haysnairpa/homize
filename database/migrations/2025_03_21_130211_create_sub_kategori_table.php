@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('id_kategori')->index('fk_sub_kategori_to_kategori');
             $table->string('nama');
+            $table->string("seri_sub_kategori");
             $table->timestamps();
         });
     }
