@@ -28,6 +28,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'profile_url',
         'password',
     ];
 
@@ -63,5 +64,23 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // one to many from user to rating
+    public function rating()
+    {
+        return $this->hasMany(Rating::class, 'id_user', 'id');
+    }
+
+    // one to one from user to merchant
+    public function merchant()
+    {
+        return $this->hasOne(Merchant::class, 'id_user', 'id');
+    }
+
+    // one to many from user to booking
+    public function booking()
+    {
+        return $this->hasMany(Booking::class, 'id_user', 'id');
     }
 }
