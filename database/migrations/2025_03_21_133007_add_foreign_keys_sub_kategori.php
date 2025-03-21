@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sub_kategori', function (Blueprint $table) {
-            $table->foreignId('id_kategori')->index('fk_sub_kategori_to_kategori')->references('id')->on('kategori')->onDelete('cascade');
+            $table->foreign('id_kategori')->index('fk_sub_kategori_to_kategori')->references('id')->on('kategori')->onDelete('cascade');
         });
     }
 

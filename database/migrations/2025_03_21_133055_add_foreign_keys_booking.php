@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('booking', function (Blueprint $table) {
-            $table->foreignId('id_user')->index('fk_booking_to_user')->references('id')->on('users')->onDelete('cascade');
-            $table->foreignId('id_merchant')->index('fk_booking_to_merchant')->references('id')->on('merchant')->onDelete('cascade');
-            $table->foreignId('id_layanan')->index('fk_booking_to_layanan')->references('id')->on('layanan')->onDelete('cascade');
-            $table->foreignId('id_status')->index('fk_booking_to_status')->references('id')->on('status')->onDelete('cascade');
-            $table->foreignId("id_booking_schedule")->index("fk_booking_to_booking_schedule")->references("id")->on("booking_schedule")->onDelete("CASCADE");
+            $table->foreign('id_user')->index('fk_booking_to_user')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('id_merchant')->index('fk_booking_to_merchant')->references('id')->on('merchant')->onDelete('cascade');
+            $table->foreign('id_layanan')->index('fk_booking_to_layanan')->references('id')->on('layanan')->onDelete('cascade');
+            $table->foreign('id_status')->index('fk_booking_to_status')->references('id')->on('status')->onDelete('cascade');
+            $table->foreign("id_booking_schedule")->index("fk_booking_to_booking_schedule")->references("id")->on("booking_schedule")->onDelete("CASCADE");
         });
     }
 

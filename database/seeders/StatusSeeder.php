@@ -15,18 +15,19 @@ class StatusSeeder extends Seeder
     {
         $status = [
             [
-                "status" => "Diproses"
+                "nama_status" => "Diproses"
             ],
             [
-                "status" => "Berlangsung"
+                "nama_status" => "Berlangsung"
             ],
             [
-                "status" => "Selesai"
+                "nama_status" => "Selesai"
             ],
             [
-                "status" => "Dibatalkan"
+                "nama_status" => "Dibatalkan"
             ]
         ];
+
         Status::insert($status);
     }
 }

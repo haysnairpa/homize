@@ -34,15 +34,10 @@ class DatabaseSeeder extends Seeder
 
         // Call other seeders
         $this->call([
-            CustomerSeeder::class,
-            JasaCategorySeeder::class,
-            CategorySeeder::class,
-            ShopSeeder::class,
-            ServicesSeeder::class,
-            ShopServiceSeeder::class,
-            RateSeeder::class,
+            KategoriSeeder::class,
+            SubKategoriSeeder::class,
             StatusSeeder::class,
-            OrderSeeder::class,
+            HariSeeder::class,
         ]);
     }
 }

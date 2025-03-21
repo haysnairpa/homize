@@ -2,20 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\JasaCategory;
+use App\Models\Kategori;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
-class JasaCategorySeeder extends Seeder
+class KategoriSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        DB::enableQueryLog();
-        $jasa_category = [
+        $kategori = [
             [
                 "name" => "Jasa Rumah Tangga",
             ],
@@ -39,8 +37,6 @@ class JasaCategorySeeder extends Seeder
             ],
         ];
 
-        foreach ($jasa_category as $category) {
-            JasaCategory::create($category);
-        }
+        Kategori::insert($kategori);
     }
 }

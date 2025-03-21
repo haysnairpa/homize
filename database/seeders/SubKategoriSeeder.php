@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\Category;
+use App\Models\SubKategori;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class CategorySeeder extends Seeder
+class SubKategoriSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $category = [
+        $sub_kategori = [
             [
                 "name" => "Asisten Rumah Tangga",
                 "series_number" => "ART",
@@ -251,8 +251,6 @@ class CategorySeeder extends Seeder
             ]
         ];
 
-        // foreach ($category as $categories) {
-        //     Category::create($categories);
-        // }
+        SubKategori::insert($sub_kategori);
     }
 }

@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('layanan', function (Blueprint $table) {
-            $table->foreignId('id_jam_operasional')->index('fk_layanan_to_jam_operasional')->references('id')->on('jam_operasional')->onDelete('cascade');
-            $table->foreignId('id_sub_kategori')->index('fk_layanan_to_sub_kategori')->references('id')->on('sub_kategori')->onDelete('cascade');
+            $table->foreign('id_jam_operasional')->index('fk_layanan_to_jam_operasional')->references('id')->on('jam_operasional')->onDelete('cascade');
+            $table->foreign('id_sub_kategori')->index('fk_layanan_to_sub_kategori')->references('id')->on('sub_kategori')->onDelete('cascade');
         });
     }
 

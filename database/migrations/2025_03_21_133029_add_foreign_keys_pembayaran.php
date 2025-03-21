@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pembayaran', function (Blueprint $table) {
-            $table->foreignId('id_booking')->index('fk_pembayaran_to_booking')->references('id')->on('booking')->onDelete('cascade');
-            $table->foreignId('id_status')->index('fk_pembayaran_to_status')->references('id')->on('status')->onDelete('cascade');
+            $table->foreign('id_booking')->index('fk_pembayaran_to_booking')->references('id')->on('booking')->onDelete('cascade');
+            $table->foreign('id_status')->index('fk_pembayaran_to_status')->references('id')->on('status')->onDelete('cascade');
         });
     }
 
