@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('sub_kategori', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_kategori');
+            $table->foreignId('id_kategori')->index('fk_sub_kategori_to_kategori');
             $table->string('nama');
             $table->timestamps();
         });

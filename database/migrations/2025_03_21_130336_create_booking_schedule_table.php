@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('booking_schedule', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_booking');
+            $table->foreignId('id_booking')->index('fk_booking_schedule_to_booking');
             $table->string('waktu_mulai');
             $table->string('waktu_selesai');
             $table->timestamps();

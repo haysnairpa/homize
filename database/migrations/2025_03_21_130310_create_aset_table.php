@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('aset', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_layanan');
+            $table->foreignId('id_layanan')->index('fk_aset_to_layanan');
             $table->string('deskripsi');
             $table->string('media_url');
             $table->timestamps();

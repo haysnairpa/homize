@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('pembayaran', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_booking');
+            $table->foreignId('id_booking')->index('fk_pembayaran_to_booking');
             $table->integer('amount');
             $table->string('method');
-            $table->integer('id_status');
+            $table->foreignId('id_status')->index('fk_pembayaran_to_status');
             $table->timestamp('payment_date');
         });
     }

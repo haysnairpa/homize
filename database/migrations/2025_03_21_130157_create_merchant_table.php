@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('merchant', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_user');
-            $table->integer('id_sub_kategori');
+            $table->foreignId('id_user')->index('fk_merchant_to_user');
+            $table->foreignId('id_sub_kategori')->index('fk_merchant_to_sub_kategori');
             $table->string('nama_usaha');
             $table->string('profile_url');
             $table->string('alamat');

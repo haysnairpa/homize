@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('rating', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_user');
-            $table->integer('id_layanan');
+            $table->foreignId('id_user')->index("fk_rating_to_user");
+            $table->foreignId('id_layanan')->index("fk_rating_to_layanan");
             $table->integer('rate');
             $table->string('message');
             $table->string('media_url');

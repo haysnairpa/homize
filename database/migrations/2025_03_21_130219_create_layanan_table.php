@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('layanan', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_merchant');
-            $table->integer('id_jam_operasional');
-            $table->integer('id_kategori');
+            $table->foreignId('id_merchant')->index('fk_layanan_to_merchant');
+            $table->foreignId('id_jam_operasional')->index('fk_layanan_to_jam_operasional');
+            $table->foreignId('id_kategori')->index('fk_layanan_to_kategori');
             $table->string('nama_layanan');
             $table->string('deskripsi_layanan');
             $table->integer('pengalaman');

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('layanan', function (Blueprint $table) {
             $table->foreignId('id_jam_operasional')->index('fk_layanan_to_jam_operasional')->references('id')->on('jam_operasional')->onDelete('cascade');
+            $table->foreignId('id_kategori')->index('fk_layanan_to_kategori')->references('id')->on('kategori')->onDelete('cascade');
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('layanan', function (Blueprint $table) {
             $table->dropForeign("fk_layanan_to_jam_operasional");
+            $table->dropForeign("fk_layanan_to_kategori");
         });
     }
 };

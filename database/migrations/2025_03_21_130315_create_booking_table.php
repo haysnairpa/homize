@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('booking', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_user');
-            $table->integer('id_merchant');
-            $table->integer('id_layanan');
-            $table->integer('id_status');
+            $table->foreignId('id_user')->index('fk_booking_to_user');
+            $table->foreignId('id_merchant')->index('fk_booking_to_merchant');
+            $table->foreignId('id_layanan')->index('fk_booking_to_layanan');
+            $table->foreignId('id_status')->index('fk_booking_to_status');
             $table->time('tanggal_booking');
             $table->string('catatan');
             $table->string('alamat_pembeli');
