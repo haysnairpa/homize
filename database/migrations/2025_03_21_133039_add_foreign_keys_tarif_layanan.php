@@ -11,7 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
+        Schema::table("tarif_layanan", function (Blueprint $table) {
+            $table->foreignId('id_revisi')->index('fk_tarif_layanan_to_revisi')->references('id')->on('revisi')->onDelete('cascade');
+            $table->foreignId('id_layanan')->index('fk_tarif_layanan_to_layanan')->references('id')->on('layanan')->onDelete('cascade');
+        });
     }
 
     /**
@@ -19,6 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table("tarif_layanan", function (Blueprint $table) {
+            $table->dropForeign("fk_tarif_layanan_to_revisi");
+            $table->dropForeign("fk_tarif_layanan_to_layanan");
+        });
     }
 };

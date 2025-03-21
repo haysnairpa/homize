@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
+        Schema::table('layanan', function (Blueprint $table) {
+            $table->foreignId('id_jam_operasional')->index('fk_layanan_to_jam_operasional')->references('id')->on('jam_operasional')->onDelete('cascade');
+        });
     }
 
     /**
@@ -19,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('layanan', function (Blueprint $table) {
+            $table->dropForeign("fk_layanan_to_jam_operasional");
+        });
     }
 };

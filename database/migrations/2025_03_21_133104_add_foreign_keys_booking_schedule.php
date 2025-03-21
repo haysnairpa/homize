@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
+        Schema::table('booking_schedule', function (Blueprint $table) {
+            $table->foreignId('id_booking')->index('fk_booking_schedule_to_booking')->references('id')->on('booking')->onDelete('cascade');
+        });
     }
 
     /**
@@ -19,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('booking_schedule', function (Blueprint $table) {
+            $table->dropForeign("fk_booking_schedule_to_booking");
+        });
     }
 };
