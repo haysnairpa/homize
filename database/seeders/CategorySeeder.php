@@ -251,8 +251,8 @@ class CategorySeeder extends Seeder
             ]
         ];
 
-        foreach ($category as $categories) {
-            Category::create($categories);
-        }
+        // foreach ($category as $categories) {
+        //     Category::create($categories);
+        // }
     }
 }
