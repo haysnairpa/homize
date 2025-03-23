@@ -49,16 +49,9 @@
                     @endif
 
                     <div>
-                        <x-input 
-                            id="name"
-                            type="text"
-                            name="name"
-                            placeholder="Nama Lengkap" 
-                            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-homize-blue focus:border-homize-blue"
-                            :value="old('name')"
-                            required
-                        />
-                        @error('name')
+                        <x-label for="nama" value="{{ __('Name') }}" />
+                        <x-input id="nama" class="block mt-1 w-full" type="text" name="nama" :value="old('nama')" required autofocus autocomplete="nama" />
+                        @error('nama')
                             <p class="mt-1 text-sm text-homize-error">{{ $message }}</p>
                         @enderror
                     </div>
