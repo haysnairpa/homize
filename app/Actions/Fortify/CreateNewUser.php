@@ -23,7 +23,7 @@ class CreateNewUser implements CreatesNewUsers
             'nama' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
-                'string', 
+                'string',
                 'email',
                 'max:255',
                 'unique:users',
@@ -52,6 +52,7 @@ class CreateNewUser implements CreatesNewUsers
             'nama' => $input['nama'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
+            'profile_url' => 'https://ui-avatars.com/api/?name=' . urlencode($input['nama']) . '&color=7F9CF5&background=EBF4FF',
         ]);
     }
 }
