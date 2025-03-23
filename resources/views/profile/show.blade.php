@@ -14,7 +14,7 @@
                         <img class="h-24 w-24 object-cover rounded-full border-4 border-homize-blue" src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
                     </div>
                     <div>
-                        <h3 class="text-2xl font-semibold text-gray-800">{{ Auth::user()->name }}</h3>
+                        <h3 class="text-2xl font-semibold text-gray-800">{{ Auth::user()->nama }}</h3>
                         <p class="text-gray-600">{{ Auth::user()->email }}</p>
                         <div class="mt-3">
                             <button class="px-4 py-2 bg-homize-blue text-white rounded-md hover:bg-homize-blue-second transition-colors text-sm inline-flex items-center gap-2">

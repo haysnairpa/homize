@@ -41,6 +41,18 @@
     <!-- Categories Section -->
     @include('components.category-browse')
 
+    <!-- Layanan Section -->
+    <div class="py-16 bg-homize-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Layanan Terpopuler</h2>
+                <p class="text-gray-600">Temukan layanan terbaik untuk kebutuhan Anda</p>
+            </div>
+
+            <x-service-card :layanan="$layanan" />
+        </div>
+    </div>
+
     <!-- Featured Services Section -->
     {{-- <x-featured-services :featuredServices="$featuredServices" /> --}}
 
