@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Hari;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -35,5 +36,7 @@ class HariSeeder extends Seeder
                 "nama_hari" => "Minggu"
             ],
         ];
+
+        Hari::insert($hari);
     }
 }
