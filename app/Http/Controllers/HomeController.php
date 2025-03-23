@@ -11,18 +11,15 @@ class HomeController extends Controller
 {
     public function navigation_data()
     {
-        $navigation = DB::select("SELECT j.id, j.nama AS jasa_name, GROUP_CONCAT(c.nama
-                                ORDER BY c.nama SEPARATOR ', ') AS category_names
-                                FROM kategori j
-                                JOIN sub_kategori c ON c.id_kategori = j.id
-                                GROUP BY j.id, j.nama;
-                                ");
+        $kategori = DB::select("SELECT nama, id FROM kategori");
+        $sub_kategori = DB::select("SELECT s.nama, s.seri_sub_kategori, s.id, s.id_kategori
+                                    FROM sub_kategori s");
 
         $ids = DB::select("SELECT `id` FROM `sub_kategori`;");
 
         $bottomNavigation = DB::select("SELECT c.nama AS category_name
                                         FROM sub_kategori c");
 
-        return view('home.home', compact('navigation', 'bottomNavigation', 'ids'));
+        return view('home.home', compact('kategori', 'sub_kategori', 'bottomNavigation', 'ids'));
     }
 }

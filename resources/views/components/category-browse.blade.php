@@ -11,7 +11,7 @@
         </div>
 
         <div class="mt-12 grid self-center grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            @foreach ($navigation as $nav)
+            @foreach ($kategori as $nav)
                 <div
                     class="group relative overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                     <div class="absolute inset-0 bg-gradient-to-r from-homize-blue to-blue-400 opacity-75 z-10"></div>
@@ -63,10 +63,12 @@
 
                         <!-- Category Info -->
                         <div class="absolute bottom-0 left-0 right-0 p-6 z-20">
-                            <h3 class="text-xl font-bold text-white mb-2">{{ $nav->jasa_name }}</h3>
-                            <p class="text-white text-sm opacity-90">
-                                {{ count(explode(',', $nav->category_names)) }} Services Available
-                            </p>
+                            <h3 class="text-xl font-bold text-white mb-2">{{ $nav->nama }}</h3>
+                            @foreach (collect($sub_kategori)->where('id_kategori', $nav->id)->take(3) as $sub)
+                                <p class="text-white text-sm opacity-90">
+                                    {{ trim($sub->nama) }}
+                                </p>
+                            @endforeach
                         </div>
                     </div>
 
@@ -76,8 +78,12 @@
                         <div class="text-center p-6">
                             <p class="text-white text-sm mb-4">Popular services include:</p>
                             <ul class="text-white text-sm space-y-1">
-                                @foreach (array_slice(explode(',', $nav->category_names), 0, 3) as $category)
-                                    <li>• {{ trim($category) }}</li>
+                                @foreach (collect($sub_kategori)->where('id_kategori', $nav->id)->take(3) as $sub)
+                                    <li>
+                                        <p class="text-white text-sm opacity-90">
+                                            {{ trim($sub->nama) }}
+                                        </p>
+                                    </li>
                                 @endforeach
                             </ul>
                             <a href="{{ route('service', [$nav->id]) }}"
