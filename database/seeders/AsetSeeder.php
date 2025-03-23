@@ -36,7 +36,7 @@ class AsetSeeder extends Seeder
                 $aset[] = [
                     'id_layanan' => $layananId,
                     'deskripsi' => $assetType . ' ' . ($i + 1),
-                    'media_url' => $faker->imageUrl(640, 480, str_replace(' ', '', $assetType)),
+                    'media_url' => $this->getImageUrlForAsset($assetType),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -72,6 +72,33 @@ class AsetSeeder extends Seeder
                 fake()->randomElement(['Mesin Cuci', 'Setrika', 'Peralatan Laundry']),
             
             default => fake()->randomElement(['Peralatan Standar', 'Toolkit Basic', 'Perlengkapan Kerja'])
+        };
+    }
+
+    private function getImageUrlForAsset($assetType): string
+    {
+        // Using picsum.photos for realistic images
+        $width = 640;
+        $height = 480;
+        $imageId = rand(1, 1000); // Picsum has about 1000 images
+
+        return match (true) {
+            str_contains($assetType, 'Kamera') => 
+                "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w={$width}&h={$height}",
+            
+            str_contains($assetType, 'Makeup') => 
+                "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w={$width}&h={$height}",
+            
+            str_contains($assetType, 'Peralatan Kebersihan') => 
+                "https://images.unsplash.com/photo-1528740561666-dc2479dc08ab?w={$width}&h={$height}",
+            
+            str_contains($assetType, 'Laptop') => 
+                "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w={$width}&h={$height}",
+            
+            str_contains($assetType, 'Mesin Cuci') => 
+                "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w={$width}&h={$height}",
+            
+            default => "https://picsum.photos/id/{$imageId}/{$width}/{$height}"
         };
     }
 }

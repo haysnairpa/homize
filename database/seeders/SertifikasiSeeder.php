@@ -36,7 +36,7 @@ class SertifikasiSeeder extends Seeder
                 $sertifikasi[] = [
                     'id_layanan' => $layananId,
                     'nama_sertifikasi' => $certType,
-                    'media_url' => $faker->imageUrl(640, 480, 'certificate'),
+                    'media_url' => $this->getCertificateImageUrl($certType),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -100,6 +100,29 @@ class SertifikasiSeeder extends Seeder
                 'Sertifikat Keahlian Dasar',
                 'Basic Training Certificate'
             ])
+        };
+    }
+
+    private function getCertificateImageUrl($certType): string
+    {
+        // Using a mix of certificate-like images
+        $width = 800;
+        $height = 600;
+        
+        return match (true) {
+            str_contains($certType, 'MUA') => 
+                "https://images.unsplash.com/photo-1574871786514-46e1680ea587?w={$width}&h={$height}",
+            
+            str_contains($certType, 'Teknisi') => 
+                "https://images.unsplash.com/photo-1532619675605-1ede6c2ed2b0?w={$width}&h={$height}",
+            
+            str_contains($certType, 'Gada Pratama') => 
+                "https://images.unsplash.com/photo-1589330694653-ded6df03f754?w={$width}&h={$height}",
+            
+            str_contains($certType, 'Teaching') => 
+                "https://images.unsplash.com/photo-1516534775068-ba3e7458af70?w={$width}&h={$height}",
+            
+            default => "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w={$width}&h={$height}"
         };
     }
 }
