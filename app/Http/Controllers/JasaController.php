@@ -60,11 +60,14 @@ class JasaController extends Controller
             ->get();
 
         // Get the category name for display
-        $kategori = SubKategori::find($ids);
-
+        $kategoriData = SubKategori::find($ids);
+        
+        // Get navigation data
+        app(HomeController::class)->navigation_data();
+        
         return view('jasa.index', [
             'jasa' => $jasa,
-            'kategori' => $kategori,
+            'kategoriData' => $kategoriData
         ]);
     }
 }
