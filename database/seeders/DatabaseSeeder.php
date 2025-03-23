@@ -30,6 +30,8 @@ class DatabaseSeeder extends Seeder
             TarifLayananSeeder::class,
             LayananMerchantSeeder::class,
             RatingSeeder::class,
+            AsetSeeder::class,
+            SertifikasiSeeder::class,
         ]);
     }
 }
