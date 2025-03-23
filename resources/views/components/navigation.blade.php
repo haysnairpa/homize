@@ -23,18 +23,14 @@
             <!-- Search Bar -->
             <div class="flex-1 max-w-2xl mx-4">
                 <div class="relative" x-data="searchComponent()">
-                    <input 
-                        type="text" 
-                        x-model="searchQuery"
-                        @input.debounce.300ms="search"
-                        @click.away="closeResults"
-                        @keydown.escape="closeResults"
-                        class="w-full bg-white rounded-md py-2 pl-4 pr-10 text-sm"
-                        placeholder="Cari di Homize">
-                    
+                    <input type="text" x-model="searchQuery" @input.debounce.300ms="search"
+                        @click.away="closeResults" @keydown.escape="closeResults"
+                        class="w-full bg-white rounded-md py-2 pl-4 pr-10 text-sm" placeholder="Cari di Homize">
+
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                         <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
 
@@ -45,18 +41,21 @@
                             <template x-for="result in searchResults" :key="result.id">
                                 <a :href="result.url" class="block hover:bg-gray-50">
                                     <div class="flex items-center p-4">
-                                        <img :src="result.image" :alt="result.name" class="h-12 w-12 object-cover rounded">
+                                        <img :src="result.image" :alt="result.name"
+                                            class="h-12 w-12 object-cover rounded">
                                         <div class="ml-4">
                                             <p class="text-sm font-medium text-gray-900" x-text="result.name"></p>
                                             <p class="text-sm text-gray-500">
                                                 <span x-text="result.category"></span> •
-                                                <span x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(result.price)"></span>
+                                                <span
+                                                    x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(result.price)"></span>
                                             </p>
                                         </div>
                                     </div>
                                 </a>
                             </template>
-                            <div x-show="searchResults.length === 0 && searchQuery !== ''" class="p-4 text-sm text-gray-500 text-center">
+                            <div x-show="searchResults.length === 0 && searchQuery !== ''"
+                                class="p-4 text-sm text-gray-500 text-center">
                                 Tidak ada hasil yang ditemukan
                             </div>
                         </div>
@@ -140,19 +139,20 @@
             <div class="">
                 <!-- Jasa Rumah Tangga -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    @foreach ($navigation as $nav)
+                    @foreach ($kategori as $index => $nav)
                         <div class="space-y-2">
-                            <h3 class="font-bold text-gray-900 mb-4">{{ $nav->jasa_name }}</h3>
+                            <h3 class="font-bold text-gray-900 mb-4">{{ $nav->nama }}</h3>
                             <ul class="space-y-2">
-                                @foreach (explode(',', $nav->category_names) as $index => $category)
-                                    <li>
-                                        <a href="{{ route('jasa', [$ids[$index]->id]) }}"
-                                            class="text-gray-700 hover:text-homize-blue">
-                                            {{ trim($category) }}
-                                        </a>
-                                    </li>
+                                @foreach ($sub_kategori as $index1 => $sub)
+                                    @if ($sub->id_kategori == $nav->id)
+                                        <li>
+                                            <a href="{{ route('jasa', [$ids[$index1]->id]) }}"
+                                                class="text-gray-700 hover:text-homize-blue">
+                                                {{ trim($sub->nama) }}
+                                            </a>
+                                        </li>
+                                    @endif
                                 @endforeach
-
                             </ul>
                         </div>
                     @endforeach
@@ -192,7 +192,7 @@
             searchQuery: '',
             searchResults: [],
             showResults: false,
-            
+
             async search() {
                 if (this.searchQuery.length < 2) {
                     this.searchResults = [];
@@ -201,7 +201,8 @@
                 }
 
                 try {
-                    const response = await fetch(`/search?query=${encodeURIComponent(this.searchQuery)}`);
+                    const response = await fetch(
+                        `/search?query=${encodeURIComponent(this.searchQuery)}`);
                     this.searchResults = await response.json();
                     this.showResults = true;
                 } catch (error) {

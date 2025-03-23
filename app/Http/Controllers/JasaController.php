@@ -12,6 +12,7 @@ class JasaController extends Controller
 {
     public function get_jasa($ids)
     {
+        // dd($ids);
         // Get services with their related data
         $jasa = DB::table('layanan as l')
             ->select([
