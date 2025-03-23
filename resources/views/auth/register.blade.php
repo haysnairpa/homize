@@ -49,8 +49,8 @@
                     @endif
 
                     <div>
-                        <x-label for="nama" value="{{ __('Name') }}" />
-                        <x-input id="nama" class="block mt-1 w-full" type="text" name="nama" :value="old('nama')" required autofocus autocomplete="nama" />
+                        {{-- <x-label for="nama" value="{{ __('Name') }}" /> --}}
+                        <x-input id="nama" class="w-full px-4 py-3 border border-gray-300 rounded-md" placeholder="Nama" type="text" name="nama" :value="old('nama')" required autofocus autocomplete="nama" />
                         @error('nama')
                             <p class="mt-1 text-sm text-homize-error">{{ $message }}</p>
                         @enderror

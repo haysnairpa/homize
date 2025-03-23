@@ -63,6 +63,6 @@ class HomeController extends Controller
             'layanan' => $layanan
         ]);
 
-        return true;
+        return view('home.home', compact('kategori', 'sub_kategori', 'navigation', 'bottomNavigation', 'ids', 'layanan'));
     }
 }
