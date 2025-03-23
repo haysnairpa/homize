@@ -42,10 +42,10 @@
     @include('components.category-browse')
 
     <!-- Featured Services Section -->
-    <x-featured-services :featuredServices="$featuredServices" />
+    {{-- <x-featured-services :featuredServices="$featuredServices" /> --}}
 
     <!-- Popular Services Section -->
-    <x-popular-services :popularServices="$popularServices" />
+    {{-- <x-popular-services :popularServices="$popularServices" /> --}}
 
     <!-- Footer -->
     @include('components.footer')

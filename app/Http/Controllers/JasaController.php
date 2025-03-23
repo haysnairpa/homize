@@ -9,12 +9,12 @@ class JasaController extends Controller
 {
     public function get_jasa($ids)
     {
-        $jasa = DB::select("SELECT c.`name` AS category_name, s.`name` AS seller_name, s.`id` AS seller_id, se.`id` AS services_id, se.`name` AS services_name, se.`price` AS services_price, se.`image_url`
-                    FROM `category` c
-                    JOIN `shop` s ON c.id = s.id_category
-                    JOIN `shop_services` sh ON sh.id_shop = s.id
-                    JOIN `services` se ON se.id = sh.id_services
-                    WHERE c.id = ?", [$ids]);
+        $jasa = DB::select("SELECT l.nama_layanan, l.pengalaman, l.id, jo.id_hari, jo.jam_buka, jo.jam_tutup, m.nama_usaha, m.profile_url
+                            FROM `sub_kategori` s
+                            JOIN `layanan` l ON l.id_sub_kategori = s.id
+                            JOIN `merchant` m ON m.id_sub_kategori = s.id
+                            JOIN `jam_operasional` jo ON jo.id = l.id_jam_operasional
+                            WHERE s.id = ?", [$ids]);
         dd($jasa);
     }
 }

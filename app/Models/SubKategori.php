@@ -17,7 +17,7 @@ class SubKategori extends Model
     // one to one from sub_kategori to merchant
     public function merchant()
     {
-        return $this->belongsTo(Merchant::class, "id_sub_kategori");
+        return $this->hasMany(Merchant::class, "id_sub_kategori", "id");
     }
 
     // one to one from sub_kategori to layanan
