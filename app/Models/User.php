@@ -83,4 +83,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Booking::class, 'id_user', 'id');
     }
+
+    // Relasi untuk toko favorit
+    public function toko_favorit()
+    {
+        return $this->hasMany(TokoFavorit::class, 'id_user');
+    }
 }

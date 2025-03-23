@@ -45,4 +45,10 @@ class Merchant extends Model
     {
         return $this->belongsTo(SubKategori::class, 'id_sub_kategori', 'id');
     }
+
+    // Relasi untuk user yang memfavoritkan
+    public function toko_favorit()
+    {
+        return $this->hasMany(TokoFavorit::class, 'id_merchant');
+    }
 }
