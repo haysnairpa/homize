@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JasaController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\LayananController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -34,3 +35,4 @@ Route::middleware([
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
 Route::get('/jasa/{jasa}', [JasaController::class, 'get_jasa'])->name('jasa');
 Route::get('/show_services/{service}', [ExploreServicesController::class, 'show_services'])->name('service');
+Route::get('/layanan/{id}', [LayananController::class, 'show'])->name('layanan.detail');

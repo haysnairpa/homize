@@ -23,7 +23,7 @@ class HomeController extends Controller
 
         $ids = DB::select("SELECT `id` FROM `sub_kategori`;");
 
-        $bottomNavigation = DB::select("SELECT c.nama AS category_name
+        $bottomNavigation = DB::select("SELECT c.nama AS category_name 
                                         FROM sub_kategori c");
 
         $layanan = DB::table('layanan as l')
@@ -53,6 +53,16 @@ class HomeController extends Controller
             ->limit(8)
             ->get();
 
-        return view('home.home', compact('kategori', 'sub_kategori', 'navigation', 'bottomNavigation', 'ids', 'layanan'));
+        // Share the navigation data with all views
+        view()->share([
+            'kategori' => $kategori,
+            'sub_kategori' => $sub_kategori,
+            'navigation' => $navigation,
+            'bottomNavigation' => $bottomNavigation,
+            'ids' => $ids,
+            'layanan' => $layanan
+        ]);
+
+        return true;
     }
 }

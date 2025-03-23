@@ -1,6 +1,6 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
     @foreach($layanan as $service)
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <a href="{{ route('layanan.detail', $service->id) }}" class="bg-white rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl">
             <div class="relative">
                 @php
                     $aset = App\Models\Aset::where('id_layanan', $service->id)->first();
@@ -41,6 +41,6 @@
                     </span>
                 </div>
             </div>
-        </div>
+        </a>
     @endforeach
 </div> 
