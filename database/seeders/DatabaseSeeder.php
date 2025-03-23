@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Rating;
 use App\Models\ShopServices;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -22,6 +23,13 @@ class DatabaseSeeder extends Seeder
             SubKategoriSeeder::class,
             StatusSeeder::class,
             HariSeeder::class,
+            UsersSeeder::class,
+            MerchantSeeder::class,
+            JamOperasionalSeeder::class,
+            LayananSeeder::class,
+            TarifLayananSeeder::class,
+            LayananMerchantSeeder::class,
+            RatingSeeder::class,
         ]);
     }
 }
