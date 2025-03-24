@@ -15,6 +15,7 @@ class LayananController extends Controller
         $layanan = DB::table('layanan as l')
             ->select([
                 'l.*',
+                'm.id as id_merchant',
                 'm.nama_usaha',
                 'm.profile_url',
                 'jo.jam_buka',
@@ -68,4 +69,4 @@ class LayananController extends Controller
 
         return view('layanan.detail', compact('layanan', 'ratings', 'ratingStats'));
     }
-} 
+}
