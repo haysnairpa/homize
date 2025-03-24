@@ -6,6 +6,7 @@ use App\Http\Controllers\JasaController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\LayananController;
+use App\Http\Controllers\MerchantController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -36,3 +37,15 @@ Route::get('/services/{service}', [ServiceController::class, 'show'])->name('ser
 Route::get('/jasa/{jasa}', [JasaController::class, 'get_jasa'])->name('jasa');
 Route::get('/show_services/{service}', [ExploreServicesController::class, 'show_services'])->name('service');
 Route::get('/layanan/{id}', [LayananController::class, 'show'])->name('layanan.detail');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/merchant', [MerchantController::class, 'index'])->name('merchant');
+    Route::get('/merchant/register/step1', [MerchantController::class, 'step1'])->name('merchant.register.step1');
+    Route::post('/merchant/register/step1', [MerchantController::class, 'storeStep1'])->name('merchant.register.step1.store');
+    Route::get('/merchant/register/step2/{id}', [MerchantController::class, 'step2'])->name('merchant.register.step2');
+    Route::post('/merchant/register/step2/{id}', [MerchantController::class, 'storeStep2'])->name('merchant.register.step2.store');
+    Route::get('/merchant/dashboard', [MerchantController::class, 'dashboard'])->name('merchant.dashboard');
+});
+
+Route::get('/search', [SearchController::class, 'search'])->name('search');
+Route::get('/api/search', [SearchController::class, 'apiSearch'])->name('api.search');

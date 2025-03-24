@@ -30,45 +30,21 @@
 
             <!-- Search Bar - Hidden on mobile, shown on medium screens and up -->
             <div class="hidden md:flex flex-1 max-w-2xl mx-4">
-                <div class="relative w-full" x-data="searchComponent()">
-                    <input type="text" x-model="searchQuery" @input.debounce.300ms="search"
-                        @click.away="closeResults" @keydown.escape="closeResults"
-                        class="w-full bg-white rounded-md py-2 pl-4 pr-10 text-sm" placeholder="Cari di Homize">
-
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-
-                    <!-- Search Results Dropdown -->
-                    <div x-show="showResults" x-cloak
-                        class="absolute mt-1 w-full bg-white rounded-md shadow-lg overflow-hidden z-50">
-                        <div class="max-h-96 overflow-y-auto">
-                            <template x-for="result in searchResults" :key="result.id">
-                                <a :href="result.url" class="block hover:bg-gray-50">
-                                    <div class="flex items-center p-4">
-                                        <img :src="result.image" :alt="result.name"
-                                            class="h-12 w-12 object-cover rounded">
-                                        <div class="ml-4">
-                                            <p class="text-sm font-medium text-gray-900" x-text="result.name"></p>
-                                            <p class="text-sm text-gray-500">
-                                                <span x-text="result.category"></span> •
-                                                <span
-                                                    x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(result.price)"></span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </template>
-                            <div x-show="searchResults.length === 0 && searchQuery !== ''"
-                                class="p-4 text-sm text-gray-500 text-center">
-                                Tidak ada hasil yang ditemukan
-                            </div>
+                <form action="{{ route('search') }}" method="GET" class="w-full">
+                    <div class="relative">
+                        <input type="text" 
+                               name="query" 
+                               value="{{ request('query') }}"
+                               class="w-full bg-white rounded-md py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-homize-blue" 
+                               placeholder="Cari layanan atau merchant...">
+                        
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
 
             <!-- Right Section - Icons and Auth -->
@@ -128,19 +104,26 @@
             <div class="flex space-x-8 py-2 text-sm">
                 @php
                     $randomNumbers = [];
-                    while (count($randomNumbers) < 3) {
-                        $randomNumber = rand(0, count($bottomNavigation) - 1);
-                        if (!in_array($randomNumber, $randomNumbers)) {
-                            $randomNumbers[] = $randomNumber;
+                    if (isset($bottomNavigation) && count($bottomNavigation) > 0) {
+                        while (count($randomNumbers) < 3) {
+                            $randomNumber = rand(0, count($bottomNavigation) - 1);
+                            if (!in_array($randomNumber, $randomNumbers)) {
+                                $randomNumbers[] = $randomNumber;
+                            }
                         }
                     }
                 @endphp
-                <a href="#"
-                    class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[0]]->category_name }}</a>
-                <a href="#"
-                    class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[1]]->category_name }}</a>
-                <a href="#"
-                    class="text-white hover:text-homize-orange">{{ $bottomNavigation[$randomNumbers[2]]->category_name }}</a>
+                @if(isset($bottomNavigation) && count($bottomNavigation) > 0)
+                    <a href="#" class="text-white hover:text-homize-orange">
+                        {{ $bottomNavigation[$randomNumbers[0]]->category_name }}
+                    </a>
+                    <a href="#" class="text-white hover:text-homize-orange">
+                        {{ $bottomNavigation[$randomNumbers[1]]->category_name }}
+                    </a>
+                    <a href="#" class="text-white hover:text-homize-orange">
+                        {{ $bottomNavigation[$randomNumbers[2]]->category_name }}
+                    </a>
+                @endif
             </div>
         </div>
     </div>
@@ -148,39 +131,57 @@
     <!-- Mobile Search - Shown only on mobile -->
     <div class="md:hidden px-4 py-3 border-t border-homize-blue-second">
         <div class="relative w-full" x-data="searchComponent()">
-            <input type="text" x-model="searchQuery" @input.debounce.300ms="search"
-                @click.away="closeResults" @keydown.escape="closeResults"
-                class="w-full bg-white rounded-md py-2 pl-4 pr-10 text-sm" placeholder="Cari di Homize">
+            <div class="relative">
+                <input type="text" 
+                    x-model="searchQuery" 
+                    @input.debounce.300ms="search"
+                    @click.away="closeResults" 
+                    @keydown.escape="closeResults"
+                    @keydown.arrow-down.prevent="navigateResults('down')"
+                    @keydown.arrow-up.prevent="navigateResults('up')"
+                    @keydown.enter.prevent="selectResult"
+                    class="w-full bg-white rounded-md py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-homize-blue" 
+                    placeholder="Cari layanan atau merchant...">
+                
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
 
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <div x-show="isLoading" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
             </div>
 
-            <!-- Mobile Search Results Dropdown -->
             <div x-show="showResults" x-cloak
                 class="absolute mt-1 w-full bg-white rounded-md shadow-lg overflow-hidden z-50">
                 <div class="max-h-96 overflow-y-auto">
-                    <template x-for="result in searchResults" :key="result.id">
-                        <a :href="result.url" class="block hover:bg-gray-50">
+                    <template x-for="(result, index) in searchResults" :key="result.id">
+                        <a :href="result.url" 
+                           class="block hover:bg-gray-50 transition-colors"
+                           :class="{'bg-gray-50': selectedIndex === index}"
+                           @mouseover="selectedIndex = index">
                             <div class="flex items-center p-4">
                                 <img :src="result.image" :alt="result.name"
                                     class="h-12 w-12 object-cover rounded">
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-900" x-text="result.name"></p>
-                                    <p class="text-sm text-gray-500">
-                                        <span x-text="result.category"></span> •
-                                        <span
-                                            x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(result.price)"></span>
+                                <div class="ml-4 flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-sm font-medium text-gray-900" x-text="result.name"></p>
+                                        <p class="text-sm font-medium text-homize-blue" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(result.price)"></p>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        <span x-text="result.merchant"></span> •
+                                        <span x-text="result.category"></span>
                                     </p>
                                 </div>
                             </div>
                         </a>
                     </template>
-                    <div x-show="searchResults.length === 0 && searchQuery !== ''"
-                        class="p-4 text-sm text-gray-500 text-center">
+                    <div x-show="searchResults.length === 0 && searchQuery !== ''" class="p-4 text-sm text-gray-500 text-center">
                         Tidak ada hasil yang ditemukan
                     </div>
                 </div>
@@ -432,39 +433,46 @@
                 searchQuery: '',
                 searchResults: [],
                 showResults: false,
-                search: function() {
+                isLoading: false,
+                selectedIndex: -1,
+                
+                async search() {
                     if (this.searchQuery.length < 2) {
                         this.searchResults = [];
                         this.showResults = false;
                         return;
                     }
-                    
-                    // This is a placeholder for your actual search logic
-                    // In a real implementation, you would make an AJAX call to your backend
-                    this.searchResults = [
-                        // Sample data - replace with your actual search implementation
-                        {
-                            id: 1,
-                            name: 'Jasa Bersih Rumah',
-                            category: 'Kebersihan',
-                            price: 150000,
-                            image: '/images/placeholder.jpg',
-                            url: '#'
-                        },
-                        {
-                            id: 2,
-                            name: 'Jasa Perbaikan AC',
-                            category: 'Elektronik',
-                            price: 250000,
-                            image: '/images/placeholder.jpg',
-                            url: '#'
-                        }
-                    ];
-                    
-                    this.showResults = true;
+
+                    this.isLoading = true;
+                    try {
+                        const response = await fetch(`/api/search?query=${encodeURIComponent(this.searchQuery)}`);
+                        this.searchResults = await response.json();
+                        this.showResults = true;
+                        this.selectedIndex = -1;
+                    } catch (error) {
+                        console.error('Search error:', error);
+                    } finally {
+                        this.isLoading = false;
+                    }
                 },
-                closeResults: function() {
+
+                navigateResults(direction) {
+                    if (direction === 'down') {
+                        this.selectedIndex = Math.min(this.selectedIndex + 1, this.searchResults.length - 1);
+                    } else {
+                        this.selectedIndex = Math.max(this.selectedIndex - 1, -1);
+                    }
+                },
+
+                selectResult() {
+                    if (this.selectedIndex >= 0 && this.searchResults[this.selectedIndex]) {
+                        window.location.href = this.searchResults[this.selectedIndex].url;
+                    }
+                },
+
+                closeResults() {
                     this.showResults = false;
+                    this.selectedIndex = -1;
                 }
             };
         };
