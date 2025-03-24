@@ -68,4 +68,9 @@ class Layanan extends Model
     {
         return $this->hasOne(SubKategori::class, "id_sub_kategori", "id");
     }
+
+    public function wishlist()
+    {
+        return $this->hasMany(Wishlist::class, 'id_layanan');
+    }
 }

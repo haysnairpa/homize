@@ -6,6 +6,8 @@ use App\Models\Layanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\ShopServices;
+use App\Models\Wishlist;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -53,6 +55,28 @@ class HomeController extends Controller
             ->limit(8)
             ->get();
 
+        $wishlists = [];
+        if (Auth::check()) {
+            $wishlists = DB::table('wishlists as w')
+            ->select([
+                'w.id_layanan', 
+                'w.id_user',
+                'l.nama_layanan',
+                'l.deskripsi_layanan',
+                'm.nama_usaha',
+                'm.profile_url',
+                'tl.harga',
+                'tl.satuan',
+                'tl.tipe_durasi',
+                'tl.durasi'
+            ])
+            ->leftJoin('layanan as l', 'w.id_layanan', '=', 'l.id')
+            ->leftJoin('merchant as m', 'l.id_merchant', '=', 'm.id')
+            ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
+            ->where('w.id_user', Auth::id())
+            ->get();
+        }
+
         // Share the navigation data with all views
         view()->share([
             'kategori' => $kategori,
@@ -60,9 +84,10 @@ class HomeController extends Controller
             'navigation' => $navigation,
             'bottomNavigation' => $bottomNavigation,
             'ids' => $ids,
-            'layanan' => $layanan
+            'layanan' => $layanan,
+            'wishlists' => $wishlists
         ]);
 
-        return view('home.home', compact('kategori', 'sub_kategori', 'navigation', 'bottomNavigation', 'ids', 'layanan'));
+        return view('home.home', compact('kategori', 'sub_kategori', 'navigation', 'bottomNavigation', 'ids', 'layanan', 'wishlists'));
     }
 }

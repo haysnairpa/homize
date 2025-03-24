@@ -89,4 +89,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(TokoFavorit::class, 'id_user');
     }
+
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class, 'id_user');
+    }
 }
