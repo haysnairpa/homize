@@ -22,6 +22,12 @@ class Merchant extends Model
         'updated_at',
     ];
 
+    // one to many from merchant to layanan
+    public function layanan()
+    {
+        return $this->hasMany(Layanan::class, 'id_merchant');
+    }
+
     // one to many from merchant to layanan_merchant
     public function layanan_merchant()
     {

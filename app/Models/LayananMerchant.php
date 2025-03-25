@@ -17,7 +17,7 @@ class LayananMerchant extends Model
     // one to one from layanan_merchant to layanan
     public function layanan()
     {
-        return $this->hasOne(Layanan::class, "id_layanan", "id");
+        return $this->belongsTo(Layanan::class, "id_layanan", "id");
     }
 
     // many to one from layanan_merchant to merchant

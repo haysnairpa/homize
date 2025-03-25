@@ -134,7 +134,14 @@
                             <span class="text-lg text-gray-500">/5.0</span>
                         </div>
                         <div class="flex-1">
-                            <p class="text-lg mb-1">{{ round(($ratingStats[5] / $layanan->rating_count) * 100) }}% pembeli merasa puas</p>
+                            <p class="text-lg mb-1">
+                                @if($layanan->rating_count > 0)
+                                    {{ round(($ratingStats[5] / $layanan->rating_count) * 100) }}% pembeli merasa puas
+                                @else
+                                    Belum ada ulasan
+                                @endif
+                            </p>
+                            
                             <p class="text-gray-500">{{ $layanan->rating_count }} rating • {{ array_sum($ratingStats) }} ulasan</p>
                         </div>
                     </div>
