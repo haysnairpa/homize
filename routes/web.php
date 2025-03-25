@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExploreServicesController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JasaController;
@@ -22,9 +23,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])->name('dashboard');
 
     Route::get('/transactions', function () {
         return view('transactions');
