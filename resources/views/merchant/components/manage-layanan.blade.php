@@ -22,6 +22,16 @@
                                 <p class="text-sm text-gray-500 mt-1">
                                     Durasi: {{ $layanan->tarif_layanan->durasi ?? 0 }} {{ $layanan->tarif_layanan->tipe_durasi ?? '-' }}
                                 </p>
+                                
+                                @php
+                                    $revisi = App\Models\Revisi::find($layanan->tarif_layanan->id_revisi ?? 1);
+                                @endphp
+                                
+                                @if($revisi && $revisi->id != 1 && $revisi->harga > 0)
+                                    <p class="text-xs text-homize-orange mt-1">
+                                        Revisi: Rp {{ number_format($revisi->harga) }} / {{ $revisi->durasi }} {{ $revisi->tipe_durasi }}
+                                    </p>
+                                @endif
                             </div>
                             <div class="flex gap-2">
                                 <button class="p-2 text-gray-600 hover:text-homize-blue hover:bg-homize-blue/5 rounded-lg">

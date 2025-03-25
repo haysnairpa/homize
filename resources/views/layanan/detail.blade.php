@@ -82,6 +82,32 @@
                             {{ $layanan->jam_buka }} - {{ $layanan->jam_tutup }}
                         </p>
                     </div>
+
+                    @php
+                        $revisi = App\Models\Revisi::find($layanan->id_revisi ?? 1);
+                    @endphp
+
+                    @if($revisi && $revisi->id != 1 && $revisi->harga > 0)
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold text-gray-900">Informasi Revisi</h3>
+                        <div class="mt-2 p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Harga Revisi</p>
+                                    <p class="text-lg font-semibold text-homize-orange">
+                                        Rp {{ number_format($revisi->harga, 0, ',', '.') }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Durasi Revisi</p>
+                                    <p class="text-lg font-semibold">
+                                        {{ $revisi->durasi }} {{ $revisi->tipe_durasi }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -156,7 +182,9 @@
                             <span class="text-lg text-gray-500">/5.0</span>
                         </div>
                         <div class="flex-1">
-                            <p class="text-lg mb-1">{{ round(($ratingStats[5] / $layanan->rating_count) * 100) }}% pembeli merasa puas</p>
+                            <p class="text-lg mb-1">
+                                {{ $layanan->rating_count > 0 ? round(($ratingStats[5] / $layanan->rating_count) * 100) : 0 }}% pembeli merasa puas
+                            </p>
                             <p class="text-gray-500">{{ $layanan->rating_count }} rating • {{ array_sum($ratingStats) }} ulasan</p>
                         </div>
                     </div>

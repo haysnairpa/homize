@@ -23,6 +23,7 @@ class LayananController extends Controller
                 'jo.id_hari',
                 'tl.harga',
                 'tl.satuan',
+                'tl.id_revisi',
                 DB::raw('COALESCE(AVG(r.rate), 0) as rating_avg'),
                 DB::raw('COUNT(DISTINCT r.id) as rating_count')
             ])
@@ -41,13 +42,15 @@ class LayananController extends Controller
                 'l.pengalaman',
                 'l.created_at',
                 'l.updated_at',
+                'm.id',
                 'm.nama_usaha',
                 'm.profile_url',
                 'jo.jam_buka',
                 'jo.jam_tutup',
                 'jo.id_hari',
                 'tl.harga',
-                'tl.satuan'
+                'tl.satuan',
+                'tl.id_revisi'
             ])
             ->first();
 

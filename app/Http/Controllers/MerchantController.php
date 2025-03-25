@@ -16,6 +16,7 @@ use App\Models\LayananMerchant;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\CreateLayananRequest;
+use App\Models\Revisi;
 
 class MerchantController extends Controller
 {
@@ -127,10 +128,22 @@ class MerchantController extends Controller
                 'id_merchant' => $merchant->id
             ]);
 
+            // Cek apakah ada revisi
+            $revisiId = 1; // Default revision ID
+            if ($request->has('revisi_harga') && $request->has('revisi_durasi') && $request->has('revisi_tipe_durasi')) {
+                // Create revisi baru
+                $revisi = Revisi::create([
+                    'harga' => $request->revisi_harga,
+                    'durasi' => $request->revisi_durasi,
+                    'tipe_durasi' => $request->revisi_tipe_durasi
+                ]);
+                $revisiId = $revisi->id;
+            }
+
             // Create tarif layanan
             TarifLayanan::create([
                 'id_layanan' => $layanan->id,
-                'id_revisi' => 1, // Default revision
+                'id_revisi' => $revisiId,
                 'harga' => $request->harga,
                 'satuan' => $request->satuan,
                 'durasi' => $request->durasi,

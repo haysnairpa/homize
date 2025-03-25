@@ -26,7 +26,10 @@ class CreateLayananRequest extends FormRequest
             'jam_operasional.jam_tutup' => 'required|date_format:H:i',
             'aset_layanan.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'sertifikasi.*.nama' => 'nullable|string',
-            'sertifikasi.*.file' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'sertifikasi.*.file' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'revisi_harga' => 'nullable|numeric|min:0',
+            'revisi_durasi' => 'nullable|integer|min:1',
+            'revisi_tipe_durasi' => 'nullable|in:Jam,Hari,Pertemuan',
         ];
     }
 

@@ -144,6 +144,67 @@
                 </div>
             </div>
 
+            <!-- Revisi Layanan -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-200 hover:shadow-md mt-8">
+                <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-transparent">
+                    <div class="flex items-center space-x-2">
+                        <div class="bg-primary/10 p-2 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold">Revisi Layanan</h3>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1 ml-9">
+                        Tentukan harga dan durasi revisi layanan Anda (opsional)
+                    </p>
+                </div>
+                <div class="p-6">
+                    <div class="mb-4">
+                        <div class="flex items-center mb-4">
+                            <input id="enable_revisi" type="checkbox" class="w-4 h-4 text-homize-blue bg-gray-100 border-gray-300 rounded focus:ring-homize-blue">
+                            <label for="enable_revisi" class="ml-2 text-sm font-medium text-gray-700">Aktifkan opsi revisi untuk layanan ini</label>
+                        </div>
+                    </div>
+                    
+                    <div id="revisi_fields" class="grid grid-cols-1 md:grid-cols-2 gap-5 hidden">
+                        <div class="space-y-2">
+                            <label for="revisi_harga" class="block text-sm font-medium text-gray-700">Harga Revisi</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <span class="text-gray-500">Rp</span>
+                                </div>
+                                <input type="number" id="revisi_harga" name="revisi_harga" min="0" placeholder="Masukkan harga revisi"
+                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="revisi_durasi" class="block text-sm font-medium text-gray-700">Durasi Revisi</label>
+                            <input type="number" id="revisi_durasi" name="revisi_durasi" min="0" placeholder="Masukkan durasi revisi"
+                                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="revisi_tipe_durasi" class="block text-sm font-medium text-gray-700">Tipe Durasi Revisi</label>
+                            <div class="relative">
+                                <select id="revisi_tipe_durasi" name="revisi_tipe_durasi"
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
+                                    <option value="" disabled selected>Pilih tipe durasi</option>
+                                    <option value="Jam">Jam</option>
+                                    <option value="Hari">Hari</option>
+                                    <option value="Pertemuan">Pertemuan</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Jam Operasional -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-200 hover:shadow-md">
                 <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-transparent">
@@ -437,6 +498,27 @@ document.getElementById('layananForm').addEventListener('submit', function(e) {
         errorDiv.classList.remove('hidden');
         window.scrollTo(0, 0);
     }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const enableRevisiCheckbox = document.getElementById('enable_revisi');
+    const revisiFields = document.getElementById('revisi_fields');
+    
+    enableRevisiCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            revisiFields.classList.remove('hidden');
+            // Tambahkan required attribute ke field revisi
+            document.getElementById('revisi_harga').setAttribute('required', '');
+            document.getElementById('revisi_durasi').setAttribute('required', '');
+            document.getElementById('revisi_tipe_durasi').setAttribute('required', '');
+        } else {
+            revisiFields.classList.add('hidden');
+            // Hapus required attribute dari field revisi
+            document.getElementById('revisi_harga').removeAttribute('required');
+            document.getElementById('revisi_durasi').removeAttribute('required');
+            document.getElementById('revisi_tipe_durasi').removeAttribute('required');
+        }
+    });
 });
 </script>
 
