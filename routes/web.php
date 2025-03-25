@@ -46,6 +46,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/merchant/register/step2/{id}', [MerchantController::class, 'step2'])->name('merchant.register.step2');
     Route::post('/merchant/register/step2/{id}', [MerchantController::class, 'storeStep2'])->name('merchant.register.step2.store');
     Route::get('/merchant/dashboard', [MerchantController::class, 'dashboard'])->name('merchant.dashboard');
+    Route::post('/merchant/layanan', [MerchantController::class, 'storeLayanan'])
+        ->name('merchant.layanan.store');
 });
 
 Route::get('/search', [SearchController::class, 'search'])->name('search');

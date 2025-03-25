@@ -6,6 +6,16 @@ use App\Models\Merchant;
 use App\Models\SubKategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Layanan;
+use App\Models\TarifLayanan;
+use App\Models\Aset;
+use App\Models\Sertifikasi;
+use App\Models\JamOperasional;
+use App\Models\Hari;
+use App\Models\LayananMerchant;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use App\Http\Requests\CreateLayananRequest;
 
 class MerchantController extends Controller
 {
@@ -79,5 +89,98 @@ class MerchantController extends Controller
     {
         $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
         return view('merchant.dashboard', compact('merchant'));
+    }
+
+    public function storeLayanan(CreateLayananRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            
+            // Validasi merchant
+            $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+            
+            // Validasi data sebelum create
+            if (!isset($request->jam_operasional['hari']) || !isset($request->jam_operasional['jam_buka']) || !isset($request->jam_operasional['jam_tutup'])) {
+                throw new \Exception('Data jam operasional tidak lengkap');
+            }
+
+            // Create jam operasional
+            $jamOperasional = JamOperasional::create([
+                'id_hari' => $request->jam_operasional['hari'],
+                'jam_buka' => $request->jam_operasional['jam_buka'],
+                'jam_tutup' => $request->jam_operasional['jam_tutup']
+            ]);
+
+            // Create layanan
+            $layanan = Layanan::create([
+                'id_merchant' => $merchant->id,
+                'id_jam_operasional' => $jamOperasional->id,
+                'id_sub_kategori' => $merchant->id_sub_kategori,
+                'nama_layanan' => $request->nama_layanan,
+                'deskripsi_layanan' => $request->deskripsi_layanan,
+                'pengalaman' => $request->pengalaman
+            ]);
+
+            // Create layanan merchant
+            LayananMerchant::create([
+                'id_layanan' => $layanan->id,
+                'id_merchant' => $merchant->id
+            ]);
+
+            // Create tarif layanan
+            TarifLayanan::create([
+                'id_layanan' => $layanan->id,
+                'id_revisi' => 1, // Default revision
+                'harga' => $request->harga,
+                'satuan' => $request->satuan,
+                'durasi' => $request->durasi,
+                'tipe_durasi' => $request->tipe_durasi
+            ]);
+
+            // Handle aset uploads
+            if ($request->hasFile('aset_layanan')) {
+                foreach ($request->file('aset_layanan') as $file) {
+                    $path = $file->store('layanan-assets', 'public');
+                    Aset::create([
+                        'id_layanan' => $layanan->id,
+                        'deskripsi' => $file->getClientOriginalName(),
+                        'media_url' => $path
+                    ]);
+                }
+            }
+
+            // Handle sertifikasi uploads
+            if ($request->has('sertifikasi')) {
+                foreach ($request->sertifikasi as $sertifikasi) {
+                    if (isset($sertifikasi['file'])) {
+                        $path = $sertifikasi['file']->store('layanan-certificates', 'public');
+                        Sertifikasi::create([
+                            'id_layanan' => $layanan->id,
+                            'nama_sertifikasi' => $sertifikasi['nama'],
+                            'media_url' => $path
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            
+            // Log success untuk debugging
+            Log::info('Layanan berhasil dibuat', [
+                'id_merchant' => $merchant->id,
+                'nama_layanan' => $request->nama_layanan
+            ]);
+
+            return redirect()->route('merchant.dashboard')
+                ->with('success', 'Layanan berhasil ditambahkan! Silakan cek di daftar layanan Anda.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating layanan: ' . $e->getMessage());
+            
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal menambahkan layanan: ' . $e->getMessage());
+        }
     }
 }
