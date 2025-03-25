@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('method');
             $table->foreignId('id_status')->index('fk_pembayaran_to_status');
             $table->timestamp('payment_date');
+            $table->timestamps();
         });
     }
 

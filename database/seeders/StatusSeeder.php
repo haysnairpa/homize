@@ -13,21 +13,19 @@ class StatusSeeder extends Seeder
      */
     public function run(): void
     {
-        $status = [
-            [
-                "nama_status" => "Diproses"
-            ],
-            [
-                "nama_status" => "Berlangsung"
-            ],
-            [
-                "nama_status" => "Selesai"
-            ],
-            [
-                "nama_status" => "Dibatalkan"
-            ]
+        $statuses = [
+            ['nama_status' => 'Pending'],
+            ['nama_status' => 'Confirmed'],
+            ['nama_status' => 'In Progress'],
+            ['nama_status' => 'Completed'],
+            ['nama_status' => 'Cancelled'],
+            ['nama_status' => 'Payment Pending'],
+            ['nama_status' => 'Payment Completed'],
+            ['nama_status' => 'Payment Failed']
         ];
 
-        Status::insert($status);
+        foreach ($statuses as $status) {
+            Status::create($status);
+        }
     }
 }

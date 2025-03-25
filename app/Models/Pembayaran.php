@@ -25,6 +25,6 @@ class Pembayaran extends Model
     // one to one from pembayaran to status
     public function status()
     {
-        return $this->hasOne(Status::class, "id_status", "id");
+        return $this->belongsTo(Status::class, "id_status", "id");
     }
 }
