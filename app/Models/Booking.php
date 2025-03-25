@@ -13,6 +13,7 @@ class Booking extends Model
         "id_merchant",
         "id_layanan",
         "id_status",
+        "id_booking_schedule",
         "tanggal_booking",
         "alamat_pembeli",
         "catatan",
@@ -28,7 +29,7 @@ class Booking extends Model
     // one to one from booking to pembayaran
     public function pembayaran()
     {
-        return $this->hasOne(Pembayaran::class, "id", "id_booking");
+        return $this->hasOne(Pembayaran::class, "id_booking", "id");
     }
 
     // many to one from booking to user
@@ -49,13 +50,13 @@ class Booking extends Model
         return $this->belongsTo(Layanan::class, "id_layanan", "id");
     }
 
-    // one to one from booking to status
+    // many to one from booking to status
     public function status()
     {
-        return $this->hasOne(Status::class, "id_status", "id");
+        return $this->belongsTo(Status::class, "id_status", "id");
     }
 
-    // one to one from booking to booking_schedule
+    // many to one from booking to booking_schedule
     public function booking_schedule()
     {
         return $this->hasOne(BookingSchedule::class, "id_booking_schedule", "id");

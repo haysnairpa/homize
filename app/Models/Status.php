@@ -12,15 +12,15 @@ class Status extends Model
         "nama_status",
     ];
 
-    // one to one from status to pembayaran
+    // one to many from status to pembayaran
     public function pembayaran()
     {
-        return $this->belongsTo(Pembayaran::class, "id", "id_status");
+        return $this->hasMany(Pembayaran::class, "id_status", "id");
     }
 
-    // one to one from status to booking
+    // one to many from status to booking
     public function booking()
     {
-        return $this->belongsTo(Booking::class, "id", "id_status");
+        return $this->hasMany(Booking::class, "id_status", "id");
     }
 }
