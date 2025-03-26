@@ -10,9 +10,11 @@ class Pembayaran extends Model
 
     protected $fillable = [
         "id_booking",
+        "order_id",
         "amount",
         "method",
         "id_status",
+        "snap_token",
         "payment_date",
     ];
 
@@ -26,5 +28,27 @@ class Pembayaran extends Model
     public function status()
     {
         return $this->belongsTo(Status::class, "id_status", "id");
+    }
+
+    // Helper method untuk cek status pembayaran
+    public function isPending()
+    {
+        return $this->status->nama_status === 'Payment Pending' || $this->status->nama_status === 'Pending';
+    }
+
+    public function isCompleted()
+    {
+        return $this->status->nama_status === 'Payment Completed';
+    }
+
+    public function isFailed()
+    {
+        return $this->status->nama_status === 'Payment Failed';
+    }
+
+    // Format amount to rupiah
+    public function getFormattedAmountAttribute()
+    {
+        return 'Rp ' . number_format($this->amount, 0, ',', '.');
     }
 }

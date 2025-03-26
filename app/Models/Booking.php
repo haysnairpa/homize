@@ -59,6 +59,6 @@ class Booking extends Model
     // many to one from booking to booking_schedule
     public function booking_schedule()
     {
-        return $this->hasOne(BookingSchedule::class, "id_booking_schedule", "id");
+        return $this->belongsTo(BookingSchedule::class, "id_booking_schedule", "id");
     }
 }

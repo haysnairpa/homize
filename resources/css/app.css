@@ -52,4 +52,33 @@
 .search-results::-webkit-scrollbar-thumb {
     background-color: rgba(156, 163, 175, 0.5);
     border-radius: 3px;
+}
+
+/* Tambahkan ini ke file CSS Anda jika belum ada */
+.text-homize-blue {
+    color: #30a0e0;
+}
+
+.bg-homize-blue {
+    background-color: #30a0e0;
+}
+
+.hover\:bg-homize-blue-second:hover {
+    background-color: #1c91c4;
+}
+
+.focus\:ring-homize-blue:focus {
+    --tw-ring-color: #30a0e0;
+}
+
+.focus\:border-homize-blue:focus {
+    border-color: #30a0e0;
+}
+
+.text-homize-orange {
+    color: #ffb655;
+}
+
+.bg-homize-orange {
+    background-color: #ffb655;
 } 
