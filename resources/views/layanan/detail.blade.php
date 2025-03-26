@@ -297,9 +297,9 @@
             try {
                 const response = await fetch('/wishlist/content');
                 const html = await response.text();
-                const wishlistDropdown = document.getElementById('wishlistDropdown');
-                if (wishlistDropdown) {
-                    wishlistDropdown.innerHTML = html;
+                const wishlistContent = document.getElementById('wishlistContent');
+                if (wishlistContent) {
+                    wishlistContent.innerHTML = html;
                 }
             } catch (error) {
                 console.error('Error updating wishlist:', error);
