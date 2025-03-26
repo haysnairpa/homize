@@ -153,7 +153,7 @@
                                                     </svg>
                                                     Pembayaran Gagal
                                                 </span>
-                                            @else
+                                            @elseif($booking->pembayaran->status->nama_status == 'Payment Pending' || $booking->pembayaran->status->nama_status == 'Pending')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                     <svg class="mr-1.5 h-2 w-2 text-yellow-400" fill="currentColor" viewBox="0 0 8 8">
                                                         <circle cx="4" cy="4" r="3" />
@@ -217,6 +217,19 @@
                                                 Bayar Sekarang
                                             </button>
                                         </form>
+                                    </div>
+                                    @elseif($booking->pembayaran->status->nama_status == 'Payment Failed')
+                                    <div class="mt-4">
+                                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                            <p class="text-red-700">Pembayaran gagal. Silakan coba lagi.</p>
+                                        </div>
+                                        
+                                        <a href="{{ route('pembayaran.process', $booking->id) }}" class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                            </svg>
+                                            Coba Bayar Lagi
+                                        </a>
                                     </div>
                                     @endif
                                 </div>
@@ -334,6 +347,33 @@
                     });
             });
         });
+    </script>
+    @endif
+    
+    <!-- Di bagian bawah sebelum </body> -->
+    @if($booking->pembayaran->status->nama_status == 'Payment Pending' || $booking->pembayaran->status->nama_status == 'Pending')
+    <script>
+        // Cek status pembayaran setiap 10 detik
+        function checkPaymentStatus() {
+            fetch('{{ route('pembayaran.check-status', $booking->id) }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'completed') {
+                        // Jika pembayaran selesai, redirect ke dashboard
+                        window.location.href = "{{ route('dashboard') }}?status=success";
+                    } else if (data.status === 'failed') {
+                        // Jika pembayaran gagal, reload halaman
+                        window.location.reload();
+                    }
+                })
+                .catch(error => console.error('Error checking payment status:', error));
+        }
+        
+        // Cek status setiap 10 detik
+        setInterval(checkPaymentStatus, 10000);
+        
+        // Cek status saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', checkPaymentStatus);
     </script>
     @endif
 </body>

@@ -60,7 +60,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
     
     // Midtrans callback
-    Route::post('/pembayaran/callback', [PembayaranController::class, 'callback'])->name('pembayaran.callback');
+    Route::post('/payment/callback', [PembayaranController::class, 'callback'])->name('payment.callback');
 });
 
 Route::get('/search', [SearchController::class, 'search'])->name('search');
@@ -70,5 +70,6 @@ Route::post('/toko-favorit/toggle', [TokoFavoritController::class, 'toggle'])->n
 Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 Route::get('/wishlist/content', [WishlistController::class, 'getContent'])->name('wishlist.content');
 
-// Tambahkan route untuk mendapatkan token Midtrans
 Route::get('/pembayaran/{id}/get-token', [PembayaranController::class, 'getToken'])->name('pembayaran.get-token');
+
+Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
