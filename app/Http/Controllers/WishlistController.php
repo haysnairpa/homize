@@ -60,7 +60,7 @@ class WishlistController extends Controller
             ->get();
 
         return view('components.wishlist-content', [
-            'wishlists' => $wishlists,
+            'wishlists' => $wishlists ?? [],
             'isAuthenticated' => true
         ]);
     }

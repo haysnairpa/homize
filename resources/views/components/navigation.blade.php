@@ -259,20 +259,12 @@
     </div>
 
     <!-- Wishlist Dropdown (Full Width) - For desktop -->
-    <div id="wishlistDropdown" class="hidden absolute left-0 right-0 w-full bg-white shadow-lg z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div id="wishlistDropdown" class="hidden absolute left-0 right-0 w-full bg-white shadow-lg z-50 py-4">
+        <div class="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-4">
+            <h2 class="text-xl font-bold text-gray-900">Wishlist Layanan</h2>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 max-h-[400px] overflow-y-auto" id="wishlistContent">
             <div class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-bold text-gray-900">Wishlist Layanan</h2>
-                    @auth
-                        @if(isset($wishlists) && count($wishlists) > 0)
-                            <a href="#" class="text-sm font-medium text-homize-blue hover:text-homize-orange transition-colors">
-                                Lihat Semua
-                            </a>
-                        @endif
-                    @endauth
-                </div>
-                
                 @auth
                     @if(isset($wishlists) && count($wishlists) > 0)
                         <div class="space-y-4">
@@ -309,8 +301,6 @@
                                     </div>
                                 </div>
                             @endforeach
-                            
-                        
                         </div>
                     @else
                         <div class="bg-gray-50 rounded-lg p-8 text-center">
