@@ -12,6 +12,7 @@ use App\Http\Controllers\TokoFavoritController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,15 +26,13 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
+    // User Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])->name('dashboard');
-
-    Route::get('/transactions', function () {
-        return view('transactions');
-    })->name('transactions');
-
-    Route::get('/merchant', function () {
-        return view('merchant');
-    })->name('merchant');
+    Route::get('/transactions', [UserController::class, 'transactions'])->name('transactions');
+    Route::get('/transaction/{id}', [UserController::class, 'transactionDetail'])->name('user.transaction.detail');
+    
+    // Merchant Routes
+    Route::get('/merchant', [MerchantController::class, 'index'])->name('merchant');
 });
 
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
@@ -42,14 +41,23 @@ Route::get('/show_services/{service}', [ExploreServicesController::class, 'show_
 Route::get('/layanan/{id}', [LayananController::class, 'show'])->name('layanan.detail');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/merchant', [MerchantController::class, 'index'])->name('merchant');
+    // Merchant Registration Routes
     Route::get('/merchant/register/step1', [MerchantController::class, 'step1'])->name('merchant.register.step1');
     Route::post('/merchant/register/step1', [MerchantController::class, 'storeStep1'])->name('merchant.register.step1.store');
     Route::get('/merchant/register/step2/{id}', [MerchantController::class, 'step2'])->name('merchant.register.step2');
     Route::post('/merchant/register/step2/{id}', [MerchantController::class, 'storeStep2'])->name('merchant.register.step2.store');
-    Route::get('/merchant/dashboard', [MerchantController::class, 'dashboard'])->name('merchant.dashboard');
-    Route::post('/merchant/layanan', [MerchantController::class, 'storeLayanan'])
-        ->name('merchant.layanan.store');
+    
+    // Merchant Dashboard Routes (with merchant middleware)
+    Route::middleware([\App\Http\Middleware\MerchantMiddleware::class])->prefix('merchant')->name('merchant.')->group(function () {
+        Route::get('/dashboard', [MerchantController::class, 'dashboard'])->name('dashboard');
+        Route::get('/profile', [MerchantController::class, 'profile'])->name('profile');
+        Route::post('/profile/update', [MerchantController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/services', [MerchantController::class, 'services'])->name('services');
+        Route::get('/orders', [MerchantController::class, 'orders'])->name('orders');
+        Route::post('/orders/{id}/update-status', [MerchantController::class, 'updateOrderStatus'])->name('orders.update-status');
+        Route::get('/analytics', [MerchantController::class, 'analytics'])->name('analytics');
+        Route::post('/layanan', [MerchantController::class, 'storeLayanan'])->name('layanan.store');
+    });
 
     // Booking routes
     Route::get('/booking/{id}', [BookingController::class, 'create'])->name('booking.create');
@@ -71,5 +79,6 @@ Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wi
 Route::get('/wishlist/content', [WishlistController::class, 'getContent'])->name('wishlist.content');
 
 Route::get('/pembayaran/{id}/get-token', [PembayaranController::class, 'getToken'])->name('pembayaran.get-token');
-
 Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
+
+// Route::post('/merchant/orders/{id}/update-status', [App\Http\Controllers\MerchantController::class, 'updateOrderStatus'])->name('merchant.orders.update-status')->middleware(['auth', 'merchant']);
