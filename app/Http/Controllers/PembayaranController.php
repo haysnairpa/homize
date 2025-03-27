@@ -8,6 +8,7 @@ use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -25,12 +26,30 @@ class PembayaranController extends Controller
     public function show($id)
     {
         // Ambil data booking
-        $booking = Booking::with(['user', 'merchant', 'layanan', 'status', 'pembayaran'])
+        $booking = Booking::with(['user', 'merchant', 'layanan', 'status', 'pembayaran', 'pembayaran.status'])
             ->findOrFail($id);
 
         // Cek apakah booking milik user yang login
         if ($booking->id_user != Auth::id()) {
             return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini');
+        }
+
+        // Cek status pembayaran, jika sudah selesai redirect ke dashboard
+        if ($booking->pembayaran->status->nama_status == 'Payment Completed') {
+            return redirect()->route('dashboard')->with('success', 'Pembayaran sudah selesai');
+        }
+
+        // Cek status pembayaran dari Midtrans jika ada order_id
+        if ($booking->pembayaran->order_id) {
+            $this->checkPaymentStatus($booking->pembayaran);
+            
+            // Refresh data booking setelah pengecekan status
+            $booking = $booking->fresh(['pembayaran', 'pembayaran.status']);
+            
+            // Cek lagi setelah refresh, jika sudah selesai redirect ke dashboard
+            if ($booking->pembayaran->status->nama_status == 'Payment Completed') {
+                return redirect()->route('dashboard')->with('success', 'Pembayaran sudah selesai');
+            }
         }
 
         // Ambil data tarif layanan
@@ -145,48 +164,63 @@ class PembayaranController extends Controller
 
     public function callback(Request $request)
     {
-        $serverKey = config('midtrans.server_key');
-        $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
+        Log::info('Midtrans callback received', $request->all());
+        
+        try {
+            $serverKey = config('midtrans.server_key');
+            $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
 
-        if ($hashed == $request->signature_key) {
-            // Extract order ID
-            $order_id = $request->order_id;
+            if ($hashed == $request->signature_key) {
+                // Extract order ID
+                $order_id = $request->order_id;
+                
+                // Find payment by order_id
+                $pembayaran = Pembayaran::where('order_id', $order_id)->first();
+                
+                if (!$pembayaran) {
+                    Log::error('Payment not found for order_id: ' . $order_id);
+                    return response()->json(['status' => 'error', 'message' => 'Payment not found']);
+                }
+
+                // Update payment status based on transaction status
+                if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
+                    // Payment success
+                    $statusCompleted = Status::where('nama_status', 'Payment Completed')->first();
+                    $pembayaran->update([
+                        'id_status' => $statusCompleted->id,
+                        'method' => $request->payment_type,
+                        'payment_date' => now(),
+                    ]);
+
+                    // Update booking status to Confirmed
+                    $statusConfirmed = Status::where('nama_status', 'Confirmed')->first();
+                    $pembayaran->booking->update([
+                        'id_status' => $statusConfirmed->id,
+                    ]);
+                    
+                    Log::info('Payment completed for order_id: ' . $order_id);
+                } elseif ($request->transaction_status == 'deny' || $request->transaction_status == 'cancel' || $request->transaction_status == 'expire') {
+                    // Payment failed
+                    $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
+                    $pembayaran->update([
+                        'id_status' => $statusFailed->id,
+                        'method' => $request->payment_type,
+                        'payment_date' => now(),
+                    ]);
+                    
+                    Log::info('Payment failed for order_id: ' . $order_id);
+                } else {
+                    Log::info('Payment status: ' . $request->transaction_status . ' for order_id: ' . $order_id);
+                }
+
+                return response()->json(['status' => 'success']);
+            } 
             
-            // Find payment by order_id
-            $pembayaran = Pembayaran::where('order_id', $order_id)->first();
-            
-            if (!$pembayaran) {
-                return response()->json(['status' => 'error', 'message' => 'Payment not found']);
-            }
-
-            // Update payment status based on transaction status
-            if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
-                // Payment success
-                $statusCompleted = Status::where('nama_status', 'Payment Completed')->first();
-                $pembayaran->update([
-                    'id_status' => $statusCompleted->id,
-                    'method' => $request->payment_type,
-                    'payment_date' => now(),
-                ]);
-
-                // Update booking status to Confirmed
-                $statusConfirmed = Status::where('nama_status', 'Confirmed')->first();
-                $pembayaran->booking->update([
-                    'id_status' => $statusConfirmed->id,
-                ]);
-            } elseif ($request->transaction_status == 'deny' || $request->transaction_status == 'cancel' || $request->transaction_status == 'expire') {
-                // Payment failed
-                $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
-                $pembayaran->update([
-                    'id_status' => $statusFailed->id,
-                    'method' => $request->payment_type,
-                    'payment_date' => now(),
-                ]);
-            }
-
-            return response()->json(['status' => 'success']);
-        } else {
+            Log::warning('Invalid signature for order_id: ' . $request->order_id);
             return response()->json(['status' => 'error', 'message' => 'Invalid signature']);
+        } catch (\Exception $e) {
+            Log::error('Error in callback: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
         }
     }
 
@@ -267,5 +301,77 @@ class PembayaranController extends Controller
         $pembayaran = $booking->pembayaran;
 
         return view('pembayaran.process_popup', compact('booking', 'pembayaran'));
+    }
+
+    // Tambahkan method baru untuk cek status pembayaran dari Midtrans
+    private function checkPaymentStatus($pembayaran)
+    {
+        try {
+            // Set konfigurasi Midtrans
+            \Midtrans\Config::$serverKey = config('midtrans.server_key');
+            \Midtrans\Config::$isProduction = config('midtrans.is_production');
+
+            // Get transaction status dari Midtrans
+            $status = \Midtrans\Transaction::status($pembayaran->order_id);
+
+            // Update status pembayaran berdasarkan response dari Midtrans
+            if ($status && isset($status->transaction_status)) {
+                if ($status->transaction_status == 'capture' || $status->transaction_status == 'settlement') {
+                    // Payment success
+                    $statusCompleted = Status::where('nama_status', 'Payment Completed')->first();
+                    $pembayaran->update([
+                        'id_status' => $statusCompleted->id,
+                        'method' => $status->payment_type ?? $pembayaran->method,
+                        'payment_date' => now(),
+                    ]);
+
+                    // Update booking status to Confirmed
+                    $statusConfirmed = Status::where('nama_status', 'Confirmed')->first();
+                    $pembayaran->booking->update([
+                        'id_status' => $statusConfirmed->id,
+                    ]);
+                } elseif ($status->transaction_status == 'deny' || $status->transaction_status == 'cancel' || $status->transaction_status == 'expire') {
+                    // Payment failed
+                    $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
+                    $pembayaran->update([
+                        'id_status' => $statusFailed->id,
+                        'method' => $status->payment_type ?? $pembayaran->method,
+                        'payment_date' => now(),
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            // Log error tapi jangan throw exception
+            Log::error('Error checking payment status: ' . $e->getMessage());
+        }
+    }
+
+    public function checkStatus($id)
+    {
+        // Ambil data booking
+        $booking = Booking::with(['pembayaran', 'pembayaran.status'])
+            ->findOrFail($id);
+
+        // Cek apakah booking milik user yang login
+        if ($booking->id_user != Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Cek status pembayaran dari Midtrans jika ada order_id
+        if ($booking->pembayaran->order_id) {
+            $this->checkPaymentStatus($booking->pembayaran);
+            
+            // Refresh data booking setelah pengecekan status
+            $booking = $booking->fresh(['pembayaran', 'pembayaran.status']);
+        }
+
+        // Return status pembayaran
+        if ($booking->pembayaran->status->nama_status == 'Payment Completed') {
+            return response()->json(['status' => 'completed']);
+        } elseif ($booking->pembayaran->status->nama_status == 'Payment Failed') {
+            return response()->json(['status' => 'failed']);
+        } else {
+            return response()->json(['status' => 'pending']);
+        }
     }
 }

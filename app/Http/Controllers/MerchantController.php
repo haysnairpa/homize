@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Merchant;
 use App\Models\SubKategori;
+use App\Models\Booking;
+use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Layanan;
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\CreateLayananRequest;
 use App\Models\Revisi;
+use Carbon\Carbon;
 
 class MerchantController extends Controller
 {
@@ -89,7 +92,208 @@ class MerchantController extends Controller
     public function dashboard()
     {
         $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
-        return view('merchant.dashboard', compact('merchant'));
+        
+        // Hitung pesanan aktif (status: Confirmed, In Progress)
+        $pesananAktif = DB::select("SELECT COUNT(*) as total
+                                FROM booking b
+                                JOIN status s ON b.id_status = s.id
+                                WHERE b.id_merchant = ?
+                                AND s.nama_status IN ('Confirmed', 'In Progress')", 
+                                [$merchant->id]);
+        
+        // Hitung pendapatan bulan ini
+        $pendapatan = DB::select("SELECT SUM(p.amount) as total
+                                FROM booking b
+                                JOIN pembayaran p ON p.id_booking = b.id
+                                JOIN status s ON p.id_status = s.id
+                                WHERE b.id_merchant = ? 
+                                AND s.nama_status = 'Payment Completed'
+                                AND MONTH(p.payment_date) = MONTH(CURRENT_DATE())
+                                AND YEAR(p.payment_date) = YEAR(CURRENT_DATE())", 
+                                [$merchant->id]);
+        
+        // Hitung jumlah pelanggan unik bulan ini
+        $pelanggan = DB::select("SELECT COUNT(DISTINCT b.id_user) as total
+                                FROM booking b
+                                WHERE b.id_merchant = ?
+                                AND MONTH(b.created_at) = MONTH(CURRENT_DATE())
+                                AND YEAR(b.created_at) = YEAR(CURRENT_DATE())",
+                                [$merchant->id]);
+        
+        // Hitung rating rata-rata
+        $rating = DB::select("SELECT COALESCE(AVG(r.rate), 0) as avg_rating
+                            FROM rating r
+                            JOIN layanan l ON r.id_layanan = l.id
+                            WHERE l.id_merchant = ?",
+                            [$merchant->id]);
+        
+        // Ambil pesanan terbaru
+        $recentOrders = DB::select("SELECT b.id, u.nama as nama_user, l.nama_layanan, s.nama_status, 
+                                    b.tanggal_booking, p.amount, bs.waktu_mulai, bs.waktu_selesai
+                                    FROM booking b
+                                    JOIN users u ON u.id = b.id_user
+                                    JOIN layanan l ON l.id = b.id_layanan
+                                    JOIN status s ON b.id_status = s.id
+                                    JOIN booking_schedule bs ON bs.id = b.id_booking_schedule
+                                    JOIN pembayaran p ON p.id_booking = b.id
+                                    WHERE b.id_merchant = ?
+                                    ORDER BY b.created_at DESC
+                                    LIMIT 5", 
+                                    [$merchant->id]);
+        
+        $stats = [
+            'pesananAktif' => $pesananAktif[0]->total ?? 0,
+            'pendapatan' => $pendapatan[0]->total ?? 0,
+            'pelanggan' => $pelanggan[0]->total ?? 0,
+            'rating' => $rating[0]->avg_rating ?? 0
+        ];
+        
+        return view('merchant.dashboard', compact('merchant', 'stats', 'recentOrders'));
+    }
+
+    public function profile()
+    {
+        $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+        $subKategori = SubKategori::all();
+        
+        // Decode media sosial dari JSON ke array
+        $mediaSosial = json_decode($merchant->media_sosial, true) ?? [];
+        
+        return view('merchant.profile', compact('merchant', 'subKategori', 'mediaSosial'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+        
+        $validated = $request->validate([
+            'nama_usaha' => 'required|string|max:255',
+            'id_sub_kategori' => 'required|exists:sub_kategori,id',
+            'alamat' => 'required|string',
+            'instagram' => 'nullable|string',
+            'facebook' => 'nullable|string',
+            'whatsapp' => 'required|string',
+            'profile_url' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        if ($request->hasFile('profile_url')) {
+            $profilePath = $request->file('profile_url')->store('merchant-profiles', 'public');
+            $merchant->profile_url = $profilePath;
+        }
+
+        $merchant->nama_usaha = $validated['nama_usaha'];
+        $merchant->id_sub_kategori = $validated['id_sub_kategori'];
+        $merchant->alamat = $validated['alamat'];
+        $merchant->media_sosial = json_encode([
+            'instagram' => $validated['instagram'] ?? '',
+            'facebook' => $validated['facebook'] ?? '',
+            'whatsapp' => $validated['whatsapp']
+        ]);
+        
+        $merchant->save();
+
+        return redirect()->route('merchant.profile')->with('success', 'Profil berhasil diperbarui');
+    }
+
+    public function services()
+    {
+        $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+        $layanan = Layanan::where('id_merchant', $merchant->id)->get();
+        return view('merchant.services', compact('merchant', 'layanan'));
+    }
+
+    public function orders()
+    {
+        $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+        
+        $orders = DB::select("SELECT b.id, u.nama as nama_user, l.nama_layanan, s.nama_status, b.tanggal_booking, 
+                            p.amount, bs.waktu_mulai, bs.waktu_selesai, b.alamat_pembeli, b.catatan
+                            FROM booking b
+                            JOIN users u ON u.id = b.id_user
+                            JOIN layanan l ON l.id = b.id_layanan
+                            JOIN status s ON b.id_status = s.id
+                            JOIN booking_schedule bs ON bs.id = b.id_booking_schedule
+                            JOIN pembayaran p ON p.id_booking = b.id
+                            WHERE b.id_merchant = ?
+                            ORDER BY b.created_at DESC", [$merchant->id]);
+        
+        $statuses = Status::whereIn('nama_status', ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'])->get();
+        
+        return view('merchant.orders', compact('merchant', 'orders', 'statuses'));
+    }
+
+    public function updateOrderStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status_id' => 'required|exists:status,id',
+        ]);
+
+        $booking = Booking::findOrFail($id);
+        $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+
+        // Pastikan booking ini milik merchant yang sedang login
+        if ($booking->id_merchant != $merchant->id) {
+            return redirect()->route('merchant.orders')->with('error', 'Anda tidak memiliki akses untuk mengubah status pesanan ini');
+        }
+
+        $booking->id_status = $validated['status_id'];
+        $booking->save();
+
+        return redirect()->route('merchant.orders')->with('success', 'Status pesanan berhasil diperbarui');
+    }
+
+    public function analytics()
+    {
+        $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+        
+        // Data placeholder untuk analytics
+        $monthlyStats = [
+            'pendapatan' => 0,
+            'pesanan' => 0,
+            'pelanggan' => 0,
+            'rating' => 0
+        ];
+        
+        // Hitung pendapatan bulan ini
+        $pendapatan = DB::select("SELECT SUM(p.amount) as total
+                                FROM booking b
+                                JOIN pembayaran p ON p.id_booking = b.id
+                                JOIN status s ON p.id_status = s.id
+                                WHERE b.id_merchant = ? 
+                                AND s.nama_status = 'Payment Completed'
+                                AND MONTH(p.payment_date) = MONTH(CURRENT_DATE())
+                                AND YEAR(p.payment_date) = YEAR(CURRENT_DATE())", 
+                                [$merchant->id]);
+        
+        if ($pendapatan && isset($pendapatan[0]->total)) {
+            $monthlyStats['pendapatan'] = $pendapatan[0]->total;
+        }
+        
+        // Hitung jumlah pesanan bulan ini
+        $pesanan = DB::select("SELECT COUNT(*) as total
+                            FROM booking b
+                            WHERE b.id_merchant = ?
+                            AND MONTH(b.created_at) = MONTH(CURRENT_DATE())
+                            AND YEAR(b.created_at) = YEAR(CURRENT_DATE())",
+                            [$merchant->id]);
+        
+        if ($pesanan && isset($pesanan[0]->total)) {
+            $monthlyStats['pesanan'] = $pesanan[0]->total;
+        }
+        
+        // Hitung jumlah pelanggan unik bulan ini
+        $pelanggan = DB::select("SELECT COUNT(DISTINCT b.id_user) as total
+                                FROM booking b
+                                WHERE b.id_merchant = ?
+                                AND MONTH(b.created_at) = MONTH(CURRENT_DATE())
+                                AND YEAR(b.created_at) = YEAR(CURRENT_DATE())",
+                                [$merchant->id]);
+        
+        if ($pelanggan && isset($pelanggan[0]->total)) {
+            $monthlyStats['pelanggan'] = $pelanggan[0]->total;
+        }
+        
+        return view('merchant.analytics', compact('merchant', 'monthlyStats'));
     }
 
     public function storeLayanan(CreateLayananRequest $request)
@@ -184,7 +388,7 @@ class MerchantController extends Controller
                 'nama_layanan' => $request->nama_layanan
             ]);
 
-            return redirect()->route('merchant.dashboard')
+            return redirect()->route('merchant.services')
                 ->with('success', 'Layanan berhasil ditambahkan! Silakan cek di daftar layanan Anda.');
 
         } catch (\Exception $e) {
@@ -195,5 +399,61 @@ class MerchantController extends Controller
                 ->withInput()
                 ->with('error', 'Gagal menambahkan layanan: ' . $e->getMessage());
         }
+    }
+
+    public function orderDetail($id)
+    {
+        $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+        
+        // Ambil detail pesanan
+        $order = DB::selectOne("SELECT b.id, u.nama as nama_user, u.email,
+                            l.nama_layanan, l.deskripsi_layanan, s.nama_status, 
+                            b.tanggal_booking, p.amount, bs.waktu_mulai, bs.waktu_selesai,
+                            b.alamat_pembeli, b.catatan, b.longitude, b.latitude,
+                            tl.harga, tl.durasi, tl.tipe_durasi
+                            FROM booking b
+                            JOIN users u ON u.id = b.id_user
+                            JOIN layanan l ON l.id = b.id_layanan
+                            JOIN status s ON b.id_status = s.id
+                            JOIN booking_schedule bs ON bs.id = b.id_booking_schedule
+                            JOIN pembayaran p ON p.id_booking = b.id
+                            JOIN tarif_layanan tl ON tl.id_layanan = l.id
+                            WHERE b.id = ? AND b.id_merchant = ?", 
+                            [$id, $merchant->id]);
+        
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesanan tidak ditemukan'
+            ], 404);
+        }
+        
+        // Format data untuk ditampilkan
+        $orderDetail = [
+            'id' => $order->id,
+            'tanggal' => Carbon::parse($order->tanggal_booking)->format('d/m/Y'),
+            'pelanggan' => [
+                'nama' => $order->nama_user,
+                'email' => $order->email,
+                'alamat' => $order->alamat_pembeli
+            ],
+            'layanan' => [
+                'nama' => $order->nama_layanan,
+                'harga' => $order->harga,
+                'durasi' => $order->durasi . ' ' . $order->tipe_durasi
+            ],
+            'jadwal' => [
+                'mulai' => Carbon::parse($order->waktu_mulai)->format('H:i'),
+                'selesai' => Carbon::parse($order->waktu_selesai)->format('H:i')
+            ],
+            'catatan' => $order->catatan,
+            'total' => $order->amount,
+            'status' => $order->nama_status
+        ];
+        
+        return response()->json([
+            'success' => true,
+            'data' => $orderDetail
+        ]);
     }
 }
