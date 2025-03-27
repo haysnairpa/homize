@@ -27,9 +27,9 @@ Route::middleware([
 ])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])->name('dashboard');
 
-    Route::get('/transactions', function () {
-        return view('transactions');
-    })->name('transactions');
+    Route::get('/transactions', [DashboardController::class, 'transactions'])->name('transactions');
+    Route::get('/transactions/filter', [DashboardController::class, 'filterTransactions'])->name('transactions.filter');
+    Route::get('/transactions/filter-by-date', [DashboardController::class, 'filterByDateRange'])->name('transactions.filter-by-date');
 
     Route::get('/merchant', function () {
         return view('merchant');
@@ -58,7 +58,7 @@ Route::middleware(['auth'])->group(function () {
     // Pembayaran routes
     Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
-    
+
     // Midtrans callback
     Route::post('/pembayaran/callback', [PembayaranController::class, 'callback'])->name('pembayaran.callback');
 });
