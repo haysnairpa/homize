@@ -52,7 +52,7 @@
                                             <select name="id_sub_kategori" id="id_sub_kategori" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
                                                 @foreach($subKategori as $kategori)
                                                     <option value="{{ $kategori->id }}" {{ $merchant->id_sub_kategori == $kategori->id ? 'selected' : '' }}>
-                                                        {{ $kategori->nama_sub_kategori }}
+                                                        {{ $kategori->nama }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -66,16 +66,6 @@
                                         <div>
                                             <label for="alamat" class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
                                             <textarea name="alamat" id="alamat" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">{{ $merchant->alamat }}</textarea>
-                                        </div>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label for="no_telp" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
-                                                <input type="text" name="no_telp" id="no_telp" value="{{ $merchant->no_telp }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
-                                            </div>
-                                            <div>
-                                                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Bisnis</label>
-                                                <input type="email" name="email" id="email" value="{{ $merchant->email }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -95,10 +85,10 @@
                                             <input type="text" name="facebook" id="facebook" value="{{ $mediaSosial['facebook'] ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
                                         </div>
                                         <div>
-                                            <label for="twitter" class="block text-sm font-medium text-gray-700 mb-1">Twitter</label>
+                                            <label for="twitter" class="block text-sm font-medium text-gray-700 mb-1">Whatsapp</label>
                                             <div class="flex">
-                                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">@</span>
-                                                <input type="text" name="twitter" id="twitter" value="{{ $mediaSosial['twitter'] ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
+                                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">+62</span>
+                                                <input type="text" name="whatsapp" id="whatsapp" value="{{ $mediaSosial['whatsapp'] ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
                                             </div>
                                         </div>
                                         <div>

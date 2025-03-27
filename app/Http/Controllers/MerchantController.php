@@ -155,7 +155,11 @@ class MerchantController extends Controller
     {
         $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
         $subKategori = SubKategori::all();
-        return view('merchant.profile', compact('merchant', 'subKategori'));
+        
+        // Decode media sosial dari JSON ke array
+        $mediaSosial = json_decode($merchant->media_sosial, true) ?? [];
+        
+        return view('merchant.profile', compact('merchant', 'subKategori', 'mediaSosial'));
     }
 
     public function updateProfile(Request $request)
@@ -181,10 +185,11 @@ class MerchantController extends Controller
         $merchant->id_sub_kategori = $validated['id_sub_kategori'];
         $merchant->alamat = $validated['alamat'];
         $merchant->media_sosial = json_encode([
-            'instagram' => $validated['instagram'],
-            'facebook' => $validated['facebook'],
+            'instagram' => $validated['instagram'] ?? '',
+            'facebook' => $validated['facebook'] ?? '',
             'whatsapp' => $validated['whatsapp']
         ]);
+        
         $merchant->save();
 
         return redirect()->route('merchant.profile')->with('success', 'Profil berhasil diperbarui');
