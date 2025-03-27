@@ -189,36 +189,79 @@
             document.querySelectorAll('.view-order').forEach(button => {
                 button.addEventListener('click', function() {
                     const orderId = this.getAttribute('data-id');
-                    // Fetch order details (placeholder for now)
-                    const orderDetailContent = document.getElementById('orderDetailContent');
-                    orderDetailContent.innerHTML = `
-                        <div class="border-b pb-4 mb-4">
-                            <h4 class="text-lg font-medium text-gray-900">Pesanan #${orderId}</h4>
-                            <p class="text-sm text-gray-500">Tanggal: ${new Date().toLocaleDateString('id-ID')}</p>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <h5 class="font-medium text-gray-700 mb-2">Detail Pelanggan</h5>
-                                <p class="text-sm text-gray-600">Nama: John Doe</p>
-                                <p class="text-sm text-gray-600">Telepon: 081234567890</p>
-                                <p class="text-sm text-gray-600">Alamat: Jl. Contoh No. 123, Jakarta</p>
-                            </div>
-                            <div>
-                                <h5 class="font-medium text-gray-700 mb-2">Detail Layanan</h5>
-                                <p class="text-sm text-gray-600">Layanan: Cleaning Service</p>
-                                <p class="text-sm text-gray-600">Harga: Rp 150.000</p>
-                                <p class="text-sm text-gray-600">Durasi: 2 jam</p>
-                            </div>
-                        </div>
-                        <div class="border-t pt-4">
-                            <h5 class="font-medium text-gray-700 mb-2">Catatan</h5>
-                            <p class="text-sm text-gray-600">Tolong bersihkan kamar mandi dengan teliti.</p>
-                        </div>
-                    `;
-                    orderDetailModal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
+                    fetchOrderDetail(orderId);
                 });
             });
+            
+            // Fungsi untuk fetch detail pesanan
+            function fetchOrderDetail(orderId) {
+                fetch(`/merchant/orders/${orderId}/detail`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showOrderDetailModal(data.data);
+                    } else {
+                        alert('Gagal memuat detail pesanan, error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat memuat detail pesanan, error: ' + error);
+                });
+            }
+            
+            // Fungsi untuk menampilkan modal detail pesanan
+            function showOrderDetailModal(order) {
+                const orderDetailContent = document.getElementById('orderDetailContent');
+                orderDetailContent.innerHTML = `
+                    <div class="border-b pb-4 mb-4">
+                        <h4 class="text-lg font-medium text-gray-900">Pesanan #${order.id}</h4>
+                        <p class="text-sm text-gray-500">Tanggal: ${order.tanggal}</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-2">Detail Pelanggan</h5>
+                            <p class="text-sm text-gray-600">Nama: ${order.pelanggan.nama}</p>
+                            <p class="text-sm text-gray-600">Email: ${order.pelanggan.email}</p>
+                            <p class="text-sm text-gray-600">Alamat: ${order.pelanggan.alamat}</p>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-2">Detail Layanan</h5>
+                            <p class="text-sm text-gray-600">Layanan: ${order.layanan.nama}</p>
+                            <p class="text-sm text-gray-600">Harga: Rp ${new Intl.NumberFormat('id-ID').format(order.layanan.harga)}</p>
+                            <p class="text-sm text-gray-600">Durasi: ${order.layanan.durasi}</p>
+                            <p class="text-sm text-gray-600">Jadwal: ${order.jadwal.mulai} - ${order.jadwal.selesai}</p>
+                        </div>
+                    </div>
+                    <div class="border-t pt-4">
+                        <h5 class="font-medium text-gray-700 mb-2">Status</h5>
+                        <p class="text-sm text-gray-600 mb-3">
+                            <span class="px-2 py-1 rounded-full ${getStatusClass(order.status)}">
+                                ${order.status}
+                            </span>
+                        </p>
+                        <h5 class="font-medium text-gray-700 mb-2">Total Pembayaran</h5>
+                        <p class="text-sm font-semibold text-gray-800 mb-3">Rp ${new Intl.NumberFormat('id-ID').format(order.total)}</p>
+                        <h5 class="font-medium text-gray-700 mb-2">Catatan</h5>
+                        <p class="text-sm text-gray-600">${order.catatan || 'Tidak ada catatan'}</p>
+                    </div>
+                `;
+                orderDetailModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Fungsi untuk mendapatkan class status
+            function getStatusClass(status) {
+                return status === 'Payment Completed' ? 'bg-green-100 text-green-800' :
+                    status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                    status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                    status === 'Completed' ? 'bg-green-100 text-green-800' :
+                    'bg-red-100 text-red-800';
+            }
             
             // Update Order Status
             document.querySelectorAll('.update-status').forEach(button => {

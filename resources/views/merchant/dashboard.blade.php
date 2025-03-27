@@ -18,7 +18,7 @@
                         </div>
                         <div class="ml-4">
                             <h3 class="text-lg font-semibold text-gray-700">Pesanan Aktif</h3>
-                            <p class="text-2xl font-bold text-homize-blue">0</p>
+                            <p class="text-2xl font-bold text-homize-blue">{{ $stats['pesananAktif'] }}</p>
                         </div>
                     </div>
                 </div>
@@ -32,7 +32,7 @@
                         </div>
                         <div class="ml-4">
                             <h3 class="text-lg font-semibold text-gray-700">Pendapatan Bulan Ini</h3>
-                            <p class="text-2xl font-bold text-green-500">Rp 0</p>
+                            <p class="text-2xl font-bold text-green-500">Rp {{ number_format($stats['pendapatan'], 0, ',', '.') }}</p>
                         </div>
                     </div>
                 </div>
@@ -46,7 +46,7 @@
                         </div>
                         <div class="ml-4">
                             <h3 class="text-lg font-semibold text-gray-700">Pelanggan</h3>
-                            <p class="text-2xl font-bold text-purple-500">0</p>
+                            <p class="text-2xl font-bold text-purple-500">{{ $stats['pelanggan'] }}</p>
                         </div>
                     </div>
                 </div>
@@ -60,7 +60,7 @@
                         </div>
                         <div class="ml-4">
                             <h3 class="text-lg font-semibold text-gray-700">Rating</h3>
-                            <p class="text-2xl font-bold text-yellow-500">0</p>
+                            <p class="text-2xl font-bold text-yellow-500">{{ number_format($stats['rating'], 1) }}</p>
                         </div>
                     </div>
                 </div>
@@ -117,12 +117,41 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Placeholder jika tidak ada pesanan -->
-                            <tr>
-                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                    Belum ada pesanan terbaru
-                                </td>
-                            </tr>
+                            @if(count($recentOrders) > 0)
+                                @foreach($recentOrders as $order)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{{ $order->id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->nama_user }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->nama_layanan }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $statusClass = match ($order->nama_status) {
+                                                'Payment Completed' => 'bg-green-100 text-green-800',
+                                                'Pending' => 'bg-yellow-100 text-yellow-800',
+                                                'In Progress' => 'bg-blue-100 text-blue-800',
+                                                'Completed' => 'bg-green-100 text-green-800',
+                                                default => 'bg-red-100 text-red-800',
+                                            };
+                                        @endphp
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
+                                            {{ $order->nama_status }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ \Carbon\Carbon::parse($order->tanggal_booking)->format('d M Y') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        Rp {{ number_format($order->amount, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                        Belum ada pesanan terbaru
+                                    </td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>

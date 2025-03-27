@@ -57,6 +57,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/orders/{id}/update-status', [MerchantController::class, 'updateOrderStatus'])->name('orders.update-status');
         Route::get('/analytics', [MerchantController::class, 'analytics'])->name('analytics');
         Route::post('/layanan', [MerchantController::class, 'storeLayanan'])->name('layanan.store');
+        Route::get('/orders/{id}/detail', [MerchantController::class, 'orderDetail'])->name('merchant.orders.detail');
     });
 
     // Booking routes
