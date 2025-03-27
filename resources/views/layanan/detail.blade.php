@@ -87,64 +87,70 @@
                         $revisi = App\Models\Revisi::find($layanan->id_revisi ?? 1);
                     @endphp
 
-                    @if($revisi && $revisi->id != 1 && $revisi->harga > 0)
-                    <div class="mt-6">
-                        <h3 class="text-lg font-semibold text-gray-900">Informasi Revisi</h3>
-                        <div class="mt-2 p-4 bg-gray-50 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-500">Harga Revisi</p>
-                                    <p class="text-lg font-semibold text-homize-orange">
-                                        Rp {{ number_format($revisi->harga, 0, ',', '.') }}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">Durasi Revisi</p>
-                                    <p class="text-lg font-semibold">
-                                        {{ $revisi->durasi }} {{ $revisi->tipe_durasi }}
-                                    </p>
+                    @if ($revisi && $revisi->id != 1 && $revisi->harga > 0)
+                        <div class="mt-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Informasi Revisi</h3>
+                            <div class="mt-2 p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-500">Harga Revisi</p>
+                                        <p class="text-lg font-semibold text-homize-orange">
+                                            Rp {{ number_format($revisi->harga, 0, ',', '.') }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Durasi Revisi</p>
+                                        <p class="text-lg font-semibold">
+                                            {{ $revisi->durasi }} {{ $revisi->tipe_durasi }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
                     @endif
                 </div>
             </div>
 
             <!-- Merchant Info -->
             <div class="border-t border-gray-200 px-8 py-12">
-                <div class="flex items-start gap-8 mb-12">
-                    <div class="w-24 h-24 rounded-full overflow-hidden flex-shrink-0">
-                        <img src="{{ $layanan->profile_url }}" alt="{{ $layanan->nama_usaha }}"
-                            class="w-full h-full object-cover">
+                <div class="grid grid-cols-12 gap-12">
+                    <!-- Merchant Info Link -->
+                    <div class="col-span-8">
+                        <a href="{{ route('merchant.detail', $layanan->id_merchant) }}"
+                            class="block rounded-lg transition duration-200 p-3">
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
+                                    <img src="{{ $layanan->profile_url }}" alt="{{ $layanan->nama_usaha }}"
+                                        class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h2 class="text-lg font-bold text-gray-900 truncate">{{ $layanan->nama_usaha }}
+                                    </h2>
+                                    <p class="text-sm text-gray-600 mt-1 truncate">{{ $layanan->nama_sub_kategori }}
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                    <div class="flex-1">
-                        <h2 class="text-2xl font-bold text-gray-900">{{ $layanan->nama_usaha }}</h2>
-                        <p class="text-gray-600 mt-2">Professional Home Service Provider</p>
-                        <div class="flex items-center gap-4 mt-4">
-                            @php
-                                $isFollowing = Auth::check()
-                                    ? App\Models\TokoFavorit::where('id_user', Auth::id())
-                                        ->where('id_merchant', $layanan->id_merchant)
-                                        ->exists()
-                                    : false;
 
-                                $isWishlisted = Auth::check()
-                                    ? App\Models\Wishlist::where('id_user', Auth::id())
-                                        ->where('id_layanan', $layanan->id)
-                                        ->exists()
-                                    : false;
-                            @endphp
+                    <!-- Follow Button -->
+                    <div class="col-span-4 flex items-center justify-center">
+                        @php
+                            $isFollowing = Auth::check()
+                                ? App\Models\TokoFavorit::where('id_user', Auth::id())
+                                    ->where('id_merchant', $layanan->id_merchant)
+                                    ->exists()
+                                : false;
+                        @endphp
 
-                            <button id="followBtn" data-merchant-id="{{ $layanan->id_merchant }}"
-                                class="px-6 py-2 border-2 border-homize-blue {{ $isFollowing ? 'bg-homize-blue text-white' : 'text-homize-blue' }} hover:bg-homize-blue hover:text-white rounded-full transition duration-300 flex items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="{{ $isFollowing ? 'M5 13l4 4L19 7' : 'M12 4v16m8-8H4' }}" />
-                                </svg>
-                                {{ $isFollowing ? 'Following' : 'Follow' }}
-                            </button>
-                        </div>
+                        <button id="followBtn" data-merchant-id="{{ $layanan->id_merchant }}"
+                            class="w-full px-4 py-2 border-2 border-homize-blue {{ $isFollowing ? 'bg-homize-blue text-white' : 'text-homize-blue bg-white' }} hover:bg-homize-blue hover:text-white rounded-full transition duration-300 flex items-center justify-center gap-2 text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="{{ $isFollowing ? 'M5 13l4 4L19 7' : 'M12 4v16m8-8H4' }}" />
+                            </svg>
+                            {{ $isFollowing ? 'Following' : 'Follow' }}
+                        </button>
                     </div>
                 </div>
 
@@ -159,6 +165,13 @@
                         Pesan Sekarang
                     </a>
 
+                    @php
+                        $isWishlisted = Auth::check()
+                            ? App\Models\Wishlist::where('id_user', Auth::id())
+                                ->where('id_layanan', $layanan->id)
+                                ->exists()
+                            : false;
+                    @endphp
                     <button id="wishlistBtn" data-layanan-id="{{ $layanan->id }}"
                         class="w-full border-2 {{ $isWishlisted ? 'border-homize-orange text-homize-orange' : 'border-gray-200 text-gray-700' }} hover:border-homize-orange hover:bg-homize-orange/5 hover:text-homize-orange font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2">
                         <svg class="w-6 h-6 {{ $isWishlisted ? 'fill-current' : '' }}" fill="none"
@@ -183,9 +196,11 @@
                         </div>
                         <div class="flex-1">
                             <p class="text-lg mb-1">
-                                {{ $layanan->rating_count > 0 ? round(($ratingStats[5] / $layanan->rating_count) * 100) : 0 }}% pembeli merasa puas
+                                {{ $layanan->rating_count > 0 ? round(($ratingStats[5] / $layanan->rating_count) * 100) : 0 }}%
+                                pembeli merasa puas
                             </p>
-                            <p class="text-gray-500">{{ $layanan->rating_count }} rating • {{ array_sum($ratingStats) }} ulasan</p>
+                            <p class="text-gray-500">{{ $layanan->rating_count }} rating •
+                                {{ array_sum($ratingStats) }} ulasan</p>
                         </div>
                     </div>
 

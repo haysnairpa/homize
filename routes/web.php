@@ -49,7 +49,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/merchant/register/step1', [MerchantController::class, 'storeStep1'])->name('merchant.register.step1.store');
     Route::get('/merchant/register/step2/{id}', [MerchantController::class, 'step2'])->name('merchant.register.step2');
     Route::post('/merchant/register/step2/{id}', [MerchantController::class, 'storeStep2'])->name('merchant.register.step2.store');
-    
+
     // Merchant Dashboard Routes (with merchant middleware)
     Route::middleware([\App\Http\Middleware\MerchantMiddleware::class])->prefix('merchant')->name('merchant.')->group(function () {
         Route::get('/dashboard', [MerchantController::class, 'dashboard'])->name('dashboard');
@@ -84,5 +84,7 @@ Route::get('/wishlist/content', [WishlistController::class, 'getContent'])->name
 
 Route::get('/pembayaran/{id}/get-token', [PembayaranController::class, 'getToken'])->name('pembayaran.get-token');
 Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
+
+Route::get('/merchant/{id}', [MerchantController::class, 'getMerchantDetail'])->name('merchant.detail');
 
 // Route::post('/merchant/orders/{id}/update-status', [App\Http\Controllers\MerchantController::class, 'updateOrderStatus'])->name('merchant.orders.update-status')->middleware(['auth', 'merchant']);
