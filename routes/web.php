@@ -29,7 +29,7 @@ Route::middleware([
     // User Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])->name('dashboard');
 
-    Route::get('/transactions', [UserController::class, 'transactions'])->name('transactions');
+    Route::get('/transactions', [DashboardController::class, 'transactions'])->name('transactions');
     Route::get('/transactions/filter', [DashboardController::class, 'filterTransactions'])->name('transactions.filter');
     Route::get('/transactions/filter-by-date', [DashboardController::class, 'filterByDateRange'])->name('transactions.filter-by-date');
 
