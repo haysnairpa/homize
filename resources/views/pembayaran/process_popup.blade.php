@@ -34,6 +34,24 @@
                         <p class="text-xl font-bold text-gray-800">Total: Rp {{ number_format($pembayaran->amount, 0, ',', '.') }}</p>
                     </div>
                     
+                    @if($pembayaran->otp_attempts > 0)
+                    <div class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-yellow-800">Perhatian</h3>
+                                <div class="mt-2 text-sm text-yellow-700">
+                                    <p>Verifikasi 3DS sebelumnya gagal. Anda memiliki {{ $pembayaran->remainingOtpAttempts() }} kesempatan lagi untuk memasukkan kode OTP yang benar.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    
                     <div class="flex justify-center">
                         <button id="pay-button" class="bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-8 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -79,7 +97,26 @@
                         window.location.href = "{{ route('dashboard') }}?status=pending";
                     },
                     onError: function(result) {
-                        window.location.href = "{{ route('dashboard') }}?status=error";
+                        // Cek apakah ini error 3DS
+                        if (result.status_code === '202' || 
+                            (result.status_message && result.status_message.toLowerCase().includes('3ds'))) {
+                            
+                            // Tampilkan pesan khusus untuk error 3DS
+                            alert('Verifikasi 3DS gagal. Silakan coba lagi dengan kode OTP yang benar.');
+                            
+                            // Cek apakah masih ada kesempatan
+                            @if($pembayaran->hasOtpAttempts())
+                                // Masih ada kesempatan, reload halaman
+                                window.location.reload();
+                            @else
+                                // Sudah habis kesempatan
+                                alert('Anda telah melebihi batas percobaan OTP. Silakan mulai ulang proses pembayaran.');
+                                window.location.href = "{{ route('pembayaran.show', $booking->id) }}";
+                            @endif
+                        } else {
+                            // Error lainnya
+                            window.location.href = "{{ route('dashboard') }}?status=error";
+                        }
                     },
                     onClose: function() {
                         // Jika user menutup popup tanpa menyelesaikan pembayaran
@@ -90,10 +127,38 @@
                             </svg>
                             Lanjutkan Pembayaran
                         `;
-                        alert('Anda menutup popup pembayaran tanpa menyelesaikan pembayaran');
                     }
                 });
             });
+        });
+
+        function checkPaymentStatus() {
+            fetch('/pembayaran/{{ $booking->id }}/check-status')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Payment status:', data.status);
+                    if (data.status === 'completed') {
+                        // Redirect ke halaman sukses
+                        window.location.href = '/dashboard';
+                    } else if (data.status === 'failed') {
+                        // Tampilkan pesan error
+                        alert('Pembayaran gagal. Silakan coba lagi.');
+                    } else {
+                        // Cek lagi setelah 5 detik
+                        setTimeout(checkPaymentStatus, 5000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking payment status:', error);
+                    // Cek lagi setelah 5 detik
+                    setTimeout(checkPaymentStatus, 5000);
+                });
+        }
+
+        // Mulai cek status setelah halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mulai cek status setelah 10 detik (beri waktu untuk user melakukan pembayaran)
+            setTimeout(checkPaymentStatus, 10000);
         });
     </script>
 </body>

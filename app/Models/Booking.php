@@ -61,4 +61,31 @@ class Booking extends Model
     {
         return $this->belongsTo(BookingSchedule::class, "id_booking_schedule", "id");
     }
+
+    /**
+     * Cek apakah status bisa diubah ke status tertentu
+     */
+    public function canTransitionTo($targetStatusName)
+    {
+        $currentStatus = $this->status->nama_status;
+        
+        // valid transitions
+        $validTransitions = [
+            'Payment Pending' => ['Payment Completed', 'Payment Failed'],
+            'Payment Completed' => ['Pending'],
+            'Pending' => ['Confirmed', 'Cancelled'],
+            'Confirmed' => ['In Progress'],
+            'In Progress' => ['Completed'],
+            'Payment Failed' => [], // final status
+            'Cancelled' => [], // final status
+            'Completed' => [] // final status
+        ];
+        
+        // check valid transitions
+        if (isset($validTransitions[$currentStatus]) && in_array($targetStatusName, $validTransitions[$currentStatus])) {
+            return true;
+        }
+        
+        return false;
+    }
 }

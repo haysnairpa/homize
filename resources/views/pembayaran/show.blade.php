@@ -350,31 +350,114 @@
     </script>
     @endif
     
-    <!-- Di bagian bawah sebelum </body> -->
-    @if($booking->pembayaran->status->nama_status == 'Payment Pending' || $booking->pembayaran->status->nama_status == 'Pending')
+    <!-- Script untuk polling status pembayaran -->
     <script>
-        // Cek status pembayaran setiap 10 detik
+        // Cek status pembayaran setiap 5 detik
         function checkPaymentStatus() {
             fetch('{{ route('pembayaran.check-status', $booking->id) }}')
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Status check response:', data);
                     if (data.status === 'completed') {
                         // Jika pembayaran selesai, redirect ke dashboard
-                        window.location.href = "{{ route('dashboard') }}?status=success";
+                        window.location.href = '{{ route('dashboard') }}?success=true';
                     } else if (data.status === 'failed') {
-                        // Jika pembayaran gagal, reload halaman
+                        // Jika pembayaran gagal, tampilkan pesan
+                        alert('Pembayaran gagal. Silakan coba lagi.');
                         window.location.reload();
                     }
                 })
-                .catch(error => console.error('Error checking payment status:', error));
+                .catch(error => {
+                    console.error('Error checking payment status:', error);
+                });
         }
         
-        // Cek status setiap 10 detik
-        setInterval(checkPaymentStatus, 10000);
+        // Cek status setiap 5 detik
+        setInterval(checkPaymentStatus, 5000);
         
         // Cek status saat halaman dimuat
         document.addEventListener('DOMContentLoaded', checkPaymentStatus);
     </script>
+
+    <!-- Tambahkan modal konfirmasi pembayaran -->
+    <div id="payment-confirmation-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Konfirmasi Pembayaran</h3>
+            <p class="text-gray-600 mb-4">Anda akan melakukan pembayaran sebesar:</p>
+            <p class="text-xl font-bold text-gray-800 mb-6">Rp {{ number_format($booking->pembayaran->amount, 0, ',', '.') }}</p>
+            
+            <p class="text-sm text-gray-500 mb-6">Setelah mengklik "Lanjutkan", Anda tidak dapat mengubah metode pembayaran.</p>
+            
+            <div class="flex justify-between gap-4">
+                <button id="cancel-payment" class="flex-1 py-2 px-4 border border-gray-300 rounded-xl text-center text-gray-700 hover:bg-gray-50 transition">
+                    Batal
+                </button>
+                <button id="confirm-payment" class="flex-1 py-2 px-4 bg-homize-blue text-white rounded-xl text-center hover:bg-homize-blue-second transition">
+                    Lanjutkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tambahkan script untuk modal konfirmasi
+        document.addEventListener('DOMContentLoaded', function() {
+            const payButton = document.getElementById('pay-button');
+            const confirmationModal = document.getElementById('payment-confirmation-modal');
+            const cancelButton = document.getElementById('cancel-payment');
+            const confirmButton = document.getElementById('confirm-payment');
+            
+            if (payButton) {
+                payButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    confirmationModal.classList.remove('hidden');
+                });
+            }
+            
+            if (cancelButton) {
+                cancelButton.addEventListener('click', function() {
+                    confirmationModal.classList.add('hidden');
+                });
+            }
+            
+            if (confirmButton) {
+                confirmButton.addEventListener('click', function() {
+                    confirmationModal.classList.add('hidden');
+                    // Lanjutkan dengan proses pembayaran
+                    document.getElementById('payment-form').submit();
+                });
+            }
+        });
+    </script>
+
+    <!-- Tambahkan informasi tentang status pembayaran -->
+    @if($booking->pembayaran->status->nama_status == 'Payment Pending')
+        <div class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800">Perhatian</h3>
+                    <div class="mt-2 text-sm text-yellow-700">
+                        <p>Jika Anda sudah melakukan pembayaran tetapi status belum berubah, silakan klik tombol di bawah untuk memeriksa status pembayaran.</p>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{{ route('pembayaran.check', $booking->id) }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                            Periksa Status Pembayaran
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     @endif
+
+    <div class="mt-4">
+        <a href="{{ route('pembayaran.force-check', $booking->id) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 active:bg-blue-700 focus:outline-none focus:border-blue-700 focus:ring focus:ring-blue-300 disabled:opacity-25 transition">
+            Cek Status Pembayaran
+        </a>
+    </div>
 </body>
 </html>

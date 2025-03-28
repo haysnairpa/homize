@@ -19,6 +19,29 @@
             </div>
             @endif
 
+            <!-- Tambahkan informasi tentang status pembayaran yang tidak bisa diubah -->
+            @if(session('error'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <span class="block sm:inline">{{ session('error') }}</span>
+                </div>
+            @endif
+
+            <!-- Tambahkan informasi di halaman orders -->
+            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700">
+                            Status pembayaran (Payment Pending, Payment Completed, Payment Failed) berubah secara otomatis berdasarkan aktivitas transaksi dan tidak dapat diubah secara manual.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                 <!-- Status Filter -->
                 <div class="mb-6">
@@ -29,6 +52,17 @@
                         <button class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-homize-gray transition-colors">Selesai</button>
                         <button class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-homize-gray transition-colors">Dibatalkan</button>
                     </div>
+                </div>
+
+                <!-- Tambahkan filter untuk tidak menampilkan pesanan dengan status Payment Pending -->
+                <div class="mb-4">
+                    <label for="status-filter" class="block text-sm font-medium text-gray-700">Filter Status</label>
+                    <select id="status-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-homize-blue focus:border-homize-blue sm:text-sm rounded-md">
+                        <option value="all">Semua Status</option>
+                        @foreach($statuses as $status)
+                            <option value="{{ $status->nama_status }}">{{ $status->nama_status }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <!-- Search and Date Filter -->
@@ -184,6 +218,8 @@
             const updateStatusModal = document.getElementById('updateStatusModal');
             const updateStatusForm = document.getElementById('updateStatusForm');
             const closeButtons = document.querySelectorAll('.close-modal');
+            const statusFilter = document.getElementById('status-filter');
+            const orderRows = document.querySelectorAll('tbody tr');
             
             // View Order Detail
             document.querySelectorAll('.view-order').forEach(button => {
@@ -293,6 +329,21 @@
                     if (e.target === modal) {
                         modal.classList.add('hidden');
                         document.body.style.overflow = 'auto';
+                    }
+                });
+            });
+
+            statusFilter.addEventListener('change', function() {
+                const selectedStatus = this.value;
+                
+                orderRows.forEach(row => {
+                    const statusCell = row.querySelector('td:nth-child(4)');
+                    const statusText = statusCell.textContent.trim();
+                    
+                    if (selectedStatus === 'all' || statusText === selectedStatus) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
                     }
                 });
             });

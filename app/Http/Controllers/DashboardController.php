@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Booking;
+use App\Http\Controllers\PembayaranController;
 
 class DashboardController extends Controller
 {
@@ -25,5 +27,30 @@ class DashboardController extends Controller
         $totalPesananSelesai = DB::select("SELECT COUNT(*) as total_pesanan_selesai FROM booking WHERE id_user = ? AND id_status = 4", [$userId]);
         $totalPesananBatal = DB::select("SELECT COUNT(*) as total_pesanan_batal FROM booking WHERE id_user = ? AND id_status = 5", [$userId]);
         return view('dashboard', compact('bookings', 'totalPesanan', 'totalPesananAktif', 'totalPesananSelesai', 'totalPesananBatal'));
+    }
+
+    public function index()
+    {
+        $user = Auth::user();
+        $bookings = Booking::with(['status', 'pembayaran', 'pembayaran.status'])
+            ->where('id_user', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Cek status pembayaran untuk semua booking dengan status Payment Pending
+        foreach ($bookings as $booking) {
+            if ($booking->pembayaran && $booking->pembayaran->status->nama_status == 'Payment Pending' && $booking->pembayaran->order_id) {
+                // Cek status pembayaran
+                app(PembayaranController::class)->checkPaymentStatus($booking->pembayaran);
+            }
+        }
+        
+        // Refresh data booking
+        $bookings = Booking::with(['status', 'pembayaran', 'pembayaran.status'])
+            ->where('id_user', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return view('dashboard', compact('bookings'));
     }
 }
