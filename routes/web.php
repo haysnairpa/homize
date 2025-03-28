@@ -77,6 +77,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Tambahkan route ini di grup yang sesuai
     Route::get('/pembayaran/{id}/reset-otp', [PembayaranController::class, 'resetOtpAttempts'])->name('pembayaran.reset-otp');
+
+    // Tambahkan route ini
+    Route::get('/pembayaran/check/{id}', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check');
+    Route::get('/pembayaran/force-check/{id}', [PembayaranController::class, 'forceCheckStatus'])->name('pembayaran.force-check');
 });
 
 Route::get('/search', [SearchController::class, 'search'])->name('search');
@@ -85,6 +89,8 @@ Route::get('/api/search', [SearchController::class, 'apiSearch'])->name('api.sea
 Route::post('/toko-favorit/toggle', [TokoFavoritController::class, 'toggle'])->name('toko-favorit.toggle');
 Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 Route::get('/wishlist/content', [WishlistController::class, 'getContent'])->name('wishlist.content');
+
+Route::get('/merchant/{id}', [MerchantController::class, 'getMerchantDetail'])->name('merchant.detail');
 
 Route::get('/pembayaran/{id}/get-token', [PembayaranController::class, 'getToken'])->name('pembayaran.get-token');
 Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
