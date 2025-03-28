@@ -86,5 +86,6 @@ Route::get('/pembayaran/{id}/get-token', [PembayaranController::class, 'getToken
 Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
 
 Route::get('/merchant/{id}', [MerchantController::class, 'getMerchantDetail'])->name('merchant.detail');
+Route::get('/merchant/{id}/sort', [MerchantController::class, 'sortLayanan'])->name('merchant.sort');
 
 // Route::post('/merchant/orders/{id}/update-status', [App\Http\Controllers\MerchantController::class, 'updateOrderStatus'])->name('merchant.orders.update-status')->middleware(['auth', 'merchant']);

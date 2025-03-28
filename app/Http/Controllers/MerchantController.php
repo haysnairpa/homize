@@ -505,6 +505,7 @@ class MerchantController extends Controller
                 l.deskripsi_layanan, 
                 l.pengalaman, 
                 tl.harga,
+                a.media_url AS url_layanan,
                 sk.nama AS nama_sub_kategori, COALESCE((
                 SELECT AVG(rate)
                 FROM rating r
@@ -520,6 +521,7 @@ class MerchantController extends Controller
                 FROM layanan l
                 LEFT JOIN sub_kategori sk ON sk.id = l.id_sub_kategori
                 LEFT JOIN tarif_layanan tl ON tl.id_layanan = l.id
+                LEFT JOIN aset a ON a.id_layanan = l.id
                 WHERE l.id_merchant = ?
                 ORDER BY l.created_at DESC;
                 ",
@@ -532,5 +534,57 @@ class MerchantController extends Controller
         $ids = DB::select("SELECT `id` FROM `sub_kategori`;");
 
         return view('merchant.detail_merchant', compact('merchant', 'layanan', 'kategori', 'sub_kategori', 'ids'));
+    }
+
+    public function sortLayanan($id, Request $request)
+    {
+        $sort = $request->query('sort', 'newest');
+        $query = "SELECT 
+            l.id, 
+            l.nama_layanan, 
+            l.deskripsi_layanan, 
+            l.pengalaman,
+            l.created_at,
+            tl.harga,
+            a.media_url AS url_layanan,
+            sk.nama AS nama_sub_kategori,
+            COALESCE((
+                SELECT AVG(rate)
+                FROM rating r
+                WHERE r.id_layanan = l.id), 0) AS rating_avg,
+            (
+                SELECT COUNT(*)
+                FROM rating r
+                WHERE r.id_layanan = l.id) AS rating_count,
+            (
+                SELECT COUNT(*)
+                FROM booking b
+                WHERE b.id_layanan = l.id) AS transaction_count
+            FROM layanan l
+            LEFT JOIN sub_kategori sk ON sk.id = l.id_sub_kategori
+            LEFT JOIN tarif_layanan tl ON tl.id_layanan = l.id
+            LEFT JOIN aset a ON a.id_layanan = l.id
+            WHERE l.id_merchant = ?";
+
+        // Add sorting based on the sort parameter
+        switch ($sort) {
+            case 'highest_rating':
+                $query .= " ORDER BY rating_avg DESC, rating_count DESC";
+                break;
+            case 'price_asc':
+                $query .= " ORDER BY tl.harga ASC";
+                break;
+            case 'price_desc':
+                $query .= " ORDER BY tl.harga DESC";
+                break;
+            default: // newest
+                $query .= " ORDER BY l.created_at DESC";
+        }
+
+        $layanan = DB::select($query, [$id]);
+
+        $html = view('merchant.partials.layanan-grid', compact('layanan'))->render();
+
+        return response()->json(['html' => $html]);
     }
 }
