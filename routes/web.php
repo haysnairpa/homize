@@ -29,11 +29,14 @@ Route::middleware([
 ])->group(function () {
     // User Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])->name('dashboard');
-    Route::get('/transactions', [UserController::class, 'transactions'])->name('transactions');
-    Route::get('/transaction/{id}', [UserController::class, 'transactionDetail'])->name('user.transaction.detail');
-    
-    // Merchant Routes
-    Route::get('/merchant', [MerchantController::class, 'index'])->name('merchant');
+
+    Route::get('/transactions', [DashboardController::class, 'transactions'])->name('transactions');
+    Route::get('/transactions/filter', [DashboardController::class, 'filterTransactions'])->name('transactions.filter');
+    Route::get('/transactions/filter-by-date', [DashboardController::class, 'filterByDateRange'])->name('transactions.filter-by-date');
+
+    Route::get('/merchant', function () {
+        return view('merchant');
+    })->name('merchant');
 });
 
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
@@ -47,7 +50,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/merchant/register/step1', [MerchantController::class, 'storeStep1'])->name('merchant.register.step1.store');
     Route::get('/merchant/register/step2/{id}', [MerchantController::class, 'step2'])->name('merchant.register.step2');
     Route::post('/merchant/register/step2/{id}', [MerchantController::class, 'storeStep2'])->name('merchant.register.step2.store');
-    
+
     // Merchant Dashboard Routes (with merchant middleware)
     Route::middleware([\App\Http\Middleware\MerchantMiddleware::class])->prefix('merchant')->name('merchant.')->group(function () {
         Route::get('/dashboard', [MerchantController::class, 'dashboard'])->name('dashboard');
@@ -68,7 +71,7 @@ Route::middleware(['auth'])->group(function () {
     // Pembayaran routes
     Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
-    
+
     // Midtrans callback
     Route::post('pembayaran/callback', [MidtransCallbackController::class, 'handle'])->name('pembayaran.callback');
 
@@ -85,5 +88,5 @@ Route::get('/wishlist/content', [WishlistController::class, 'getContent'])->name
 
 Route::get('/pembayaran/{id}/get-token', [PembayaranController::class, 'getToken'])->name('pembayaran.get-token');
 Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
-Route::get('/pembayaran/{id}/check', [PembayaranController::class, 'forceCheckStatus'])->name('pembayaran.check');
-Route::get('pembayaran/{id}/force-check', [PembayaranController::class, 'forceCheckStatus'])->name('pembayaran.force-check');
+
+// Route::post('/merchant/orders/{id}/update-status', [App\Http\Controllers\MerchantController::class, 'updateOrderStatus'])->name('merchant.orders.update-status')->middleware(['auth', 'merchant']);

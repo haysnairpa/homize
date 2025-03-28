@@ -18,6 +18,7 @@ class LayananController extends Controller
                 'm.id as id_merchant',
                 'm.nama_usaha',
                 'm.profile_url',
+                'sk.nama as nama_sub_kategori',
                 'jo.jam_buka',
                 'jo.jam_tutup',
                 'jo.id_hari',
@@ -30,6 +31,7 @@ class LayananController extends Controller
             ->join('merchant as m', 'l.id_merchant', '=', 'm.id')
             ->join('jam_operasional as jo', 'l.id_jam_operasional', '=', 'jo.id')
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
+            ->leftJoin('sub_kategori as sk', 'm.id_sub_kategori', '=', 'sk.id')
             ->leftJoin('rating as r', 'l.id', '=', 'r.id_layanan')
             ->where('l.id', $id)
             ->groupBy([
