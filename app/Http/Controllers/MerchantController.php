@@ -238,7 +238,7 @@ class MerchantController extends Controller
             'status_id' => 'required|exists:status,id',
         ]);
 
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::with(['status', 'pembayaran', 'pembayaran.status'])->findOrFail($id);
         $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
 
         // Pastikan booking ini milik merchant yang sedang login
@@ -246,6 +246,50 @@ class MerchantController extends Controller
             return redirect()->route('merchant.orders')->with('error', 'Anda tidak memiliki akses untuk mengubah status pesanan ini');
         }
 
+        // Ambil status saat ini dan status yang diminta
+        $currentStatus = $booking->status->nama_status;
+        $requestedStatus = Status::find($validated['status_id'])->nama_status;
+
+        // Cek apakah ini adalah status pembayaran yang tidak boleh diubah manual
+        $paymentStatuses = ['Payment Pending', 'Payment Completed', 'Payment Failed'];
+        if (in_array($currentStatus, $paymentStatuses) || in_array($requestedStatus, $paymentStatuses)) {
+            return redirect()->route('merchant.orders')->with('error', 'Status pembayaran tidak dapat diubah secara manual. Status ini berubah otomatis berdasarkan aktivitas transaksi.');
+        }
+
+        // Validasi alur status sesuai flowchart
+        $validTransition = false;
+
+        switch ($currentStatus) {
+            case 'Pending':
+                // Dari Pending hanya bisa ke Confirmed atau Cancelled
+                if ($requestedStatus == 'Confirmed' || $requestedStatus == 'Cancelled') {
+                    $validTransition = true;
+                }
+                break;
+            case 'Confirmed':
+                // Dari Confirmed hanya bisa ke In Progress
+                if ($requestedStatus == 'In Progress') {
+                    $validTransition = true;
+                }
+                break;
+            case 'In Progress':
+                // Dari In Progress hanya bisa ke Completed
+                if ($requestedStatus == 'Completed') {
+                    $validTransition = true;
+                }
+                break;
+            case 'Cancelled':
+            case 'Completed':
+                // Status final tidak bisa diubah
+                $validTransition = false;
+                break;
+        }
+
+        if (!$validTransition) {
+            return redirect()->route('merchant.orders')->with('error', 'Perubahan status tidak valid. Status hanya bisa bergerak maju sesuai alur yang ditentukan.');
+        }
+
+        // Update status booking
         $booking->id_status = $validated['status_id'];
         $booking->save();
 

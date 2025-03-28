@@ -47,6 +47,7 @@ class LayananController extends Controller
                 'm.id',
                 'm.nama_usaha',
                 'm.profile_url',
+                'sk.nama',
                 'jo.jam_buka',
                 'jo.jam_tutup',
                 'jo.id_hari',

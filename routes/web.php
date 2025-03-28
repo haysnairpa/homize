@@ -13,6 +13,7 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MidtransCallbackController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -72,7 +73,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
 
     // Midtrans callback
-    Route::post('/payment/callback', [PembayaranController::class, 'callback'])->name('payment.callback');
+    Route::post('pembayaran/callback', [MidtransCallbackController::class, 'handle'])->name('pembayaran.callback');
+
+    // Tambahkan route ini di grup yang sesuai
+    Route::get('/pembayaran/{id}/reset-otp', [PembayaranController::class, 'resetOtpAttempts'])->name('pembayaran.reset-otp');
+
+    // Tambahkan route ini
+    Route::get('/pembayaran/check/{id}', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check');
+    Route::get('/pembayaran/force-check/{id}', [PembayaranController::class, 'forceCheckStatus'])->name('pembayaran.force-check');
 });
 
 Route::get('/search', [SearchController::class, 'search'])->name('search');
@@ -82,10 +90,10 @@ Route::post('/toko-favorit/toggle', [TokoFavoritController::class, 'toggle'])->n
 Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 Route::get('/wishlist/content', [WishlistController::class, 'getContent'])->name('wishlist.content');
 
+Route::get('/merchant/{id}', [MerchantController::class, 'getMerchantDetail'])->name('merchant.detail');
+
 Route::get('/pembayaran/{id}/get-token', [PembayaranController::class, 'getToken'])->name('pembayaran.get-token');
 Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
-
-Route::get('/merchant/{id}', [MerchantController::class, 'getMerchantDetail'])->name('merchant.detail');
 Route::get('/merchant/{id}/sort', [MerchantController::class, 'sortLayanan'])->name('merchant.sort');
 
 // Route::post('/merchant/orders/{id}/update-status', [App\Http\Controllers\MerchantController::class, 'updateOrderStatus'])->name('merchant.orders.update-status')->middleware(['auth', 'merchant']);

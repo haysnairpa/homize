@@ -129,8 +129,13 @@ class BookingController extends Controller
             $statusPembayaranPending = Status::where('nama_status', 'Payment Pending')->first();
             if (!$statusPembayaranPending) {
                 // Fallback ke status Pending biasa jika Payment Pending tidak ada
-                $statusPembayaranPending = $statusPending;
+                throw new \Exception('Status Payment Pending tidak ditemukan');
             }
+
+            // Status booking awal adalah Payment Pending juga
+            $booking->update([
+                'id_status' => $statusPembayaranPending->id
+            ]);
 
             Pembayaran::create([
                 'id_booking' => $booking->id,
