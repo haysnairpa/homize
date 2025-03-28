@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\CreateLayananRequest;
 use App\Models\Revisi;
 use Carbon\Carbon;
+use App\Events\OrderCompleted;
 
 class MerchantController extends Controller
 {
@@ -278,20 +279,53 @@ class MerchantController extends Controller
                     $validTransition = true;
                 }
                 break;
-            case 'Cancelled':
-            case 'Completed':
-                // Status final tidak bisa diubah
+            default:
+                // Status lain tidak bisa diubah
                 $validTransition = false;
-                break;
         }
 
         if (!$validTransition) {
-            return redirect()->route('merchant.orders')->with('error', 'Perubahan status tidak valid. Status hanya bisa bergerak maju sesuai alur yang ditentukan.');
+            return redirect()->route('merchant.orders')->with('error', 'Perubahan status tidak valid. Mohon ikuti alur status yang benar.');
         }
 
         // Update status booking
         $booking->id_status = $validated['status_id'];
         $booking->save();
+
+        // Jika status berubah menjadi Completed, trigger event OrderCompleted
+        if ($requestedStatus == 'Completed') {
+            // Load relasi yang dibutuhkan
+            $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
+            
+            Log::info('Akan memicu event OrderCompleted', [
+                'booking_id' => $booking->id
+            ]);
+            
+            // Trigger event OrderCompleted
+            event(new OrderCompleted($booking));
+            
+            Log::info('Event OrderCompleted berhasil dipicu', [
+                'booking_id' => $booking->id
+            ]);
+            
+            // // Alternatif: Kirim email langsung jika event tidak berfungsi
+            // try {
+            //     if ($booking->user) {
+            //         Mail::to($booking->user->email)
+            //             ->send(new OrderCompletedNotification($booking));
+                    
+            //         Log::info('Email notifikasi pesanan selesai berhasil dikirim langsung', [
+            //             'booking_id' => $booking->id,
+            //             'user_email' => $booking->user->email
+            //         ]);
+            //     }
+            // } catch (\Exception $e) {
+            //     Log::error('Gagal mengirim email notifikasi pesanan selesai langsung', [
+            //         'booking_id' => $booking->id,
+            //         'error' => $e->getMessage()
+            //     ]);
+            // }
+        }
 
         return redirect()->route('merchant.orders')->with('success', 'Status pesanan berhasil diperbarui');
     }

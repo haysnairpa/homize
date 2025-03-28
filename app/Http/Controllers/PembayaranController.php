@@ -12,21 +12,19 @@ use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
 use Midtrans\Snap;
 use Illuminate\Support\Facades\Route;
+use App\Events\OrderCreated;
+use App\Mail\NewOrderNotification;
+use Illuminate\Support\Facades\Mail;
 
 class PembayaranController extends Controller
 {
     public function __construct()
     {
-        // Set konfigurasi Midtrans
+        // Midtrans Config
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
         Config::$is3ds = config('midtrans.is_3ds');
-        
-        // Set URL callback yang benar - TANPA url()
-        $ngrokUrl = 'https://0d64-103-125-56-99.ngrok-free.app'; // Ganti dengan URL ngrok aktif
-        Config::$appendNotifUrl = $ngrokUrl . '/pembayaran/callback';
-        Config::$overrideNotifUrl = $ngrokUrl . '/pembayaran/callback';
         
         Log::info('Midtrans Callback URL: ' . Config::$overrideNotifUrl);
     }
@@ -158,7 +156,7 @@ class PembayaranController extends Controller
 
             // Jika metode pembayaran adalah bank transfer, kita bisa langsung menampilkan halaman instruksi
             if ($paymentMethod == 'bank_transfer') {
-                // Untuk demo, kita gunakan nomor VA statis
+                // VA Statis for demo
                 $va_number = '80777081386348589';
                 return view('pembayaran.process', compact('booking', 'pembayaran', 'snapToken', 'bank_name', 'va_number'));
             } else {
@@ -214,6 +212,57 @@ class PembayaranController extends Controller
                     $pembayaran->booking->update([
                         'id_status' => $statusPending->id,
                     ]);
+                    
+                    // Load relasi yang dibutuhkan
+                    $booking = $pembayaran->booking;
+                    $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
+                    
+                    // Tambahkan pengecekan merchant lebih detail
+                    Log::info('Detail merchant untuk booking #' . $booking->id, [
+                        'merchant_id' => $booking->merchant->id ?? 'tidak ada',
+                        'merchant_nama' => $booking->merchant->nama_usaha ?? 'tidak ada',
+                        'merchant_user_id' => $booking->merchant->user->id ?? 'tidak ada',
+                        'merchant_email' => $booking->merchant->user->email ?? 'tidak ada'
+                    ]);
+                    
+                    // Kirim email langsung tanpa event
+                    // try {
+                    //     if ($booking->merchant && $booking->merchant->user && $booking->merchant->user->email) {
+                    //         Mail::to($booking->merchant->user->email)
+                    //             ->send(new NewOrderNotification($booking));
+                            
+                    //         Log::info('Email notifikasi pesanan baru berhasil dikirim langsung', [
+                    //             'booking_id' => $booking->id,
+                    //             'merchant_email' => $booking->merchant->user->email
+                    //         ]);
+                    //     } else {
+                    //         Log::warning('Tidak dapat mengirim email: data merchant atau user tidak lengkap', [
+                    //             'booking_id' => $booking->id,
+                    //             'merchant' => $booking->merchant ? 'ada' : 'tidak ada',
+                    //             'merchant_user' => ($booking->merchant && $booking->merchant->user) ? 'ada' : 'tidak ada',
+                    //             'merchant_email' => ($booking->merchant && $booking->merchant->user) ? $booking->merchant->user->email : 'tidak ada'
+                    //         ]);
+                    //     }
+                    // } catch (\Exception $e) {
+                    //     Log::error('Gagal mengirim email notifikasi pesanan baru langsung', [
+                    //         'booking_id' => $booking->id,
+                    //         'error' => $e->getMessage(),
+                    //         'trace' => $e->getTraceAsString()
+                    //     ]);
+                    // }
+                    
+                    // Setelah itu, coba trigger event
+                    try {
+                        event(new OrderCreated($booking));
+                        Log::info('Event OrderCreated berhasil dipicu', [
+                            'booking_id' => $booking->id
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Gagal memicu event OrderCreated', [
+                            'booking_id' => $booking->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
                     
                     Log::info('Payment completed for order_id: ' . $order_id);
                 } 
@@ -279,8 +328,8 @@ class PembayaranController extends Controller
             Log::warning('Invalid signature for order_id: ' . $request->order_id);
             return response()->json(['status' => 'error', 'message' => 'Invalid signature']);
         } catch (\Exception $e) {
-            Log::error('Error in callback: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
+            Log::error('Error processing Midtrans callback: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -406,9 +455,60 @@ class PembayaranController extends Controller
                         return false;
                     }
                     
-                    $pembayaran->booking->update([
+                    $booking = $pembayaran->booking;
+                    $booking->update([
                         'id_status' => $statusPending->id,
                     ]);
+                    
+                    // Load relasi yang dibutuhkan
+                    $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
+                    
+                    // Tambahkan pengecekan merchant lebih detail
+                    Log::info('Detail merchant untuk booking #' . $booking->id, [
+                        'merchant_id' => $booking->merchant->id ?? 'tidak ada',
+                        'merchant_nama' => $booking->merchant->nama_usaha ?? 'tidak ada',
+                        'merchant_user_id' => $booking->merchant->user->id ?? 'tidak ada',
+                        'merchant_email' => $booking->merchant->user->email ?? 'tidak ada'
+                    ]);
+                    
+                    // Kirim email langsung tanpa event
+                    // try {
+                    //     if ($booking->merchant && $booking->merchant->user && $booking->merchant->user->email) {
+                    //         Mail::to($booking->merchant->user->email)
+                    //             ->send(new NewOrderNotification($booking));
+                            
+                    //         Log::info('Email notifikasi pesanan baru berhasil dikirim langsung', [
+                    //             'booking_id' => $booking->id,
+                    //             'merchant_email' => $booking->merchant->user->email
+                    //         ]);
+                    //     } else {
+                    //         Log::warning('Tidak dapat mengirim email: data merchant atau user tidak lengkap', [
+                    //             'booking_id' => $booking->id,
+                    //             'merchant' => $booking->merchant ? 'ada' : 'tidak ada',
+                    //             'merchant_user' => ($booking->merchant && $booking->merchant->user) ? 'ada' : 'tidak ada',
+                    //             'merchant_email' => ($booking->merchant && $booking->merchant->user) ? $booking->merchant->user->email : 'tidak ada'
+                    //         ]);
+                    //     }
+                    // } catch (\Exception $e) {
+                    //     Log::error('Gagal mengirim email notifikasi pesanan baru langsung', [
+                    //         'booking_id' => $booking->id,
+                    //         'error' => $e->getMessage(),
+                    //         'trace' => $e->getTraceAsString()
+                    //     ]);
+                    // }
+                    
+                    // Setelah itu, coba trigger event
+                    try {
+                        event(new OrderCreated($booking));
+                        Log::info('Event OrderCreated berhasil dipicu', [
+                            'booking_id' => $booking->id
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Gagal memicu event OrderCreated', [
+                            'booking_id' => $booking->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
                     
                     Log::info('Payment completed for order_id: ' . $pembayaran->order_id);
                     return true;

@@ -14,6 +14,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MidtransCallbackController;
+use App\Http\Controllers\RatingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -33,6 +34,8 @@ Route::middleware([
     Route::get('/transactions', [DashboardController::class, 'transactions'])->name('transactions');
     Route::get('/transactions/filter', [DashboardController::class, 'filterTransactions'])->name('transactions.filter');
     Route::get('/transactions/filter-by-date', [DashboardController::class, 'filterByDateRange'])->name('transactions.filter-by-date');
+
+    Route::get('/transactions/{id}/detail', [DashboardController::class, 'transactionDetail'])->name('user.transaction.detail');
 
     Route::get('/merchant', function () {
         return view('merchant');
@@ -96,3 +99,9 @@ Route::get('/pembayaran/{id}/get-token', [PembayaranController::class, 'getToken
 Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
 
 // Route::post('/merchant/orders/{id}/update-status', [App\Http\Controllers\MerchantController::class, 'updateOrderStatus'])->name('merchant.orders.update-status')->middleware(['auth', 'merchant']);
+
+// Rating routes
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/rating/{id}', [RatingController::class, 'create'])->name('user.rating.create');
+    Route::post('/rating/{id}', [RatingController::class, 'store'])->name('user.rating.store');
+});

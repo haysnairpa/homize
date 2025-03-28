@@ -41,6 +41,6 @@ class UserController extends Controller
             return redirect()->route('transactions')->with('error', 'Transaksi tidak ditemukan');
         }
 
-        return view('user.transaction-detail', compact('transaction'));
+        return view('user.transaction.detail', compact('transaction'));
     }
 } 
