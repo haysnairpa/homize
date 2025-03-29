@@ -4,11 +4,10 @@ namespace App\Listeners;
 
 use App\Events\OrderCompleted;
 use App\Mail\OrderCompletedNotification;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class SendOrderCompletedNotification implements ShouldQueue
+class SendOrderCompletedNotification
 {
     /**
      * Handle the event.
@@ -18,11 +17,30 @@ class SendOrderCompletedNotification implements ShouldQueue
      */
     public function handle(OrderCompleted $event): void
     {
-        $booking = $event->booking;
-        
-        // Pastikan booking memiliki relasi user
-        if ($booking->user) {
-            try {
+        try {
+            $booking = $event->booking;
+            
+            // Log awal proses
+            Log::info('Memulai proses pengiriman email notifikasi pesanan selesai', [
+                'booking_id' => $booking->id
+            ]);
+            
+            // Pastikan semua relasi dimuat
+            if (!$booking->relationLoaded('user') || !$booking->relationLoaded('merchant') || 
+                !$booking->relationLoaded('layanan') || !$booking->relationLoaded('pembayaran')) {
+                Log::info('Loading relasi yang dibutuhkan untuk email', [
+                    'booking_id' => $booking->id
+                ]);
+                $booking->load(['user', 'merchant', 'layanan', 'pembayaran']);
+            }
+            
+            // Pastikan booking memiliki relasi user
+            if ($booking->user && $booking->user->email) {
+                Log::info('Mencoba mengirim email ke user', [
+                    'booking_id' => $booking->id,
+                    'user_email' => $booking->user->email
+                ]);
+                
                 Mail::to($booking->user->email)
                     ->send(new OrderCompletedNotification($booking));
                 
@@ -30,15 +48,18 @@ class SendOrderCompletedNotification implements ShouldQueue
                     'booking_id' => $booking->id,
                     'user_email' => $booking->user->email
                 ]);
-            } catch (\Exception $e) {
-                Log::error('Gagal mengirim email notifikasi pesanan selesai', [
+            } else {
+                Log::warning('Tidak dapat mengirim email notifikasi: data user tidak lengkap', [
                     'booking_id' => $booking->id,
-                    'error' => $e->getMessage()
+                    'user' => $booking->user ? 'ada' : 'tidak ada',
+                    'email' => $booking->user->email ?? 'tidak ada'
                 ]);
             }
-        } else {
-            Log::warning('Tidak dapat mengirim email notifikasi: data user tidak lengkap', [
-                'booking_id' => $booking->id
+        } catch (\Exception $e) {
+            Log::error('Gagal mengirim email notifikasi pesanan selesai', [
+                'booking_id' => $event->booking->id ?? 'tidak ada',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
     }
