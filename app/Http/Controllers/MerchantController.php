@@ -21,15 +21,19 @@ use App\Http\Requests\CreateLayananRequest;
 use App\Models\Revisi;
 use Carbon\Carbon;
 use App\Events\OrderCompleted;
+use Illuminate\Support\Facades\Session;
 
 class MerchantController extends Controller
 {
     public function index()
     {
+        // Cek apakah user sudah terdaftar sebagai merchant
         $merchant = Merchant::where('id_user', Auth::id())->first();
 
         if ($merchant) {
-            return redirect()->route('merchant.dashboard');
+            // Jika sudah terdaftar, redirect ke dashboard merchant
+            return redirect()->route('merchant.dashboard')
+                ->with('info', 'Anda sudah terdaftar sebagai merchant');
         }
 
         return view('merchant');
@@ -37,8 +41,21 @@ class MerchantController extends Controller
 
     public function step1()
     {
+        // Cek apakah user sudah terdaftar sebagai merchant
+        $merchant = Merchant::where('id_user', Auth::id())->first();
+
+        if ($merchant) {
+            // Jika sudah terdaftar, redirect ke dashboard merchant
+            return redirect()->route('merchant.dashboard')
+                ->with('info', 'Anda sudah terdaftar sebagai merchant');
+        }
+        
         $subKategori = SubKategori::all();
-        return view('merchant.register.step1', compact('subKategori'));
+        
+        // Ambil data dari session jika ada
+        $oldData = Session::get('merchant_registration', []);
+        
+        return view('merchant.register.step1', compact('subKategori', 'oldData'));
     }
 
     public function storeStep1(Request $request)
@@ -47,47 +64,89 @@ class MerchantController extends Controller
             'nama_usaha' => 'required|string|max:255',
             'id_sub_kategori' => 'required|exists:sub_kategori,id',
             'profile_url' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ], [
+            'nama_usaha.required' => 'Nama usaha wajib diisi',
+            'id_sub_kategori.required' => 'Kategori usaha wajib dipilih',
+            'profile_url.required' => 'Foto profil usaha wajib diunggah',
+            'profile_url.image' => 'File harus berupa gambar',
+            'profile_url.mimes' => 'Format gambar harus jpeg, png, atau jpg',
+            'profile_url.max' => 'Ukuran gambar maksimal 2MB',
         ]);
 
-        $profilePath = $request->file('profile_url')->store('merchant-profiles', 'public');
+        // Simpan file ke storage
+        $profilePath = $request->file('profile_url')->store('temp-merchant-profiles', 'public');
 
-        $merchant = new Merchant();
-        $merchant->id_user = Auth::id();
-        $merchant->nama_usaha = $validated['nama_usaha'];
-        $merchant->id_sub_kategori = $validated['id_sub_kategori'];
-        $merchant->profile_url = $profilePath;
-        $merchant->alamat = '';
-        $merchant->media_sosial = json_encode([]);
-        $merchant->save();
+        // Simpan data ke session
+        $merchantData = [
+            'nama_usaha' => $validated['nama_usaha'],
+            'id_sub_kategori' => $validated['id_sub_kategori'],
+            'profile_url' => $profilePath,
+        ];
+        
+        Session::put('merchant_registration', $merchantData);
 
-        return redirect()->route('merchant.register.step2', $merchant->id);
+        return redirect()->route('merchant.register.step2');
     }
 
-    public function step2($id)
+    public function step2()
     {
-        $merchant = Merchant::findOrFail($id);
-        return view('merchant.register.step2', compact('merchant'));
+        // Cek apakah ada data di session
+        if (!Session::has('merchant_registration')) {
+            return redirect()->route('merchant.register.step1')
+                ->with('error', 'Silakan isi informasi dasar terlebih dahulu');
+        }
+        
+        $merchantData = Session::get('merchant_registration');
+        
+        return view('merchant.register.step2', compact('merchantData'));
     }
 
-    public function storeStep2(Request $request, $id)
+    public function storeStep2(Request $request)
     {
+        // Cek apakah ada data di session
+        if (!Session::has('merchant_registration')) {
+            return redirect()->route('merchant.register.step1')
+                ->with('error', 'Silakan isi informasi dasar terlebih dahulu');
+        }
+
         $validated = $request->validate([
             'alamat' => 'required|string',
             'instagram' => 'nullable|string',
             'facebook' => 'nullable|string',
             'whatsapp' => 'required|string',
+        ], [
+            'alamat.required' => 'Alamat wajib diisi',
+            'whatsapp.required' => 'Nomor WhatsApp wajib diisi',
         ]);
 
-        $merchant = Merchant::findOrFail($id);
+        // Ambil data dari session
+        $merchantData = Session::get('merchant_registration');
+        
+        // Buat merchant baru
+        $merchant = new Merchant();
+        $merchant->id_user = Auth::id();
+        $merchant->nama_usaha = $merchantData['nama_usaha'];
+        $merchant->id_sub_kategori = $merchantData['id_sub_kategori'];
+        $merchant->profile_url = $merchantData['profile_url'];
         $merchant->alamat = $validated['alamat'];
         $merchant->media_sosial = json_encode([
-            'instagram' => $validated['instagram'],
-            'facebook' => $validated['facebook'],
+            'instagram' => $validated['instagram'] ?? '',
+            'facebook' => $validated['facebook'] ?? '',
             'whatsapp' => $validated['whatsapp']
         ]);
         $merchant->save();
 
-        return redirect()->route('merchant.dashboard');
+        // Hapus data dari session
+        Session::forget('merchant_registration');
+
+        return redirect()->route('merchant.dashboard')
+            ->with('success', 'Pendaftaran merchant berhasil! Selamat datang di dashboard merchant.');
+    }
+
+    public function backToStep1()
+    {
+        // Tidak perlu menghapus data dari session
+        return redirect()->route('merchant.register.step1');
     }
 
     public function dashboard()

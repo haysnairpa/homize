@@ -16,14 +16,27 @@
                 </div>
             </div>
 
+            @if(session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ session('error') }}</span>
+            </div>
+            @endif
+
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-8">
-                    <form action="{{ route('merchant.register.step1.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
+                    <form id="step1Form" action="{{ route('merchant.register.step1.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
                         @csrf
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-4">Foto Profil Usaha</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-4">Foto Profil Usaha <span class="text-red-500">*</span></label>
+                                <div id="imagePreviewContainer" class="mb-4 {{ isset($oldData['profile_url']) ? '' : 'hidden' }}">
+                                    @if(isset($oldData['profile_url']))
+                                    <img src="{{ asset('storage/' . $oldData['profile_url']) }}" alt="Preview" class="w-40 h-40 object-cover rounded-lg border-2 border-homize-blue">
+                                    @else
+                                    <img id="imagePreview" src="#" alt="Preview" class="w-40 h-40 object-cover rounded-lg border-2 border-homize-blue">
+                                    @endif
+                                </div>
                                 <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-homize-blue transition-colors">
                                     <div class="space-y-1 text-center">
                                         <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
@@ -38,33 +51,55 @@
                                         <p class="text-xs text-gray-500">PNG, JPG hingga 2MB</p>
                                     </div>
                                 </div>
+                                @error('profile_url')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div class="space-y-6">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Usaha</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Usaha <span class="text-red-500">*</span></label>
                                     <input 
                                         type="text" 
                                         name="nama_usaha" 
+                                        id="nama_usaha"
+                                        value="{{ old('nama_usaha', $oldData['nama_usaha'] ?? '') }}"
                                         class="mt-1 block w-full rounded-lg border-2 border-gray-300 shadow-sm focus:border-homize-blue focus:ring-homize-blue transition duration-200 ease-in-out hover:border-gray-400 placeholder-gray-400 focus:placeholder-gray-500 px-4 py-2" 
                                         placeholder="Contoh: Jasa Bersih Express"
                                     >
+                                    @error('nama_usaha')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Usaha</label>
-                                    <select name="id_sub_kategori" class="mt-1 block w-full rounded-lg border-2 border-gray-300 shadow-sm focus:border-homize-blue focus:ring-homize-blue transition duration-200 ease-in-out hover:border-gray-400 placeholder-gray-400 focus:placeholder-gray-500 px-4 py-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Usaha <span class="text-red-500">*</span></label>
+                                    <select 
+                                        name="id_sub_kategori" 
+                                        id="id_sub_kategori"
+                                        class="mt-1 block w-full rounded-lg border-2 border-gray-300 shadow-sm focus:border-homize-blue focus:ring-homize-blue transition duration-200 ease-in-out hover:border-gray-400 placeholder-gray-400 focus:placeholder-gray-500 px-4 py-2"
+                                    >
                                         <option value="">Pilih Kategori</option>
                                         @foreach($subKategori as $kategori)
-                                            <option value="{{ $kategori->id }}">{{ $kategori->nama }}</option>
+                                            <option value="{{ $kategori->id }}" {{ old('id_sub_kategori', $oldData['id_sub_kategori'] ?? '') == $kategori->id ? 'selected' : '' }}>
+                                                {{ $kategori->nama }}
+                                            </option>
                                         @endforeach
                                     </select>
+                                    @error('id_sub_kategori')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex justify-end pt-6">
-                            <button type="submit" class="inline-flex items-center px-6 py-3 bg-homize-blue text-white rounded-lg hover:bg-homize-blue-second transition-colors text-base font-medium gap-2">
+                            <button 
+                                type="submit" 
+                                id="submitBtn"
+                                class="inline-flex items-center px-6 py-3 bg-homize-blue text-white rounded-lg hover:bg-homize-blue-second transition-colors text-base font-medium gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled
+                            >
                                 Lanjutkan
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
@@ -76,4 +111,45 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileInput = document.getElementById('profile_url');
+            const namaUsahaInput = document.getElementById('nama_usaha');
+            const kategoriInput = document.getElementById('id_sub_kategori');
+            const submitBtn = document.getElementById('submitBtn');
+            const imagePreview = document.getElementById('imagePreview');
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            
+            // Fungsi untuk validasi form
+            function validateForm() {
+                const profileValid = profileInput.files.length > 0 || {{ isset($oldData['profile_url']) ? 'true' : 'false' }};
+                const namaUsahaValid = namaUsahaInput.value.trim() !== '';
+                const kategoriValid = kategoriInput.value !== '';
+                
+                submitBtn.disabled = !(profileValid && namaUsahaValid && kategoriValid);
+            }
+            
+            // Cek validasi saat halaman dimuat
+            validateForm();
+            
+            // Tambahkan event listener untuk input
+            profileInput.addEventListener('change', function(e) {
+                validateForm();
+                
+                // Preview gambar
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreviewContainer.classList.remove('hidden');
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+            
+            namaUsahaInput.addEventListener('input', validateForm);
+            kategoriInput.addEventListener('change', validateForm);
+        });
+    </script>
 </x-app-layout> 

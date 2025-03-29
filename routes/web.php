@@ -47,44 +47,45 @@ Route::get('/jasa/{jasa}', [JasaController::class, 'get_jasa'])->name('jasa');
 Route::get('/show_services/{service}', [ExploreServicesController::class, 'show_services'])->name('service');
 Route::get('/layanan/{id}', [LayananController::class, 'show'])->name('layanan.detail');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\PreventMerchantReregistration::class])->group(function () {
     // Merchant Registration Routes
+    Route::get('/merchant', [MerchantController::class, 'index'])->name('merchant');
     Route::get('/merchant/register/step1', [MerchantController::class, 'step1'])->name('merchant.register.step1');
     Route::post('/merchant/register/step1', [MerchantController::class, 'storeStep1'])->name('merchant.register.step1.store');
-    Route::get('/merchant/register/step2/{id}', [MerchantController::class, 'step2'])->name('merchant.register.step2');
-    Route::post('/merchant/register/step2/{id}', [MerchantController::class, 'storeStep2'])->name('merchant.register.step2.store');
-
-    // Merchant Dashboard Routes (with merchant middleware)
-    Route::middleware([\App\Http\Middleware\MerchantMiddleware::class])->prefix('merchant')->name('merchant.')->group(function () {
-        Route::get('/dashboard', [MerchantController::class, 'dashboard'])->name('dashboard');
-        Route::get('/profile', [MerchantController::class, 'profile'])->name('profile');
-        Route::post('/profile/update', [MerchantController::class, 'updateProfile'])->name('profile.update');
-        Route::get('/services', [MerchantController::class, 'services'])->name('services');
-        Route::get('/orders', [MerchantController::class, 'orders'])->name('orders');
-        Route::post('/orders/{id}/update-status', [MerchantController::class, 'updateOrderStatus'])->name('orders.update-status');
-        Route::get('/analytics', [MerchantController::class, 'analytics'])->name('analytics');
-        Route::post('/layanan', [MerchantController::class, 'storeLayanan'])->name('layanan.store');
-        Route::get('/orders/{id}/detail', [MerchantController::class, 'orderDetail'])->name('merchant.orders.detail');
-    });
-
-    // Booking routes
-    Route::get('/booking/{id}', [BookingController::class, 'create'])->name('booking.create');
-    Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
-
-    // Pembayaran routes
-    Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
-    Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
-
-    // Midtrans callback
-    Route::post('pembayaran/callback', [MidtransCallbackController::class, 'handle'])->name('pembayaran.callback');
-
-    // Tambahkan route ini di grup yang sesuai
-    Route::get('/pembayaran/{id}/reset-otp', [PembayaranController::class, 'resetOtpAttempts'])->name('pembayaran.reset-otp');
-
-    // Tambahkan route ini
-    Route::get('/pembayaran/check/{id}', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check');
-    Route::get('/pembayaran/force-check/{id}', [PembayaranController::class, 'forceCheckStatus'])->name('pembayaran.force-check');
+    Route::get('/merchant/register/step2', [MerchantController::class, 'step2'])->name('merchant.register.step2');
+    Route::post('/merchant/register/step2', [MerchantController::class, 'storeStep2'])->name('merchant.register.step2.store');
 });
+
+// Merchant Dashboard Routes (pastikan tidak menggunakan middleware prevent-merchant-reregistration)
+Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->prefix('merchant')->name('merchant.')->group(function () {
+    Route::get('/dashboard', [MerchantController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [MerchantController::class, 'profile'])->name('profile');
+    Route::post('/profile/update', [MerchantController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/services', [MerchantController::class, 'services'])->name('services');
+    Route::get('/orders', [MerchantController::class, 'orders'])->name('orders');
+    Route::post('/orders/{id}/update-status', [MerchantController::class, 'updateOrderStatus'])->name('orders.update-status');
+    Route::get('/analytics', [MerchantController::class, 'analytics'])->name('analytics');
+    Route::post('/layanan', [MerchantController::class, 'storeLayanan'])->name('layanan.store');
+    Route::get('/orders/{id}/detail', [MerchantController::class, 'orderDetail'])->name('merchant.orders.detail');
+});
+
+// Booking routes
+Route::get('/booking/{id}', [BookingController::class, 'create'])->name('booking.create');
+Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+
+// Pembayaran routes
+Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
+Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
+
+// Midtrans callback
+Route::post('pembayaran/callback', [MidtransCallbackController::class, 'handle'])->name('pembayaran.callback');
+
+// Tambahkan route ini di grup yang sesuai
+Route::get('/pembayaran/{id}/reset-otp', [PembayaranController::class, 'resetOtpAttempts'])->name('pembayaran.reset-otp');
+
+// Tambahkan route ini
+Route::get('/pembayaran/check/{id}', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check');
+Route::get('/pembayaran/force-check/{id}', [PembayaranController::class, 'forceCheckStatus'])->name('pembayaran.force-check');
 
 Route::get('/search', [SearchController::class, 'search'])->name('search');
 Route::get('/api/search', [SearchController::class, 'apiSearch'])->name('api.search');
