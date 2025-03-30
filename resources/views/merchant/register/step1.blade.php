@@ -75,18 +75,18 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Usaha <span class="text-red-500">*</span></label>
                                     <select 
-                                        name="id_sub_kategori" 
-                                        id="id_sub_kategori"
+                                        name="id_kategori" 
+                                        id="id_kategori"
                                         class="mt-1 block w-full rounded-lg border-2 border-gray-300 shadow-sm focus:border-homize-blue focus:ring-homize-blue transition duration-200 ease-in-out hover:border-gray-400 placeholder-gray-400 focus:placeholder-gray-500 px-4 py-2"
                                     >
                                         <option value="">Pilih Kategori</option>
-                                        @foreach($subKategori as $kategori)
-                                            <option value="{{ $kategori->id }}" {{ old('id_sub_kategori', $oldData['id_sub_kategori'] ?? '') == $kategori->id ? 'selected' : '' }}>
-                                                {{ $kategori->nama }}
+                                        @foreach($kategori as $kat)
+                                            <option value="{{ $kat->id }}" {{ old('id_kategori', $oldData['id_kategori'] ?? '') == $kat->id ? 'selected' : '' }}>
+                                                {{ $kat->nama }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('id_sub_kategori')
+                                    @error('id_kategori')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -116,7 +116,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const profileInput = document.getElementById('profile_url');
             const namaUsahaInput = document.getElementById('nama_usaha');
-            const kategoriInput = document.getElementById('id_sub_kategori');
+            const kategoriInput = document.getElementById('id_kategori');
             const submitBtn = document.getElementById('submitBtn');
             const imagePreview = document.getElementById('imagePreview');
             const imagePreviewContainer = document.getElementById('imagePreviewContainer');

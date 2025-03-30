@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('jam_operasional', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->foreignId('id_hari')->index('fk_jam_operasional_to_hari');
             $table->time('jam_buka');
             $table->time('jam_tutup');
             $table->timestamps();

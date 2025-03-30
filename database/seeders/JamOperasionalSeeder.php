@@ -18,13 +18,15 @@ class JamOperasionalSeeder extends Seeder
         $hariIds = Hari::pluck('id')->toArray();
 
         foreach ($hariIds as $hariId) {
-            JamOperasional::create([
-                'id_hari' => $hariId,
+            $jamOperasional = JamOperasional::create([
                 'jam_buka' => '08:00:00',
                 'jam_tutup' => '17:00:00',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            // Attach the hari to jam_operasional using the pivot table
+            $jamOperasional->hari()->attach($hariId);
         }
     }
 }

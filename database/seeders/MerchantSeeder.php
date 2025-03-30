@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Merchant;
 use App\Models\User;
-use App\Models\SubKategori;
+use App\Models\Kategori;
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 
@@ -21,13 +21,13 @@ class MerchantSeeder extends Seeder
         $users = User::pluck('id')->toArray();
         $selectedUsers = array_rand(array_flip($users), ceil(count($users) / 2));
 
-        // Get all sub categories
-        $subKategories = SubKategori::all();
+        // Get all categories
+        $kategories = Kategori::all();
 
         $merchants = [];
 
-        // Ensure each subcategory has at least one merchant
-        foreach ($subKategories as $subKategori) {
+        // Ensure each category has at least one merchant
+        foreach ($kategories as $kategori) {
             if (empty($selectedUsers)) break;
 
             $userId = array_pop($selectedUsers);
@@ -36,9 +36,9 @@ class MerchantSeeder extends Seeder
 
             $merchants[] = [
                 'id_user' => $userId,
-                'id_sub_kategori' => $subKategori->id,
+                'id_kategori' => $kategori->id,
                 'nama_usaha' => $faker->randomElement($namaPrefixes) . ' ' .
-                    $subKategori->nama . ' ' .
+                    $kategori->nama . ' ' .
                     $faker->randomElement($namaSuffixes),
                 'profile_url' => $faker->imageUrl(640, 480, 'business'),
                 'alamat' => $faker->address,
@@ -55,13 +55,13 @@ class MerchantSeeder extends Seeder
         // Fill remaining merchants randomly
         while (!empty($selectedUsers)) {
             $userId = array_pop($selectedUsers);
-            $subKategori = $subKategories->random();
+            $kategori = $kategories->random();
 
             $merchants[] = [
                 'id_user' => $userId,
-                'id_sub_kategori' => $subKategori->id,
+                'id_kategori' => $kategori->id,
                 'nama_usaha' => $faker->randomElement(['Jasa', 'Layanan', 'Servis', 'Pro']) . ' ' .
-                    $subKategori->nama . ' ' .
+                    $kategori->nama . ' ' .
                     $faker->randomElement(['Professional', 'Terpercaya', 'Handal', 'Express', 'Gacor']),
                 'profile_url' => $faker->imageUrl(640, 480, 'business'),
                 'alamat' => $faker->address,

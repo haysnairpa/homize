@@ -6,6 +6,7 @@ use App\Models\Merchant;
 use App\Models\SubKategori;
 use App\Models\Booking;
 use App\Models\Status;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Layanan;
@@ -49,24 +50,24 @@ class MerchantController extends Controller
             return redirect()->route('merchant.dashboard')
                 ->with('info', 'Anda sudah terdaftar sebagai merchant');
         }
-        
-        $subKategori = SubKategori::all();
-        
+
+        $kategori = Kategori::all();
+
         // Ambil data dari session jika ada
         $oldData = Session::get('merchant_registration', []);
-        
-        return view('merchant.register.step1', compact('subKategori', 'oldData'));
+
+        return view('merchant.register.step1', compact('kategori', 'oldData'));
     }
 
     public function storeStep1(Request $request)
     {
         $validated = $request->validate([
             'nama_usaha' => 'required|string|max:255',
-            'id_sub_kategori' => 'required|exists:sub_kategori,id',
+            'id_kategori' => 'required|exists:kategori,id',
             'profile_url' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ], [
             'nama_usaha.required' => 'Nama usaha wajib diisi',
-            'id_sub_kategori.required' => 'Kategori usaha wajib dipilih',
+            'id_kategori.required' => 'Kategori usaha wajib dipilih',
             'profile_url.required' => 'Foto profil usaha wajib diunggah',
             'profile_url.image' => 'File harus berupa gambar',
             'profile_url.mimes' => 'Format gambar harus jpeg, png, atau jpg',
@@ -79,10 +80,10 @@ class MerchantController extends Controller
         // Simpan data ke session
         $merchantData = [
             'nama_usaha' => $validated['nama_usaha'],
-            'id_sub_kategori' => $validated['id_sub_kategori'],
+            'id_kategori' => $validated['id_kategori'],
             'profile_url' => $profilePath,
         ];
-        
+
         Session::put('merchant_registration', $merchantData);
 
         return redirect()->route('merchant.register.step2');
@@ -95,9 +96,9 @@ class MerchantController extends Controller
             return redirect()->route('merchant.register.step1')
                 ->with('error', 'Silakan isi informasi dasar terlebih dahulu');
         }
-        
+
         $merchantData = Session::get('merchant_registration');
-        
+
         return view('merchant.register.step2', compact('merchantData'));
     }
 
@@ -121,12 +122,12 @@ class MerchantController extends Controller
 
         // Ambil data dari session
         $merchantData = Session::get('merchant_registration');
-        
+
         // Buat merchant baru
         $merchant = new Merchant();
         $merchant->id_user = Auth::id();
         $merchant->nama_usaha = $merchantData['nama_usaha'];
-        $merchant->id_sub_kategori = $merchantData['id_sub_kategori'];
+        $merchant->id_kategori = $merchantData['id_kategori'];
         $merchant->profile_url = $merchantData['profile_url'];
         $merchant->alamat = $validated['alamat'];
         $merchant->media_sosial = json_encode([
@@ -238,7 +239,7 @@ class MerchantController extends Controller
 
         $validated = $request->validate([
             'nama_usaha' => 'required|string|max:255',
-            'id_sub_kategori' => 'required|exists:sub_kategori,id',
+            'id_kategori' => 'required|exists:kategori,id',
             'alamat' => 'required|string',
             'instagram' => 'nullable|string',
             'facebook' => 'nullable|string',
@@ -252,7 +253,7 @@ class MerchantController extends Controller
         }
 
         $merchant->nama_usaha = $validated['nama_usaha'];
-        $merchant->id_sub_kategori = $validated['id_sub_kategori'];
+        $merchant->id_kategori = $validated['id_kategori'];
         $merchant->alamat = $validated['alamat'];
         $merchant->media_sosial = json_encode([
             'instagram' => $validated['instagram'] ?? '',
@@ -269,7 +270,8 @@ class MerchantController extends Controller
     {
         $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
         $layanan = Layanan::where('id_merchant', $merchant->id)->get();
-        return view('merchant.services', compact('merchant', 'layanan'));
+        $subKategori = SubKategori::where('id_kategori', $merchant->id_kategori)->get();
+        return view('merchant.services', compact('merchant', 'layanan', 'subKategori'));
     }
 
     public function orders()
@@ -355,24 +357,24 @@ class MerchantController extends Controller
         if ($requestedStatus == 'Completed') {
             // Load relasi yang dibutuhkan
             $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
-            
+
             Log::info('Akan memicu event OrderCompleted', [
                 'booking_id' => $booking->id
             ]);
-            
+
             // Trigger event OrderCompleted
             event(new OrderCompleted($booking));
-            
+
             Log::info('Event OrderCompleted berhasil dipicu', [
                 'booking_id' => $booking->id
             ]);
-            
+
             // // Alternatif: Kirim email langsung jika event tidak berfungsi
             // try {
             //     if ($booking->user) {
             //         Mail::to($booking->user->email)
             //             ->send(new OrderCompletedNotification($booking));
-                    
+
             //         Log::info('Email notifikasi pesanan selesai berhasil dikirim langsung', [
             //             'booking_id' => $booking->id,
             //             'user_email' => $booking->user->email
@@ -449,47 +451,46 @@ class MerchantController extends Controller
         return view('merchant.analytics', compact('merchant', 'monthlyStats'));
     }
 
-    public function storeLayanan(CreateLayananRequest $request)
+    public function storeLayanan(Request $request)
     {
         try {
             DB::beginTransaction();
 
-            // Validasi merchant
-            $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+            // Get the merchant
+            $merchant = Auth::user()->merchant;
 
-            // Validasi data sebelum create
-            if (!isset($request->jam_operasional['hari']) || !isset($request->jam_operasional['jam_buka']) || !isset($request->jam_operasional['jam_tutup'])) {
-                throw new \Exception('Data jam operasional tidak lengkap');
+            // Validate sub-kategori belongs to merchant's kategori
+            $subKategori = SubKategori::findOrFail($request->id_sub_kategori);
+            if ($subKategori->id_kategori !== $merchant->id_kategori) {
+                throw new \Exception('Sub kategori tidak sesuai dengan kategori merchant Anda.');
             }
 
-            // Create jam operasional
+            // Create jam_operasional record
             $jamOperasional = JamOperasional::create([
-                'id_hari' => $request->jam_operasional['hari'],
                 'jam_buka' => $request->jam_operasional['jam_buka'],
                 'jam_tutup' => $request->jam_operasional['jam_tutup']
             ]);
 
-            // Create layanan
+            // Attach multiple hari to jam_operasional
+            if (isset($request->jam_operasional['hari']) && is_array($request->jam_operasional['hari'])) {
+                $jamOperasional->hari()->attach($request->jam_operasional['hari']);
+            }
+
+            // Create layanan record with id_merchant
             $layanan = Layanan::create([
-                'id_merchant' => $merchant->id,
-                'id_jam_operasional' => $jamOperasional->id,
-                'id_sub_kategori' => $merchant->id_sub_kategori,
                 'nama_layanan' => $request->nama_layanan,
                 'deskripsi_layanan' => $request->deskripsi_layanan,
-                'pengalaman' => $request->pengalaman
+                'id_sub_kategori' => $request->id_sub_kategori,
+                'id_jam_operasional' => $jamOperasional->id,
+                'id_merchant' => $merchant->id,
+                'pengalaman' => $request->pengalaman ?? 0
             ]);
 
-            // Create layanan merchant
-            LayananMerchant::create([
-                'id_layanan' => $layanan->id,
-                'id_merchant' => $merchant->id
-            ]);
-
-            // Cek apakah ada revisi
-            $revisiId = 1; // Default revision ID
-            if ($request->has('revisi_harga') && $request->has('revisi_durasi') && $request->has('revisi_tipe_durasi')) {
-                // Create revisi baru
+            // Handle revisi if enabled
+            $revisiId = null;
+            if ($request->has('enable_revisi') && $request->enable_revisi) {
                 $revisi = Revisi::create([
+                    'id_layanan' => $layanan->id,
                     'harga' => $request->revisi_harga,
                     'durasi' => $request->revisi_durasi,
                     'tipe_durasi' => $request->revisi_tipe_durasi
@@ -497,37 +498,40 @@ class MerchantController extends Controller
                 $revisiId = $revisi->id;
             }
 
-            // Create tarif layanan
+            // Create tarif_layanan record with id_revisi
             TarifLayanan::create([
                 'id_layanan' => $layanan->id,
-                'id_revisi' => $revisiId,
                 'harga' => $request->harga,
-                'satuan' => $request->satuan,
                 'durasi' => $request->durasi,
-                'tipe_durasi' => $request->tipe_durasi
+                'tipe_durasi' => $request->tipe_durasi,
+                'satuan' => $request->satuan,
+                'id_revisi' => $revisiId
             ]);
 
-            // Handle aset uploads
+            // Handle aset (images)
             if ($request->hasFile('aset_layanan')) {
                 foreach ($request->file('aset_layanan') as $file) {
-                    $path = $file->store('layanan-assets', 'public');
+                    $path = $file->store('layanan-images', 'public');
                     Aset::create([
                         'id_layanan' => $layanan->id,
-                        'deskripsi' => $file->getClientOriginalName(),
-                        'media_url' => $path
+                        'media_url' => $path,
+                        'deskripsi' => $request->nama_layanan  // Add default description
                     ]);
                 }
             }
 
-            // Handle sertifikasi uploads
+            // Handle sertifikasi
             if ($request->has('sertifikasi')) {
                 foreach ($request->sertifikasi as $sertifikasi) {
-                    if (isset($sertifikasi['file'])) {
-                        $path = $sertifikasi['file']->store('layanan-certificates', 'public');
+                    if (!empty($sertifikasi['nama'])) {
+                        $filePath = null;
+                        if (isset($sertifikasi['file']) && $sertifikasi['file']) {
+                            $filePath = $sertifikasi['file']->store('sertifikasi', 'public');
+                        }
                         Sertifikasi::create([
                             'id_layanan' => $layanan->id,
-                            'nama_sertifikasi' => $sertifikasi['nama'],
-                            'media_url' => $path
+                            'nama' => $sertifikasi['nama'],
+                            'file_url' => $filePath
                         ]);
                     }
                 }
@@ -535,21 +539,10 @@ class MerchantController extends Controller
 
             DB::commit();
 
-            // Log success untuk debugging
-            Log::info('Layanan berhasil dibuat', [
-                'id_merchant' => $merchant->id,
-                'nama_layanan' => $request->nama_layanan
-            ]);
-
-            return redirect()->route('merchant.services')
-                ->with('success', 'Layanan berhasil ditambahkan! Silakan cek di daftar layanan Anda.');
+            return redirect()->back()->with('success', 'Layanan berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating layanan: ' . $e->getMessage());
-
-            return back()
-                ->withInput()
-                ->with('error', 'Gagal menambahkan layanan: ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
@@ -723,5 +716,12 @@ class MerchantController extends Controller
         $html = view('merchant.partials.layanan-grid', compact('layanan'))->render();
 
         return response()->json(['html' => $html]);
+    }
+
+    public function showAddLayananForm()
+    {
+        $merchant = Auth::user()->merchant;
+        $subKategori = SubKategori::where('id_kategori', $merchant->id_kategori)->get();
+        return view('merchant.components.add-layanan', compact('subKategori', 'merchant'));
     }
 }

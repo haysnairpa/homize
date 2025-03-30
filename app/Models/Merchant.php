@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Merchant extends Model
 {
-    public $table = 'merchant';
+    protected $table = 'merchant';
     protected $primaryKey = 'id';
     protected $fillable = [
         'id_user',
-        'id_sub_kategori',
         'nama_usaha',
+        'id_kategori',
         'profile_url',
         'alamat',
         'media_sosial',
@@ -43,13 +43,13 @@ class Merchant extends Model
     // one to one from merchant to user
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user', 'id');
+        return $this->belongsTo(User::class, 'id_user');
     }
 
-    // one to one from merchant to sub_kategori
-    public function sub_kategori()
+    // one to one from merchant to kategori
+    public function kategori()
     {
-        return $this->belongsTo(SubKategori::class, 'id_sub_kategori', 'id');
+        return $this->belongsTo(Kategori::class, 'id_kategori');
     }
 
     // Relasi untuk user yang memfavoritkan
