@@ -15,6 +15,7 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MidtransCallbackController;
 use App\Http\Controllers\RatingController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -106,4 +107,22 @@ Route::get('/merchant/{id}/sort', [MerchantController::class, 'sortLayanan'])->n
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/rating/{id}', [RatingController::class, 'create'])->name('user.rating.create');
     Route::post('/rating/{id}', [RatingController::class, 'store'])->name('user.rating.store');
+});
+
+// Admin Routes
+Route::prefix('admin')->name('admin.')->group(function () {
+    
+    Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AdminController::class, 'login'])->name('login.post');
+    
+     // Protected admin routes
+     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/merchants', [AdminController::class, 'merchants'])->name('merchants');
+        Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
+        Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions');
+    });
+
+
 });
