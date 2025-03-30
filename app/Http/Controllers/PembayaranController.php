@@ -115,13 +115,10 @@ class PembayaranController extends Controller
 
         // Konfigurasi payment berdasarkan metode yang dipilih
         $enabled_payments = [];
-        $bank_name = '';
-        $va_number = '';
 
         switch ($paymentMethod) {
             case 'bank_transfer':
                 $enabled_payments = ['bca_va', 'bni_va', 'bri_va', 'permata_va'];
-                $bank_name = 'BCA/BNI/BRI/Permata';
                 break;
             case 'e_wallet':
                 $enabled_payments = ['gopay', 'shopeepay'];
@@ -134,8 +131,9 @@ class PembayaranController extends Controller
                 break;
             default:
                 $enabled_payments = ['bca_va', 'bni_va', 'bri_va', 'permata_va'];
-                $bank_name = 'BCA/BNI/BRI/Permata';
         }
+
+        
 
         $transaction = [
             'transaction_details' => $transaction_details,
@@ -143,6 +141,7 @@ class PembayaranController extends Controller
             'item_details' => $item_details,
             'enabled_payments' => $enabled_payments
         ];
+
 
         try {
             // Dapatkan Snap Token
@@ -154,16 +153,10 @@ class PembayaranController extends Controller
                 'snap_token' => $snapToken,
             ]);
 
-            // Jika metode pembayaran adalah bank transfer, kita bisa langsung menampilkan halaman instruksi
-            if ($paymentMethod == 'bank_transfer') {
-                // VA Statis for demo
-                $va_number = '80777081386348589';
-                return view('pembayaran.process', compact('booking', 'pembayaran', 'snapToken', 'bank_name', 'va_number'));
-            } else {
-                // Untuk metode lain, kita gunakan Snap popup
-                return view('pembayaran.process_popup', compact('booking', 'pembayaran', 'snapToken'));
-            }
+            // Untuk semua metode pembayaran, gunakan Snap popup
+            return view('pembayaran.process_popup', compact('booking', 'pembayaran', 'snapToken'));
         } catch (\Exception $e) {
+            Log::error('Midtrans error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -707,5 +700,130 @@ class PembayaranController extends Controller
         
         return redirect()->route('pembayaran.process_popup', $booking->id)
             ->with('success', 'Percobaan OTP telah direset. Silakan coba lagi.');
+    }
+
+    public function getVaNumber($id)
+    {
+        // Ambil data booking
+        $booking = Booking::with(['pembayaran'])->findOrFail($id);
+        
+        // Cek apakah booking milik user yang login
+        if ($booking->id_user != Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        
+        // Cek apakah ada order_id
+        if (!$booking->pembayaran->order_id) {
+            return response()->json(['error' => 'Belum ada transaksi'], 400);
+        }
+        
+        try {
+            // Set konfigurasi Midtrans
+            \Midtrans\Config::$serverKey = config('midtrans.server_key');
+            \Midtrans\Config::$isProduction = config('midtrans.is_production');
+            
+            // Get transaction status dari Midtrans
+            $status = \Midtrans\Transaction::status($booking->pembayaran->order_id);
+            
+            // Log untuk debugging
+            Log::info('Transaction status for VA number:', [
+                'order_id' => $booking->pembayaran->order_id,
+                'status' => $status
+            ]);
+            
+            // Cek apakah ada VA number
+            $va_number = null;
+            
+            if (isset($status->va_numbers) && !empty($status->va_numbers)) {
+                $va_number = $status->va_numbers[0]->va_number;
+            } elseif (isset($status->permata_va_number)) {
+                $va_number = $status->permata_va_number;
+            } elseif (isset($status->bill_key)) {
+                // Untuk Mandiri Bill Payment
+                $va_number = $status->bill_key;
+            } elseif (isset($status->payment_code)) {
+                // Untuk Indomaret/Alfamart
+                $va_number = $status->payment_code;
+            } elseif (isset($status->qr_string)) {
+                // Untuk QRIS
+                $va_number = 'QRIS Code tersedia di halaman Midtrans';
+            }
+            
+            return response()->json([
+                'va_number' => $va_number,
+                'bank' => isset($status->va_numbers) ? $status->va_numbers[0]->bank : (isset($status->permata_va_number) ? 'permata' : null),
+                'payment_type' => $status->payment_type ?? null
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting VA number: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function showQris($id)
+    {
+        // Ambil data booking
+        $booking = Booking::with(['user', 'merchant', 'layanan', 'pembayaran'])
+            ->findOrFail($id);
+
+        // Cek apakah booking milik user yang login
+        if ($booking->id_user != Auth::id()) {
+            return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini');
+        }
+
+        // Ambil data pembayaran
+        $pembayaran = $booking->pembayaran;
+
+        // Cek apakah pembayaran sudah selesai
+        if ($pembayaran->status->nama_status == 'Payment Completed') {
+            return redirect()->route('dashboard')->with('info', 'Pembayaran sudah selesai');
+        }
+
+        // Buat transaksi di Midtrans khusus untuk QRIS
+        $transaction_details = [
+            'order_id' => 'HOMIZE-' . $booking->id . '-' . time(),
+            'gross_amount' => $pembayaran->amount,
+        ];
+
+        $customer_details = [
+            'first_name' => $booking->user->name,
+            'email' => $booking->user->email,
+        ];
+
+        $item_details = [
+            [
+                'id' => $booking->layanan->id,
+                'price' => $pembayaran->amount,
+                'quantity' => 1,
+                'name' => $booking->layanan->nama_layanan,
+            ]
+        ];
+
+        // Konfigurasi khusus untuk QRIS
+        $transaction = [
+            'transaction_details' => $transaction_details,
+            'customer_details' => $customer_details,
+            'item_details' => $item_details,
+            'enabled_payments' => ['qris'],
+        ];
+
+        try {
+            // Dapatkan Snap Token
+            $snapToken = Snap::getSnapToken($transaction);
+
+            // Update order_id dan snap_token di tabel pembayaran
+            $pembayaran->update([
+                'order_id' => $transaction_details['order_id'],
+                'snap_token' => $snapToken,
+                'method' => 'qris',
+            ]);
+
+            // Render view dengan snap token
+            return view('pembayaran.qris', compact('booking', 'pembayaran', 'snapToken'));
+
+        } catch (\Exception $e) {
+            Log::error('Midtrans QRIS error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }

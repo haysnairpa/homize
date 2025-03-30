@@ -91,9 +91,13 @@
                 // Buka Snap popup dengan token yang sudah ada
                 snap.pay('{{ $pembayaran->snap_token }}', {
                     onSuccess: function(result) {
+                        // Setelah pembayaran berhasil, ambil VA number jika ada
+                        fetchVaNumber();
                         window.location.href = "{{ route('dashboard') }}?status=success";
                     },
                     onPending: function(result) {
+                        // Jika pending (terutama untuk VA/QRIS), ambil VA number
+                        fetchVaNumber();
                         window.location.href = "{{ route('dashboard') }}?status=pending";
                     },
                     onError: function(result) {
@@ -130,6 +134,22 @@
                     }
                 });
             });
+            
+            // Fungsi untuk mengambil VA number
+            function fetchVaNumber() {
+                fetch('{{ route("pembayaran.va-number", $booking->id) }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.va_number) {
+                            // Simpan VA number ke localStorage untuk digunakan di halaman lain
+                            localStorage.setItem('va_number_{{ $booking->id }}', data.va_number);
+                            localStorage.setItem('bank_{{ $booking->id }}', data.bank);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching VA number:', error);
+                    });
+            }
         });
 
         function checkPaymentStatus() {

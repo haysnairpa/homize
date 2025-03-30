@@ -24,11 +24,11 @@
         }
     </style>
 </head>
+<div class="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
+    @include('components.navigation')
+</div>
 <body class="font-sans antialiased bg-homize-gray">
     @auth
-        <div class="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
-            @include('components.navigation')
-        </div>
 
         <div class="nav-spacer"></div>
 
@@ -362,19 +362,13 @@
                     </svg>
                     <span class="text-xs mt-1">Beranda</span>
                 </a>
-                <a href="#" class="flex-1 flex flex-col items-center py-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <span class="text-xs mt-1">Cari</span>
-                </a>
-                <a href="#" class="flex-1 flex flex-col items-center py-3">
+                <a href="{{ route('transactions') }}" class="flex-1 flex flex-col items-center py-3">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span class="text-xs mt-1">Pesanan</span>
                 </a>
-                <a href="#" class="flex-1 flex flex-col items-center py-3">
+                <a href="{{ route('dashboard') }}" class="flex-1 flex flex-col items-center py-3">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>

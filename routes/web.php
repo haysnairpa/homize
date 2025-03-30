@@ -110,3 +110,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 // Tambahkan route ini di bawah route home
 Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filterLayanan'])->name('home.filter');
+
+Route::get('/pembayaran/{id}/va-number', [PembayaranController::class, 'getVaNumber'])->name('pembayaran.va-number');
+
+Route::get('/pembayaran/{id}/qris', [PembayaranController::class, 'showQris'])->name('pembayaran.qris');
