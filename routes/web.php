@@ -107,3 +107,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/rating/{id}', [RatingController::class, 'create'])->name('user.rating.create');
     Route::post('/rating/{id}', [RatingController::class, 'store'])->name('user.rating.store');
 });
+
+// Tambahkan route ini di bawah route home
+Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filterLayanan'])->name('home.filter');
