@@ -42,6 +42,27 @@ class BookingController extends Controller
             ->leftJoin('hari as h', 'joh.id_hari', '=', 'h.id')
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
             ->where('l.id', $id)
+            ->groupBy([
+                'l.id',
+                'l.id_merchant',
+                'l.id_jam_operasional',
+                'l.nama_layanan',
+                'l.deskripsi_layanan',
+                'l.pengalaman',
+                'l.created_at',
+                'l.updated_at',
+                'm.id',
+                'm.nama_usaha',
+                'm.profile_url',
+                'm.alamat',
+                'jo.jam_buka',
+                'jo.jam_tutup',
+                'tl.harga',
+                'tl.satuan',
+                'tl.durasi',
+                'tl.tipe_durasi',
+                'tl.id_revisi'
+            ])
             ->first();
 
         if (!$layanan) {
