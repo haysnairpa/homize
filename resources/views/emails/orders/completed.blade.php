@@ -1,4 +1,4 @@
-@component('mail::message')
+<x-mail::message>
 <div style="text-align: center; margin-bottom: 30px;">
     <img src="{{ asset('images/homizelogoblue.png') }}" alt="Homize Logo" style="max-height: 50px; margin-bottom: 20px;">
     <h1 style="color: #30a0e0; margin: 0; font-size: 24px; font-weight: 700;">Pesanan Anda Sudah Beres! 🎉</h1>
@@ -33,13 +33,13 @@
 
 <div style="text-align: center; margin-bottom: 25px;">
     <p style="font-size: 16px;">Kami harap Anda puas dengan layanan ini! Yuk, bantu penyedia layanan terus berkembang dengan memberikan rating dan ulasan. ✨</p>
-    @component('mail::button', ['url' => route('user.rating.create', $booking->id), 'color' => 'primary'])
+    <x-mail::button :url="route('user.rating.create', $booking->id)" color="primary">
     Berikan Rating & Ulasan
-    @endcomponent
+    </x-mail::button>
 </div>
 
 <div style="text-align: center; margin-top: 30px; color: #6B7280; font-size: 14px;">
     <p>Terima kasih sudah mempercayai Homize! Sampai jumpa di pesanan berikutnya. 🚀</p>
     <p style="margin-bottom: 0;">Homize</p>
 </div>
-@endcomponent
+</x-mail::message>

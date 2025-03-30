@@ -23,7 +23,7 @@ class OrderCompletedNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Pesanan Selesai: #' . $this->booking->id,
+            subject: 'Pesanan #' . $this->booking->id . ' Telah Selesai',
         );
     }
 

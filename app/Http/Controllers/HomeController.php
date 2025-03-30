@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Layanan;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\ShopServices;
@@ -33,11 +34,13 @@ class HomeController extends Controller
                 'l.*',
                 'tl.harga',
                 'tl.satuan', 
+                'a.media_url as gambar',
                 DB::raw('COALESCE(AVG(r.rate), 0) as rating_avg'),
                 DB::raw('COUNT(DISTINCT r.id) as rating_count')
             ])
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
             ->leftJoin('rating as r', 'l.id', '=', 'r.id_layanan')
+            ->leftJoin('aset as a', 'l.id', '=', 'a.id_layanan')
             ->groupBy([
                 'l.id',
                 'l.id_merchant',
@@ -49,11 +52,15 @@ class HomeController extends Controller
                 'l.created_at',
                 'l.updated_at',
                 'tl.harga',
-                'tl.satuan'
+                'tl.satuan',
+                'a.media_url'
             ])
             ->orderBy('rating_avg', 'desc')
             ->limit(8)
             ->get();
+            
+        // Ambil semua kategori untuk filter
+        $allKategori = Kategori::all();
 
         $wishlists = [];
         if (Auth::check()) {
@@ -78,16 +85,88 @@ class HomeController extends Controller
         }
 
         // Share the navigation data with all views
-        view()->share([
+        $sharedData = [
             'kategori' => $kategori,
             'sub_kategori' => $sub_kategori,
             'navigation' => $navigation,
             'bottomNavigation' => $bottomNavigation,
             'ids' => $ids,
             'layanan' => $layanan,
-            'wishlists' => $wishlists
-        ]);
+            'wishlists' => $wishlists,
+            'allKategori' => $allKategori
+        ];
+        
+        view()->share($sharedData);
 
-        return view('home.home', compact('kategori', 'sub_kategori', 'navigation', 'bottomNavigation', 'ids', 'layanan', 'wishlists'));
+        return view('home.home', $sharedData);
+    }
+    
+    public function filterLayanan(Request $request)
+    {
+        $kategoriId = $request->kategori_id;
+        $sortBy = $request->sort_by;
+        $minPrice = $request->min_price;
+        $maxPrice = $request->max_price;
+        
+        $query = DB::table('layanan as l')
+            ->select([
+                'l.*',
+                'tl.harga',
+                'tl.satuan', 
+                'sk.id_kategori',
+                DB::raw('COALESCE(AVG(r.rate), 0) as rating_avg'),
+                DB::raw('COUNT(DISTINCT r.id) as rating_count')
+            ])
+            ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
+            ->leftJoin('rating as r', 'l.id', '=', 'r.id_layanan')
+            ->leftJoin('sub_kategori as sk', 'l.id_sub_kategori', '=', 'sk.id');
+            
+        if ($kategoriId) {
+            $query->where('sk.id_kategori', $kategoriId);
+        }
+        
+        if ($minPrice) {
+            $query->where('tl.harga', '>=', $minPrice);
+        }
+        
+        if ($maxPrice) {
+            $query->where('tl.harga', '<=', $maxPrice);
+        }
+        
+        $query->groupBy([
+            'l.id',
+            'l.id_merchant',
+            'l.id_jam_operasional',
+            'l.id_sub_kategori', 
+            'l.nama_layanan',
+            'l.deskripsi_layanan',
+            'l.pengalaman',
+            'l.created_at',
+            'l.updated_at',
+            'tl.harga',
+            'tl.satuan',
+            'sk.id_kategori'
+        ]);
+        
+        switch ($sortBy) {
+            case 'price_asc':
+                $query->orderBy('tl.harga', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('tl.harga', 'desc');
+                break;
+            case 'rating':
+                $query->orderBy('rating_avg', 'desc');
+                break;
+            default:
+                $query->orderBy('l.created_at', 'desc');
+                break;
+        }
+        
+        $layanan = $query->limit(20)->get();
+        
+        return response()->json([
+            'html' => view('home.partials.layanan-grid', compact('layanan'))->render()
+        ]);
     }
 }

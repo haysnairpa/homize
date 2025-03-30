@@ -8,4 +8,11 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        hmr: {
+            host: 'localhost',
+        },
+    },
+    // Tambahkan ini untuk mengizinkan akses dari host eksternal
+    base: '',
 });

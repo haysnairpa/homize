@@ -7,6 +7,18 @@
 
     <div class="py-12 bg-homize-gray">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if(session('info'))
+            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+                <p>{{ session('info') }}</p>
+            </div>
+            @endif
+
+            @if(session('success'))
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+                <p>{{ session('success') }}</p>
+            </div>
+            @endif
+
             <!-- Stats Section -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-homize-blue">
