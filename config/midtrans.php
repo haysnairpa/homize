@@ -9,4 +9,6 @@ return [
     'is_sanitized' => env('MIDTRANS_IS_SANITIZED', true),
     'is_3ds' => env('MIDTRANS_IS_3DS', true),
     'max_otp_attempts' => env('MIDTRANS_MAX_OTP_ATTEMPTS', 3),
+    'qris_enabled' => env('MIDTRANS_QRIS_ENABLED', true),
+    'qris_acquirer' => env('MIDTRANS_QRIS_ACQUIRER', 'gopay'),
 ];

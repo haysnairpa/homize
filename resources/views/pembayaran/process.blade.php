@@ -44,7 +44,13 @@
                             <div class="flex justify-between items-center mb-2">
                                 <span class="text-gray-600">Nomor Virtual Account</span>
                                 <div class="flex items-center">
-                                    <span id="va-number" class="font-medium text-gray-800">{{ $va_number ?? '80777081386348589' }}</span>
+                                    <span id="va-number" class="font-medium text-gray-800">
+                                        @if(isset($va_number) && !empty($va_number))
+                                            {{ $va_number }}
+                                        @else
+                                            <span class="text-gray-400">Menunggu nomor VA dari Midtrans...</span>
+                                        @endif
+                                    </span>
                                     <button onclick="copyToClipboard('va-number')" class="ml-2 text-homize-blue hover:text-homize-blue-second">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -195,6 +201,47 @@
                 minutesElement.textContent = minutes < 10 ? '0' + minutes : minutes;
                 secondsElement.textContent = seconds < 10 ? '0' + seconds : seconds;
             }, 1000);
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cek apakah ada VA number di localStorage
+            const vaNumber = localStorage.getItem('va_number_{{ $booking->id }}');
+            const bank = localStorage.getItem('bank_{{ $booking->id }}');
+            
+            if (vaNumber) {
+                document.getElementById('va-number').textContent = vaNumber;
+            }
+            
+            if (bank) {
+                // Update bank name jika ada
+                const bankElements = document.querySelectorAll('.bank-name');
+                bankElements.forEach(element => {
+                    element.textContent = bank.toUpperCase();
+                });
+            }
+            
+            // Jika tidak ada VA number, coba ambil dari server
+            if (!vaNumber) {
+                fetch('{{ route("pembayaran.va-number", $booking->id) }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.va_number) {
+                            document.getElementById('va-number').textContent = data.va_number;
+                            localStorage.setItem('va_number_{{ $booking->id }}', data.va_number);
+                            
+                            if (data.bank) {
+                                const bankElements = document.querySelectorAll('.bank-name');
+                                bankElements.forEach(element => {
+                                    element.textContent = data.bank.toUpperCase();
+                                });
+                                localStorage.setItem('bank_{{ $booking->id }}', data.bank);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching VA number:', error);
+                    });
+            }
         });
     </script>
 </body>

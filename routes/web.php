@@ -109,6 +109,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/rating/{id}', [RatingController::class, 'store'])->name('user.rating.store');
 });
 
+// Tambahkan route ini di bawah route home
+Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filterLayanan'])->name('home.filter');
+
+Route::get('/pembayaran/{id}/va-number', [PembayaranController::class, 'getVaNumber'])->name('pembayaran.va-number');
+
+Route::get('/pembayaran/{id}/qris', [PembayaranController::class, 'showQris'])->name('pembayaran.qris');
+
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     
