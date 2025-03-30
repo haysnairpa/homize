@@ -41,6 +41,12 @@ Route::middleware([
     Route::get('/merchant', function () {
         return view('merchant');
     })->name('merchant');
+
+    // Transaction routes
+    Route::get('/user/transactions', [DashboardController::class, 'transactions'])->name('user.transactions');
+    Route::get('/user/transactions/filter', [DashboardController::class, 'filterTransactions'])->name('user.transactions.filter');
+    Route::get('/user/transactions/filter-by-date', [DashboardController::class, 'filterTransactionsByDate'])->name('user.transactions.filter-by-date');
+    Route::get('/user/transactions/{id}', [DashboardController::class, 'transactionDetail'])->name('user.transaction.detail');
 });
 
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
