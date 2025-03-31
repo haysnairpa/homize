@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Layanan;
+use App\Models\LayananView;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class LayananController extends Controller
 {
@@ -72,6 +74,14 @@ class LayananController extends Controller
             2 => $ratings->where('rate', 2)->count(),
             1 => $ratings->where('rate', 1)->count(),
         ];
+
+        // Catat view
+        LayananView::create([
+            'id_layanan' => $layanan->id,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'id_user' => Auth::id()
+        ]);
 
         return view('layanan.detail', compact('layanan', 'ratings', 'ratingStats'));
     }
