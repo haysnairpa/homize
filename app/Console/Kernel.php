@@ -5,6 +5,7 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Jobs\CheckExpiredPayments;
+use App\Console\Commands\CreateAdminCommand;
 
 class Kernel extends ConsoleKernel
 {
@@ -13,4 +14,8 @@ class Kernel extends ConsoleKernel
         // Jalankan job setiap jam untuk cek pembayaran yang expired
         $schedule->job(new CheckExpiredPayments)->hourly();
     }
+
+    protected $commands = [
+        CreateAdminCommand::class,
+    ];
 }

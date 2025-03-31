@@ -22,5 +22,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'merchant' => \App\Http\Middleware\MerchantMiddleware::class,
         'prevent-merchant-reregistration' => \App\Http\Middleware\PreventMerchantReregistration::class,
+        'admin' => \App\Http\Middleware\AdminMiddleware::class
     ];
 } 

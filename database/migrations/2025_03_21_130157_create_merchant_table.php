@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('merchant', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_user')->index('fk_merchant_to_user');
-            $table->foreignId('id_sub_kategori')->index('fk_merchant_to_sub_kategori');
+            $table->foreignId('id_user')->constrained('users')->onDelete('cascade');
             $table->string('nama_usaha');
+            $table->foreignId('id_kategori')->constrained('kategori')->onDelete('cascade');
             $table->string('profile_url');
-            $table->string('alamat');
-            $table->string('media_sosial');
+            $table->text('alamat');
+            $table->json('media_sosial');
             $table->timestamps();
         });
     }

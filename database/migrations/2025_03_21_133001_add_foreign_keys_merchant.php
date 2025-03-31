@@ -12,8 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('merchant', function (Blueprint $table) {
-            $table->foreign('id_user')->index('fk_merchant_to_user')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('id_sub_kategori')->index('fk_merchant_to_sub_kategori')->references('id')->on('sub_kategori')->onDelete('cascade');
+            $table->foreign('id_user', 'fk_merchant_to_user')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
+
+            $table->foreign('id_kategori', 'fk_merchant_to_kategori')
+                ->references('id')
+                ->on('kategori')
+                ->onDelete('cascade');
         });
     }
 
@@ -23,8 +30,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('merchant', function (Blueprint $table) {
-            $table->dropForeign("fk_merchant_to_user");
-            $table->dropForeign("fk_merchant_to_sub_kategori");
+            $table->dropForeign('fk_merchant_to_user');
+            $table->dropForeign('fk_merchant_to_kategori');
         });
     }
 };

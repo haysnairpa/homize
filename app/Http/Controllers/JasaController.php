@@ -26,7 +26,7 @@ class JasaController extends Controller
                 'm.alamat',
                 'jo.jam_buka',
                 'jo.jam_tutup',
-                'jo.id_hari',
+                DB::raw('GROUP_CONCAT(DISTINCT h.nama_hari ORDER BY h.id) as hari'),
                 'sk.nama as kategori_nama',
                 'tl.harga',
                 'tl.satuan',
@@ -37,6 +37,8 @@ class JasaController extends Controller
             ->join('merchant as m', 'l.id_merchant', '=', 'm.id')
             ->join('sub_kategori as sk', 'l.id_sub_kategori', '=', 'sk.id')
             ->join('jam_operasional as jo', 'l.id_jam_operasional', '=', 'jo.id')
+            ->leftJoin('jam_operasional_hari as joh', 'jo.id', '=', 'joh.id_jam_operasional')
+            ->leftJoin('hari as h', 'joh.id_hari', '=', 'h.id')
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
             ->leftJoin('rating as r', 'l.id', '=', 'r.id_layanan')
             ->where('l.id_sub_kategori', $ids)
@@ -51,7 +53,6 @@ class JasaController extends Controller
                 'm.alamat',
                 'jo.jam_buka',
                 'jo.jam_tutup',
-                'jo.id_hari',
                 'sk.nama',
                 'tl.harga',
                 'tl.satuan',
@@ -61,10 +62,10 @@ class JasaController extends Controller
 
         // Get the category name for display
         $kategoriData = SubKategori::find($ids);
-        
+
         // Get navigation data
         app(HomeController::class)->navigation_data();
-        
+
         return view('jasa.index', [
             'jasa' => $jasa,
             'kategoriData' => $kategoriData

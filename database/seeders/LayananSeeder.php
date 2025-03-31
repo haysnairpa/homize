@@ -6,6 +6,7 @@ use App\Models\Layanan;
 use App\Models\Merchant;
 use App\Models\JamOperasional;
 use App\Models\SubKategori;
+use App\Models\Kategori;
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 
@@ -28,10 +29,13 @@ class LayananSeeder extends Seeder
         // First, ensure each merchant has services
         foreach ($merchants as $merchant) {
             $numServices = rand(3, 5);
-            $subKategori = SubKategori::find($merchant->id_sub_kategori);
+            // Get sub-categories that belong to the merchant's kategori
+            $subKategori = SubKategori::where('id_kategori', $merchant->id_kategori)->inRandomOrder()->first();
 
-            // Generate service names based on sub-category
-            $this->generateServicesForSubCategory($layanan, $merchant, $subKategori, $jamOperasional, $numServices, $faker);
+            if ($subKategori) {
+                // Generate service names based on sub-category
+                $this->generateServicesForSubCategory($layanan, $merchant, $subKategori, $jamOperasional, $numServices, $faker);
+            }
         }
 
         // Then, create additional services to reach 500 and cover all sub-categories
@@ -39,11 +43,11 @@ class LayananSeeder extends Seeder
 
         while ($remainingCount > 0) {
             foreach ($subKategories as $subKategori) {
-                // Get random merchant that matches this sub-category
-                $merchant = Merchant::where('id_sub_kategori', $subKategori->id)->inRandomOrder()->first();
+                // Get random merchant that matches this sub-category's kategori
+                $merchant = Merchant::where('id_kategori', $subKategori->id_kategori)->inRandomOrder()->first();
 
                 if (!$merchant) {
-                    // If no merchant exists for this sub-category, create services with random merchant
+                    // If no merchant exists for this kategori, create services with random merchant
                     $merchant = $merchants->random();
                 }
 

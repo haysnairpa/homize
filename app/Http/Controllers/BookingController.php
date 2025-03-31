@@ -29,7 +29,7 @@ class BookingController extends Controller
                 'm.alamat as alamat_merchant',
                 'jo.jam_buka',
                 'jo.jam_tutup',
-                'jo.id_hari',
+                DB::raw('GROUP_CONCAT(DISTINCT h.nama_hari ORDER BY h.id) as hari'),
                 'tl.harga',
                 'tl.satuan',
                 'tl.durasi',
@@ -38,8 +38,31 @@ class BookingController extends Controller
             ])
             ->join('merchant as m', 'l.id_merchant', '=', 'm.id')
             ->join('jam_operasional as jo', 'l.id_jam_operasional', '=', 'jo.id')
+            ->leftJoin('jam_operasional_hari as joh', 'jo.id', '=', 'joh.id_jam_operasional')
+            ->leftJoin('hari as h', 'joh.id_hari', '=', 'h.id')
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
             ->where('l.id', $id)
+            ->groupBy([
+                'l.id',
+                'l.id_merchant',
+                'l.id_jam_operasional',
+                'l.nama_layanan',
+                'l.deskripsi_layanan',
+                'l.pengalaman',
+                'l.created_at',
+                'l.updated_at',
+                'm.id',
+                'm.nama_usaha',
+                'm.profile_url',
+                'm.alamat',
+                'jo.jam_buka',
+                'jo.jam_tutup',
+                'tl.harga',
+                'tl.satuan',
+                'tl.durasi',
+                'tl.tipe_durasi',
+                'tl.id_revisi'
+            ])
             ->first();
 
         if (!$layanan) {
@@ -82,14 +105,14 @@ class BookingController extends Controller
 
             // Buat booking schedule
             $waktuMulai = Carbon::parse($request->tanggal_booking);
-            
+
             // Ambil durasi dari tarif layanan
             $tarifLayanan = DB::table('tarif_layanan')
                 ->where('id_layanan', $request->id_layanan)
                 ->first();
-            
+
             $waktuSelesai = clone $waktuMulai;
-            
+
             if ($tarifLayanan) {
                 if ($tarifLayanan->tipe_durasi == 'Jam') {
                     $waktuSelesai->addHours($tarifLayanan->durasi);
@@ -154,4 +177,4 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
-} 
+}

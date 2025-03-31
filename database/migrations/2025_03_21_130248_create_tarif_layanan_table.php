@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('tarif_layanan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_revisi')->index('fk_tarif_layanan_to_revisi');
+            $table->foreignId('id_revisi')->nullable()->index('fk_tarif_layanan_to_revisi');
             $table->foreignId('id_layanan')->index('fk_tarif_layanan_to_layanan');
             $table->integer('harga');
-            $table->string('satuan');
+            $table->string('satuan')->nullable();
             $table->integer('durasi');
             $table->string('tipe_durasi');
             $table->timestamps();

@@ -23,7 +23,7 @@ class LayananController extends Controller
                 'sk.nama as nama_sub_kategori',
                 'jo.jam_buka',
                 'jo.jam_tutup',
-                'jo.id_hari',
+                DB::raw('GROUP_CONCAT(DISTINCT h.nama_hari ORDER BY h.id) as hari'),
                 'tl.harga',
                 'tl.satuan',
                 'tl.id_revisi',
@@ -32,8 +32,10 @@ class LayananController extends Controller
             ])
             ->join('merchant as m', 'l.id_merchant', '=', 'm.id')
             ->join('jam_operasional as jo', 'l.id_jam_operasional', '=', 'jo.id')
+            ->leftJoin('jam_operasional_hari as joh', 'jo.id', '=', 'joh.id_jam_operasional')
+            ->leftJoin('hari as h', 'joh.id_hari', '=', 'h.id')
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
-            ->leftJoin('sub_kategori as sk', 'm.id_sub_kategori', '=', 'sk.id')
+            ->leftJoin('sub_kategori as sk', 'l.id_sub_kategori', '=', 'sk.id')
             ->leftJoin('rating as r', 'l.id', '=', 'r.id_layanan')
             ->where('l.id', $id)
             ->groupBy([
@@ -52,7 +54,6 @@ class LayananController extends Controller
                 'sk.nama',
                 'jo.jam_buka',
                 'jo.jam_tutup',
-                'jo.id_hari',
                 'tl.harga',
                 'tl.satuan',
                 'tl.id_revisi'

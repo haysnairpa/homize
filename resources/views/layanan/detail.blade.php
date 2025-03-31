@@ -79,6 +79,7 @@
                     <div class="mt-6">
                         <h3 class="text-lg font-semibold text-gray-900">Jam Operasional</h3>
                         <p class="mt-2 text-gray-600">
+                            {{ \App\Helpers\HariHelper::formatHari($layanan->hari) }}<br>
                             {{ $layanan->jam_buka }} - {{ $layanan->jam_tutup }}
                         </p>
                     </div>

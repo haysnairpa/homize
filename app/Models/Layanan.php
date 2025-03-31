@@ -58,10 +58,10 @@ class Layanan extends Model
         return $this->belongsTo(Booking::class, "id", "id_layanan");
     }
 
-    // one to many from layanan to jam_operasional
+    // one to one from layanan to jam_operasional
     public function jam_operasional()
     {
-        return $this->hasMany(JamOperasional::class, "id_jam_operasional", "id");
+        return $this->belongsTo(JamOperasional::class, "id_jam_operasional", "id");
     }
 
     // one to one from layanan to sub_kategori

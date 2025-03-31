@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('jam_operasional', function (Blueprint $table) {
-            $table->foreign('id_hari')->index('fk_jam_operasional_to_hari')->references('id')->on('hari')->onDelete('cascade');
+        Schema::create('admins', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->rememberToken();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('jam_operasional', function (Blueprint $table) {
-            $table->dropForeign("fk_jam_operasional_to_hari");
-        });
+        Schema::dropIfExists('admins');
     }
 };

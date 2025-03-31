@@ -15,6 +15,7 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MidtransCallbackController;
 use App\Http\Controllers\RatingController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -40,6 +41,12 @@ Route::middleware([
     Route::get('/merchant', function () {
         return view('merchant');
     })->name('merchant');
+
+    // Transaction routes
+    Route::get('/user/transactions', [DashboardController::class, 'transactions'])->name('user.transactions');
+    Route::get('/user/transactions/filter', [DashboardController::class, 'filterTransactions'])->name('user.transactions.filter');
+    Route::get('/user/transactions/filter-by-date', [DashboardController::class, 'filterTransactionsByDate'])->name('user.transactions.filter-by-date');
+    Route::get('/user/transactions/{id}', [DashboardController::class, 'transactionDetail'])->name('user.transaction.detail');
 });
 
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
@@ -114,4 +121,22 @@ Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filter
 Route::get('/pembayaran/{id}/va-number', [PembayaranController::class, 'getVaNumber'])->name('pembayaran.va-number');
 
 Route::get('/pembayaran/{id}/qris', [PembayaranController::class, 'showQris'])->name('pembayaran.qris');
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    
+    Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AdminController::class, 'login'])->name('login.post');
+    
+     // Protected admin routes
+     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/merchants', [AdminController::class, 'merchants'])->name('merchants');
+        Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
+        Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions');
+    });
+
+
+});
+
 Route::get('/merchant/analytics/data', [MerchantController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
