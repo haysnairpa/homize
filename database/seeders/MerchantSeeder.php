@@ -17,9 +17,10 @@ class MerchantSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
 
-        // Get all users and randomly select 50%
+        // Get all users and randomly select 30-35%
         $users = User::pluck('id')->toArray();
-        $selectedUsers = array_rand(array_flip($users), ceil(count($users) / 2));
+        $percentage = rand(30, 35) / 100;
+        $selectedUsers = array_rand(array_flip($users), ceil(count($users) * $percentage));
 
         // Get all categories
         $kategories = Kategori::all();

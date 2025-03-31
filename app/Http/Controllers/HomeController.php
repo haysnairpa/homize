@@ -84,6 +84,26 @@ class HomeController extends Controller
             ->get();
         }
 
+        // Update the popular merchants query
+        $popularMerchants = DB::table('merchant as m')
+            ->select([
+                'm.id',
+                'm.nama_usaha',
+                'm.profile_url',
+                DB::raw('COUNT(DISTINCT tf.id_user) as followers_count'),
+                DB::raw('COALESCE(AVG(r.rate), 0) as rating_avg'),
+                DB::raw('COUNT(DISTINCT r.id) as rating_count'),
+                DB::raw('COUNT(DISTINCT l.id) as services_count')
+            ])
+            ->leftJoin('toko_favorit as tf', 'm.id', '=', 'tf.id_merchant')
+            ->leftJoin('layanan as l', 'm.id', '=', 'l.id_merchant')
+            ->leftJoin('rating as r', 'l.id', '=', 'r.id_layanan')
+            ->groupBy('m.id', 'm.nama_usaha', 'm.profile_url')
+            ->orderBy('followers_count', 'desc')
+            ->orderBy('rating_avg', 'desc') // Secondary sort by rating when followers are equal
+            ->limit(10)
+            ->get();
+
         // Share the navigation data with all views
         $sharedData = [
             'kategori' => $kategori,
@@ -93,7 +113,8 @@ class HomeController extends Controller
             'ids' => $ids,
             'layanan' => $layanan,
             'wishlists' => $wishlists,
-            'allKategori' => $allKategori
+            'allKategori' => $allKategori,
+            'popularMerchants' => $popularMerchants
         ];
         
         view()->share($sharedData);

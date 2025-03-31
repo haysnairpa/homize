@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             RatingSeeder::class,
             AsetSeeder::class,
             SertifikasiSeeder::class,
+            TokoFavoritSeeder::class,
         ]);
     }
 }

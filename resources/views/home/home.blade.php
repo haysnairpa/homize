@@ -273,26 +273,58 @@
 
                 <div x-show="activeTab === 'merchants'" style="display: none;">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- Merchant cards - Replace placeholders with actual data -->
-                        @for ($i = 0; $i < 4; $i++)
-                            <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                                <div class="p-6 flex flex-col items-center text-center">
-                                    <div class="h-20 w-20 rounded-full bg-gray-200 mb-4 overflow-hidden">
-                                        <img src="{{ asset('placeholder-merchant.jpg') }}" alt="Merchant"
-                                            class="h-full w-full object-cover">
+                        @foreach($popularMerchants as $merchant)
+                            <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-[360px] flex flex-col">
+                                <div class="p-6 flex-grow flex flex-col items-center text-center">
+                                    <!-- Merchant Profile Image -->
+                                    <div class="w-24 h-24 rounded-full bg-gray-200 mb-4 overflow-hidden flex-shrink-0">
+                                        <img src="{{ $merchant->profile_url ?: asset('placeholder-merchant.jpg') }}" 
+                                             alt="{{ $merchant->nama_usaha }}"
+                                             class="h-full w-full object-cover">
                                     </div>
-                                    <h3 class="font-medium mb-1">Merchant Name {{ $i + 1 }}</h3>
-                                    <div class="flex items-center text-amber-500 mb-1">★★★★☆</div>
-                                    <p class="text-sm text-gray-600">12 layanan tersedia</p>
+                                    
+                                    <!-- Merchant Name -->
+                                    <h3 class="font-medium mb-2 text-lg line-clamp-1">{{ $merchant->nama_usaha }}</h3>
+                                    
+                                    <!-- Rating -->
+                                    <div class="flex items-center text-amber-500 mb-2">
+                                        @php
+                                            $rating = round($merchant->rating_avg * 2) / 2; // Rounds to nearest 0.5
+                                        @endphp
+                                        @for($i = 1; $i <= 5; $i++)
+                                            @if($i <= floor($rating))
+                                                <span>★</span>
+                                            @elseif($i - 0.5 == $rating)
+                                                <span>★</span>
+                                            @else
+                                                <span>☆</span>
+                                            @endif
+                                        @endfor
+                                        <span class="text-gray-600 text-sm ml-1">({{ number_format($merchant->rating_avg, 1) }})</span>
+                                    </div>
+                                    
+                                    <!-- Stats -->
+                                    <div class="flex justify-center gap-4 text-sm text-gray-600 mb-2">
+                                        <div class="flex flex-col items-center">
+                                            <span class="font-semibold">{{ number_format($merchant->followers_count) }}</span>
+                                            <span>Pengikut</span>
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <span class="font-semibold">{{ number_format($merchant->services_count) }}</span>
+                                            <span>Layanan</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="px-4 py-3 bg-gray-50 border-t">
-                                    <a href="#"
-                                        class="block w-full border border-gray-300 text-center px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                
+                                <!-- Action Button -->
+                                <div class="px-4 py-3 bg-gray-50 border-t mt-auto">
+                                    <a href="{{ route('merchant.detail', $merchant->id) }}"
+                                        class="block w-full border border-homize-blue text-homize-blue text-center px-4 py-2 rounded-lg hover:bg-homize-blue hover:text-white transition-colors">
                                         Lihat Profil
                                     </a>
                                 </div>
                             </div>
-                        @endfor
+                        @endforeach
                     </div>
                 </div>
 
