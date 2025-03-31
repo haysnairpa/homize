@@ -101,7 +101,7 @@ class HomeController extends Controller
             ->groupBy('m.id', 'm.nama_usaha', 'm.profile_url')
             ->orderBy('followers_count', 'desc')
             ->orderBy('rating_avg', 'desc') // Secondary sort by rating when followers are equal
-            ->limit(10)
+            ->limit(4)
             ->get();
 
         // Share the navigation data with all views
