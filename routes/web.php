@@ -122,7 +122,6 @@ Route::get('/pembayaran/{id}/va-number', [PembayaranController::class, 'getVaNum
 
 Route::get('/pembayaran/{id}/qris', [PembayaranController::class, 'showQris'])->name('pembayaran.qris');
 
-// Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
@@ -139,3 +138,5 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
 });
+
+Route::get('/merchant/analytics/data', [MerchantController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
