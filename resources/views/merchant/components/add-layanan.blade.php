@@ -413,14 +413,14 @@
                                     <div class="space-y-2">
                                         <label for="sertifikasi_nama_0"
                                             class="block text-sm font-medium text-gray-700">Nama Sertifikasi</label>
-                                        <input type="text" id="sertifikasi_nama_0" name="sertifikasi[0][nama]"
+                                        <input type="text" id="sertifikasi_nama_0" name="nama_sertifikasi"
                                             placeholder="Masukkan nama sertifikasi"
                                             class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                                     </div>
                                     <div class="space-y-2">
                                         <label for="sertifikasi_file_0"
                                             class="block text-sm font-medium text-gray-700">File Sertifikasi</label>
-                                        <input type="file" id="sertifikasi_file_0" name="sertifikasi[0][file]"
+                                        <input type="file" id="sertifikasi_file_0" name="file_sertifikasi"
                                             accept="image/*"
                                             class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                                     </div>

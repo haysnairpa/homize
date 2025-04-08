@@ -394,20 +394,21 @@ class MerchantController extends Controller
     public function analytics()
     {
         $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
-        
+
         // Default periode: 7 hari terakhir
         $period = request('period', 'week');
-        
+
         // Fungsi untuk mengambil data statistik
-        function getStat($query, $params = []) {
+        function getStat($query, $params = [])
+        {
             $result = DB::select($query, $params);
             return $result && isset($result[0]->total) ? $result[0]->total : 0;
         }
-        
+
         // Tentukan rentang tanggal berdasarkan periode
         $startDate = now();
         $endDate = now();
-        
+
         switch ($period) {
             case 'week':
                 $startDate = now()->subDays(7);
@@ -418,13 +419,13 @@ class MerchantController extends Controller
             case 'month30':
                 $startDate = now()->subDays(30);
                 break;
-            // Kasus custom akan ditangani di frontend
+                // Kasus custom akan ditangani di frontend
         }
-        
+
         // Format tanggal untuk query
         $startDateStr = $startDate->format('Y-m-d');
         $endDateStr = $endDate->format('Y-m-d');
-        
+
         // Statistik mingguan
         $weeklyStats = [
             'pendapatan' => getStat(
@@ -463,42 +464,42 @@ class MerchantController extends Controller
                 [$merchant->id]
             )
         ];
-        
+
         // Statistik periode sebelumnya untuk perbandingan tren
         $prevStartDate = clone $startDate;
         $prevEndDate = clone $startDate;
         $prevStartDate = $prevStartDate->subDays($startDate->diffInDays($endDate));
         $prevStartDateStr = $prevStartDate->format('Y-m-d');
         $prevEndDateStr = $prevEndDate->format('Y-m-d');
-        
+
         // Tren pendapatan
         $prevPendapatan = getStat(
             "SELECT SUM(p.amount) as total FROM booking b JOIN pembayaran p ON p.id_booking = b.id JOIN status s ON p.id_status = s.id WHERE b.id_merchant = ? AND s.nama_status = 'Payment Completed' AND p.payment_date BETWEEN ? AND ?",
             [$merchant->id, $prevStartDateStr, $prevEndDateStr]
         );
         $pendapatanTrend = $prevPendapatan > 0 ? round((($weeklyStats['pendapatan'] - $prevPendapatan) / $prevPendapatan) * 100) : 0;
-        
+
         // Tren pesanan
         $prevPesanan = getStat(
             "SELECT COUNT(*) as total FROM booking b WHERE b.id_merchant = ? AND b.created_at BETWEEN ? AND ?",
             [$merchant->id, $prevStartDateStr, $prevEndDateStr]
         );
         $pesananTrend = $prevPesanan > 0 ? round((($weeklyStats['pesanan'] - $prevPesanan) / $prevPesanan) * 100) : 0;
-        
+
         // Tren views
         $prevViews = getStat(
             "SELECT COUNT(*) as total FROM layanan_views lv JOIN layanan l ON lv.id_layanan = l.id WHERE l.id_merchant = ? AND lv.created_at BETWEEN ? AND ?",
             [$merchant->id, $prevStartDateStr, $prevEndDateStr]
         );
         $viewsTrend = $prevViews > 0 ? round((($weeklyStats['views'] - $prevViews) / $prevViews) * 100) : 0;
-        
+
         // Tren rating
         $prevRating = getStat(
             "SELECT COALESCE(AVG(r.rate), 0) as total FROM rating r JOIN layanan l ON r.id_layanan = l.id WHERE l.id_merchant = ? AND r.created_at BETWEEN ? AND ?",
             [$merchant->id, $prevStartDateStr, $prevEndDateStr]
         );
         $ratingTrend = $prevRating > 0 ? round(($weeklyStats['rating'] - $prevRating), 1) : 0;
-        
+
         // Perbaiki query untuk mendapatkan data revenue
         $revenueData = DB::select(
             "SELECT DATE(p.payment_date) as date, SUM(p.amount) as total 
@@ -613,7 +614,7 @@ class MerchantController extends Controller
             ORDER BY total_revenue DESC",
             [$merchant->id]
         );
-        
+
         // Data rating dan ulasan
         $avgRating = DB::selectOne(
             "SELECT COALESCE(AVG(r.rate), 0) as avg_rating 
@@ -622,7 +623,7 @@ class MerchantController extends Controller
             WHERE l.id_merchant = ?",
             [$merchant->id]
         )->avg_rating;
-        
+
         $ratingCount = DB::selectOne(
             "SELECT COUNT(*) as total 
             FROM rating r 
@@ -630,7 +631,7 @@ class MerchantController extends Controller
             WHERE l.id_merchant = ?",
             [$merchant->id]
         )->total;
-        
+
         $reviewCount = DB::selectOne(
             "SELECT COUNT(*) as total 
             FROM rating r 
@@ -638,7 +639,7 @@ class MerchantController extends Controller
             WHERE l.id_merchant = ? AND r.message IS NOT NULL AND r.message != ''",
             [$merchant->id]
         )->total;
-        
+
         // Distribusi rating
         $ratingStats = [];
         for ($i = 1; $i <= 5; $i++) {
@@ -650,7 +651,7 @@ class MerchantController extends Controller
                 [$merchant->id, $i]
             )->total;
         }
-        
+
         // Ulasan terbaru
         $latestReviews = DB::select(
             "SELECT r.*, u.nama as nama_user 
@@ -662,28 +663,28 @@ class MerchantController extends Controller
             LIMIT 5",
             [$merchant->id]
         );
-        
+
         // Hitung tingkat penyelesaian dan pembatalan
         $totalOrders = getStat(
             "SELECT COUNT(*) as total FROM booking b WHERE b.id_merchant = ? AND b.created_at BETWEEN ? AND ?",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         $completedOrders = getStat(
             "SELECT COUNT(*) as total FROM booking b JOIN status s ON b.id_status = s.id WHERE b.id_merchant = ? AND s.
             nama_status = 'Completed' AND b.created_at BETWEEN ? AND ?",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         $cancelledOrders = getStat(
             "SELECT COUNT(*) as total FROM booking b JOIN status s ON b.id_status = s.id WHERE b.id_merchant = ? AND s.
             nama_status = 'Cancelled' AND b.created_at BETWEEN ? AND ?",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         $completionRate = $totalOrders > 0 ? round(($completedOrders / $totalOrders) * 100) : 0;
         $cancellationRate = $totalOrders > 0 ? round(($cancelledOrders / $totalOrders) * 100) : 0;
-        
+
         // Hitung pelanggan berulang dan baru
         $totalCustomers = getStat(
             "SELECT COUNT(DISTINCT b.id_user) as total FROM booking b WHERE b.id_merchant = ? AND b.created_at 
@@ -739,7 +740,7 @@ class MerchantController extends Controller
         return view('merchant.analytics', compact(
             'weeklyStats',
             'monthlyStats',
-            'revenueData', 
+            'revenueData',
             'orderData',
             'viewsData',
             'ratingData',
@@ -770,11 +771,11 @@ class MerchantController extends Controller
     {
         $merchant = Auth::user()->merchant;
         $period = $request->input('period', 'week');
-        
+
         // Set tanggal berdasarkan periode
         $endDate = now();
         $startDate = clone $endDate;
-        
+
         switch ($period) {
             case 'month':
                 $startDate->startOfMonth();
@@ -787,16 +788,16 @@ class MerchantController extends Controller
                 $startDate->subDays(7);
                 break;
         }
-        
+
         $startDateStr = $startDate->format('Y-m-d');
         $endDateStr = $endDate->format('Y-m-d');
-        
+
         // Helper function untuk mendapatkan statistik
-        $getStat = function($query, $params) {
+        $getStat = function ($query, $params) {
             $result = DB::select($query, $params);
             return $result[0]->total ?? 0;
         };
-        
+
         // Data untuk grafik pendapatan
         $revenueData = DB::select(
             "SELECT DATE(p.payment_date) as date, SUM(p.amount) as total 
@@ -810,7 +811,7 @@ class MerchantController extends Controller
             ORDER BY date",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         // Jika tidak ada data, buat data dummy
         if (empty($revenueData)) {
             $revenueData = [];
@@ -823,7 +824,7 @@ class MerchantController extends Controller
                 $currentDate->addDay();
             }
         }
-        
+
         // Data untuk grafik pesanan
         $orderData = DB::select(
             "SELECT DATE(b.created_at) as date, COUNT(*) as total 
@@ -834,7 +835,7 @@ class MerchantController extends Controller
             ORDER BY date",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         // Data untuk grafik views
         $viewsData = DB::select(
             "SELECT DATE(lv.created_at) as date, COUNT(*) as total 
@@ -846,7 +847,7 @@ class MerchantController extends Controller
             ORDER BY date",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         // Data untuk grafik rating
         $ratingData = DB::select(
             "SELECT DATE(r.created_at) as date, AVG(r.rate) as total 
@@ -858,44 +859,44 @@ class MerchantController extends Controller
             ORDER BY date",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         // Format data untuk response
-        $formatData = function($data) {
+        $formatData = function ($data) {
             $labels = [];
             $values = [];
-            
+
             foreach ($data as $item) {
                 $labels[] = \Carbon\Carbon::parse($item->date)->format('d M');
                 $values[] = $item->total;
             }
-            
+
             return [
                 'labels' => $labels,
                 'data' => $values
             ];
         };
-        
+
         // Hitung statistik
         $pendapatan = $getStat(
             "SELECT SUM(p.amount) as total FROM booking b JOIN pembayaran p ON p.id_booking = b.id JOIN status s ON p.id_status = s.id WHERE b.id_merchant = ? AND s.nama_status = 'Payment Completed' AND p.payment_date BETWEEN ? AND ?",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         $pesanan = $getStat(
             "SELECT COUNT(*) as total FROM booking b WHERE b.id_merchant = ? AND b.created_at BETWEEN ? AND ?",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         $views = $getStat(
             "SELECT COUNT(*) as total FROM layanan_views lv JOIN layanan l ON lv.id_layanan = l.id WHERE l.id_merchant = ? AND lv.created_at BETWEEN ? AND ?",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         $rating = $getStat(
             "SELECT COALESCE(AVG(r.rate), 0) as total FROM rating r JOIN layanan l ON r.id_layanan = l.id WHERE l.id_merchant = ? AND r.created_at BETWEEN ? AND ?",
             [$merchant->id, $startDateStr, $endDateStr]
         );
-        
+
         return response()->json([
             'revenue' => $formatData($revenueData),
             'orders' => $formatData($orderData),
@@ -949,6 +950,12 @@ class MerchantController extends Controller
                 'id_jam_operasional' => $jamOperasional->id,
                 'id_merchant' => $merchant->id,
                 'pengalaman' => $request->pengalaman ?? 0
+            ]);
+
+            Sertifikasi::create([
+                'id_layanan' => $layanan->id,
+                'nama_sertifikasi' => $request->nama_sertifikasi,
+                'media_url' => $request->file_sertifikasi ? $request->file_sertifikasi->store('sertifikasi', 'public') : null,
             ]);
 
             // Handle revisi if enabled
