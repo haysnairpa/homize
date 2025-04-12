@@ -41,7 +41,9 @@ class DashboardController extends Controller
                                     m.profile_url, 
                                     m.alamat as alamat_merchant, 
                                     s.nama_status, 
-                                    b.tanggal_booking, 
+                                    b.id_status,
+                                    b.created_at AS tanggal_booking,
+                                    b.updated_at AS tanggal_selesai, 
                                     b.updated_at, 
                                     p.amount, 
                                     bs.waktu_mulai, 
@@ -58,7 +60,7 @@ class DashboardController extends Controller
                                 JOIN booking_schedule bs ON bs.id = b.id_booking_schedule
                                 JOIN pembayaran p ON p.id_booking = b.id
                                 WHERE b.id_user = ?
-                                ORDER BY b.created_at DESC", [$userId]);
+                                ORDER BY b.created_at ASC", [$userId]);
 
         return view('user.transactions', compact('transactions'));
     }
@@ -176,7 +178,8 @@ class DashboardController extends Controller
                                         b.tanggal_booking, 
                                         p.amount, 
                                         bs.waktu_mulai, 
-                                        bs.waktu_selesai, 
+                                        bs.waktu_selesai,
+                                        b.id_status, 
                                         b.alamat_pembeli, 
                                         b.catatan, 
                                         b.latitude, 

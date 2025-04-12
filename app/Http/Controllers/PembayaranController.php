@@ -25,7 +25,7 @@ class PembayaranController extends Controller
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
         Config::$is3ds = config('midtrans.is_3ds');
-        
+
         Log::info('Midtrans Callback URL: ' . Config::$overrideNotifUrl);
     }
 
@@ -48,10 +48,10 @@ class PembayaranController extends Controller
         // Cek status pembayaran dari Midtrans jika ada order_id
         if ($booking->pembayaran->order_id) {
             $this->checkPaymentStatus($booking->pembayaran);
-            
+
             // Refresh data booking setelah pengecekan status
             $booking = $booking->fresh(['pembayaran', 'pembayaran.status']);
-            
+
             // Cek lagi setelah refresh, jika sudah selesai redirect ke dashboard
             if ($booking->pembayaran->status->nama_status == 'Payment Completed') {
                 return redirect()->route('dashboard')->with('success', 'Pembayaran sudah selesai');
@@ -133,7 +133,7 @@ class PembayaranController extends Controller
                 $enabled_payments = ['bca_va', 'bni_va', 'bri_va', 'permata_va'];
         }
 
-        
+
 
         $transaction = [
             'transaction_details' => $transaction_details,
@@ -165,14 +165,14 @@ class PembayaranController extends Controller
     {
         // Log semua request untuk debugging
         Log::info('Midtrans callback received', $request->all());
-        
+
         try {
             // Cek apakah ini request test dari Midtrans
             if ($request->isMethod('get')) {
                 // Kembalikan 200 OK untuk test request
                 return response('OK', 200);
             }
-            
+
             // Kode lainnya tetap sama
             $serverKey = config('midtrans.server_key');
             $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
@@ -180,10 +180,10 @@ class PembayaranController extends Controller
             if ($hashed == $request->signature_key) {
                 // Extract order ID
                 $order_id = $request->order_id;
-                
+
                 // Find payment by order_id
                 $pembayaran = Pembayaran::where('order_id', $order_id)->first();
-                
+
                 if (!$pembayaran) {
                     Log::error('Payment not found for order_id: ' . $order_id);
                     return response()->json(['status' => 'error', 'message' => 'Payment not found']);
@@ -205,11 +205,11 @@ class PembayaranController extends Controller
                     $pembayaran->booking->update([
                         'id_status' => $statusPending->id,
                     ]);
-                    
+
                     // Load relasi yang dibutuhkan
                     $booking = $pembayaran->booking;
                     $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
-                    
+
                     // Tambahkan pengecekan merchant lebih detail
                     Log::info('Detail merchant untuk booking #' . $booking->id, [
                         'merchant_id' => $booking->merchant->id ?? 'tidak ada',
@@ -217,13 +217,13 @@ class PembayaranController extends Controller
                         'merchant_user_id' => $booking->merchant->user->id ?? 'tidak ada',
                         'merchant_email' => $booking->merchant->user->email ?? 'tidak ada'
                     ]);
-                    
+
                     // Kirim email langsung tanpa event
                     // try {
                     //     if ($booking->merchant && $booking->merchant->user && $booking->merchant->user->email) {
                     //         Mail::to($booking->merchant->user->email)
                     //             ->send(new NewOrderNotification($booking));
-                            
+
                     //         Log::info('Email notifikasi pesanan baru berhasil dikirim langsung', [
                     //             'booking_id' => $booking->id,
                     //             'merchant_email' => $booking->merchant->user->email
@@ -243,7 +243,7 @@ class PembayaranController extends Controller
                     //         'trace' => $e->getTraceAsString()
                     //     ]);
                     // }
-                    
+
                     // Setelah itu, coba trigger event
                     try {
                         event(new OrderCreated($booking));
@@ -256,19 +256,20 @@ class PembayaranController extends Controller
                             'error' => $e->getMessage()
                         ]);
                     }
-                    
+
                     Log::info('Payment completed for order_id: ' . $order_id);
-                } 
-                elseif ($request->transaction_status == 'deny' || $request->transaction_status == 'cancel' || $request->transaction_status == 'expire') {
+                } elseif ($request->transaction_status == 'deny' || $request->transaction_status == 'cancel' || $request->transaction_status == 'expire') {
                     // Cek apakah ini kegagalan 3DS
-                    if ($request->status_code == '202' || 
+                    if (
+                        $request->status_code == '202' ||
                         (isset($request->fraud_status) && $request->fraud_status == 'challenge') ||
-                        (isset($request->status_message) && strpos(strtolower($request->status_message), '3ds') !== false)) {
-                        
+                        (isset($request->status_message) && strpos(strtolower($request->status_message), '3ds') !== false)
+                    ) {
+
                         // Ini adalah kegagalan 3DS, tambah jumlah percobaan
                         $attempts = $pembayaran->otp_attempts + 1;
                         $maxAttempts = config('midtrans.max_otp_attempts', 3);
-                        
+
                         if ($attempts >= $maxAttempts) {
                             // Jika sudah melebihi batas percobaan, anggap gagal
                             $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
@@ -278,12 +279,12 @@ class PembayaranController extends Controller
                                 'payment_date' => now(),
                                 'otp_attempts' => $attempts,
                             ]);
-                            
+
                             // Update booking status to Payment Failed juga
                             $pembayaran->booking->update([
                                 'id_status' => $statusFailed->id,
                             ]);
-                            
+
                             Log::info('Payment failed after ' . $attempts . ' OTP attempts for order_id: ' . $order_id);
                         } else {
                             // Masih ada kesempatan, tetap di status pending
@@ -291,7 +292,7 @@ class PembayaranController extends Controller
                                 'method' => $request->payment_type,
                                 'otp_attempts' => $attempts,
                             ]);
-                            
+
                             Log::info('3DS verification failed, attempt ' . $attempts . ' of ' . $maxAttempts . ' for order_id: ' . $order_id);
                         }
                     } else {
@@ -303,12 +304,12 @@ class PembayaranController extends Controller
                             'payment_date' => now(),
                             'otp_attempts' => 0, // Reset percobaan OTP
                         ]);
-                        
+
                         // Update booking status to Payment Failed juga
                         $pembayaran->booking->update([
                             'id_status' => $statusFailed->id,
                         ]);
-                        
+
                         Log::info('Payment failed for order_id: ' . $order_id);
                     }
                 } else {
@@ -316,8 +317,8 @@ class PembayaranController extends Controller
                 }
 
                 return response()->json(['status' => 'success']);
-            } 
-            
+            }
+
             Log::warning('Invalid signature for order_id: ' . $request->order_id);
             return response()->json(['status' => 'error', 'message' => 'Invalid signature']);
         } catch (\Exception $e) {
@@ -415,7 +416,7 @@ class PembayaranController extends Controller
 
             // Get transaction status dari Midtrans
             $status = \Midtrans\Transaction::status($pembayaran->order_id);
-            
+
             Log::info('Checking payment status for order_id: ' . $pembayaran->order_id, [
                 'midtrans_status' => $status->transaction_status ?? 'unknown'
             ]);
@@ -423,16 +424,16 @@ class PembayaranController extends Controller
             // Update status pembayaran berdasarkan response dari Midtrans
             if ($status && isset($status->transaction_status)) {
                 Log::info('Status transaksi: ' . $status->transaction_status);
-                
+
                 if ($status->transaction_status == 'capture' || $status->transaction_status == 'settlement') {
                     // Payment success
                     $statusCompleted = Status::where('nama_status', 'Payment Completed')->first();
-                    
+
                     if (!$statusCompleted) {
                         Log::error('Status Payment Completed tidak ditemukan di database');
                         return false;
                     }
-                    
+
                     $pembayaran->update([
                         'id_status' => $statusCompleted->id,
                         'method' => $status->payment_type ?? $pembayaran->method,
@@ -442,20 +443,20 @@ class PembayaranController extends Controller
 
                     // Update booking status to Pending (menunggu konfirmasi seller)
                     $statusPending = Status::where('nama_status', 'Pending')->first();
-                    
+
                     if (!$statusPending) {
                         Log::error('Status Pending tidak ditemukan di database');
                         return false;
                     }
-                    
+
                     $booking = $pembayaran->booking;
                     $booking->update([
                         'id_status' => $statusPending->id,
                     ]);
-                    
+
                     // Load relasi yang dibutuhkan
                     $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
-                    
+
                     // Tambahkan pengecekan merchant lebih detail
                     Log::info('Detail merchant untuk booking #' . $booking->id, [
                         'merchant_id' => $booking->merchant->id ?? 'tidak ada',
@@ -463,13 +464,13 @@ class PembayaranController extends Controller
                         'merchant_user_id' => $booking->merchant->user->id ?? 'tidak ada',
                         'merchant_email' => $booking->merchant->user->email ?? 'tidak ada'
                     ]);
-                    
+
                     // Kirim email langsung tanpa event
                     // try {
                     //     if ($booking->merchant && $booking->merchant->user && $booking->merchant->user->email) {
                     //         Mail::to($booking->merchant->user->email)
                     //             ->send(new NewOrderNotification($booking));
-                            
+
                     //         Log::info('Email notifikasi pesanan baru berhasil dikirim langsung', [
                     //             'booking_id' => $booking->id,
                     //             'merchant_email' => $booking->merchant->user->email
@@ -489,7 +490,7 @@ class PembayaranController extends Controller
                     //         'trace' => $e->getTraceAsString()
                     //     ]);
                     // }
-                    
+
                     // Setelah itu, coba trigger event
                     try {
                         event(new OrderCreated($booking));
@@ -502,20 +503,21 @@ class PembayaranController extends Controller
                             'error' => $e->getMessage()
                         ]);
                     }
-                    
+
                     Log::info('Payment completed for order_id: ' . $pembayaran->order_id);
                     return true;
-                } 
-                elseif ($status->transaction_status == 'deny' || $status->transaction_status == 'cancel' || $status->transaction_status == 'expire') {
+                } elseif ($status->transaction_status == 'deny' || $status->transaction_status == 'cancel' || $status->transaction_status == 'expire') {
                     // Cek apakah ini kegagalan 3DS
-                    if ($status->status_code == '202' || 
+                    if (
+                        $status->status_code == '202' ||
                         (isset($status->fraud_status) && $status->fraud_status == 'challenge') ||
-                        (isset($status->status_message) && strpos(strtolower($status->status_message), '3ds') !== false)) {
-                        
+                        (isset($status->status_message) && strpos(strtolower($status->status_message), '3ds') !== false)
+                    ) {
+
                         // Ini adalah kegagalan 3DS, tambah jumlah percobaan
                         $attempts = $pembayaran->otp_attempts + 1;
                         $maxAttempts = config('midtrans.max_otp_attempts', 3);
-                        
+
                         if ($attempts >= $maxAttempts) {
                             // Jika sudah melebihi batas percobaan, anggap gagal
                             $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
@@ -525,12 +527,12 @@ class PembayaranController extends Controller
                                 'payment_date' => now(),
                                 'otp_attempts' => $attempts,
                             ]);
-                            
+
                             // Update booking status to Payment Failed juga
                             $pembayaran->booking->update([
                                 'id_status' => $statusFailed->id,
                             ]);
-                            
+
                             Log::info('Payment failed after ' . $attempts . ' OTP attempts for order_id: ' . $pembayaran->order_id);
                             return false;
                         } else {
@@ -539,36 +541,35 @@ class PembayaranController extends Controller
                                 'method' => $status->payment_type ?? $pembayaran->method,
                                 'otp_attempts' => $attempts,
                             ]);
-                            
+
                             Log::info('3DS verification failed, attempt ' . $attempts . ' of ' . $maxAttempts . ' for order_id: ' . $pembayaran->order_id);
                             return null;
                         }
                     } else {
                         // Payment failed - bukan kegagalan 3DS
                         $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
-                        
+
                         if (!$statusFailed) {
                             Log::error('Status Payment Failed tidak ditemukan di database');
                             return false;
                         }
-                        
+
                         $pembayaran->update([
                             'id_status' => $statusFailed->id,
                             'method' => $status->payment_type ?? $pembayaran->method,
                             'payment_date' => now(),
                             'otp_attempts' => 0, // Reset percobaan OTP
                         ]);
-                        
+
                         // Update booking status to Payment Failed juga
                         $pembayaran->booking->update([
                             'id_status' => $statusFailed->id,
                         ]);
-                        
+
                         Log::info('Payment failed for order_id: ' . $pembayaran->order_id);
                         return false;
                     }
-                }
-                else {
+                } else {
                     Log::info('Payment status masih pending: ' . $status->transaction_status);
                 }
             } else {
@@ -579,7 +580,7 @@ class PembayaranController extends Controller
             Log::error('Error checking payment status: ' . $e->getMessage());
             return false;
         }
-        
+
         return null;
     }
 
@@ -599,7 +600,7 @@ class PembayaranController extends Controller
             // PENTING: Tambahkan parameter true untuk force refresh
             $paymentResult = $this->checkPaymentStatus($booking->pembayaran);
             Log::info('Payment status check result: ' . ($paymentResult === true ? 'completed' : ($paymentResult === false ? 'failed' : 'pending')));
-            
+
             // Refresh data booking setelah pengecekan status
             $booking = $booking->fresh(['pembayaran', 'pembayaran.status']);
         }
@@ -621,11 +622,11 @@ class PembayaranController extends Controller
     public function forceCheckStatus($id)
     {
         $booking = Booking::with(['pembayaran'])->findOrFail($id);
-        
+
         if (!$booking->pembayaran || !$booking->pembayaran->order_id) {
             return redirect()->back()->with('error', 'Tidak ada data pembayaran untuk pesanan ini');
         }
-        
+
         try {
             // Set konfigurasi Midtrans
             \Midtrans\Config::$serverKey = config('midtrans.server_key');
@@ -633,12 +634,12 @@ class PembayaranController extends Controller
 
             // Get transaction status dari Midtrans
             $status = \Midtrans\Transaction::status($booking->pembayaran->order_id);
-            
+
             Log::info('Manual check status: ', [
                 'order_id' => $booking->pembayaran->order_id,
                 'status' => $status
             ]);
-            
+
             // Proses status
             if ($status->transaction_status == 'capture' || $status->transaction_status == 'settlement') {
                 // Update ke Payment Completed
@@ -655,21 +656,23 @@ class PembayaranController extends Controller
                 $booking->update([
                     'id_status' => $statusPending->id,
                 ]);
-                
+
                 return redirect()->back()->with('success', 'Status pembayaran berhasil diperbarui. Pembayaran telah selesai.');
             } elseif ($status->transaction_status == 'deny' || $status->transaction_status == 'cancel' || $status->transaction_status == 'expire') {
                 // Cek apakah ini kegagalan 3DS
-                if ($status->status_code == '202' || 
+                if (
+                    $status->status_code == '202' ||
                     (isset($status->fraud_status) && $status->fraud_status == 'challenge') ||
-                    (isset($status->status_message) && strpos(strtolower($status->status_message), '3ds') !== false)) {
-                    
+                    (isset($status->status_message) && strpos(strtolower($status->status_message), '3ds') !== false)
+                ) {
+
                     return redirect()->back()->with('info', 'Verifikasi 3DS gagal. Anda masih memiliki kesempatan untuk mencoba lagi.');
                 } else {
                     // Kegagalan normal
                     return redirect()->back()->with('info', 'Status pembayaran: ' . $status->transaction_status);
                 }
             }
-            
+
             return redirect()->back()->with('info', 'Status pembayaran: ' . $status->transaction_status);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
@@ -687,17 +690,17 @@ class PembayaranController extends Controller
     public function resetOtpAttempts($id)
     {
         $booking = Booking::with(['pembayaran'])->findOrFail($id);
-        
+
         // Cek apakah booking milik user yang login
         if ($booking->id_user != Auth::id()) {
             return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini');
         }
-        
+
         // Reset percobaan OTP
         $booking->pembayaran->update([
             'otp_attempts' => 0
         ]);
-        
+
         return redirect()->route('pembayaran.process_popup', $booking->id)
             ->with('success', 'Percobaan OTP telah direset. Silakan coba lagi.');
     }
@@ -706,34 +709,34 @@ class PembayaranController extends Controller
     {
         // Ambil data booking
         $booking = Booking::with(['pembayaran'])->findOrFail($id);
-        
+
         // Cek apakah booking milik user yang login
         if ($booking->id_user != Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
-        
+
         // Cek apakah ada order_id
         if (!$booking->pembayaran->order_id) {
             return response()->json(['error' => 'Belum ada transaksi'], 400);
         }
-        
+
         try {
             // Set konfigurasi Midtrans
             \Midtrans\Config::$serverKey = config('midtrans.server_key');
             \Midtrans\Config::$isProduction = config('midtrans.is_production');
-            
+
             // Get transaction status dari Midtrans
             $status = \Midtrans\Transaction::status($booking->pembayaran->order_id);
-            
+
             // Log untuk debugging
             Log::info('Transaction status for VA number:', [
                 'order_id' => $booking->pembayaran->order_id,
                 'status' => $status
             ]);
-            
+
             // Cek apakah ada VA number
             $va_number = null;
-            
+
             if (isset($status->va_numbers) && !empty($status->va_numbers)) {
                 $va_number = $status->va_numbers[0]->va_number;
             } elseif (isset($status->permata_va_number)) {
@@ -748,7 +751,7 @@ class PembayaranController extends Controller
                 // Untuk QRIS
                 $va_number = 'QRIS Code tersedia di halaman Midtrans';
             }
-            
+
             return response()->json([
                 'va_number' => $va_number,
                 'bank' => isset($status->va_numbers) ? $status->va_numbers[0]->bank : (isset($status->permata_va_number) ? 'permata' : null),
@@ -820,7 +823,6 @@ class PembayaranController extends Controller
 
             // Render view dengan snap token
             return view('pembayaran.qris', compact('booking', 'pembayaran', 'snapToken'));
-
         } catch (\Exception $e) {
             Log::error('Midtrans QRIS error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
