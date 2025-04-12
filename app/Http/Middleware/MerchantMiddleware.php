@@ -21,6 +21,10 @@ class MerchantMiddleware
                 ->with('error', 'Anda harus mendaftar sebagai merchant terlebih dahulu');
         }
 
+        if ($merchant->verification_status !== 'approved') {
+            return redirect()->route('merchant.verification-status');
+        }
+
         return $next($request);
     }
 } 

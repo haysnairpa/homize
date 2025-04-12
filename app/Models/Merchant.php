@@ -15,6 +15,9 @@ class Merchant extends Model
         'profile_url',
         'alamat',
         'media_sosial',
+        'verification_status',
+        'rejection_reason',
+        'verified_at',
     ];
 
     protected $dates = [

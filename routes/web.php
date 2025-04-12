@@ -63,6 +63,12 @@ Route::middleware(['auth', \App\Http\Middleware\PreventMerchantReregistration::c
     Route::post('/merchant/register/step2', [MerchantController::class, 'storeStep2'])->name('merchant.register.step2.store');
 });
 
+// Merchant verification status routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/merchant/verification-status', [MerchantController::class, 'verificationStatus'])->name('merchant.verification-status');
+    Route::post('/merchant/verification-retry', [MerchantController::class, 'retryVerification'])->name('merchant.verification.retry');
+});
+
 // Merchant Dashboard Routes (pastikan tidak menggunakan middleware prevent-merchant-reregistration)
 Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->prefix('merchant')->name('merchant.')->group(function () {
     Route::get('/dashboard', [MerchantController::class, 'dashboard'])->name('dashboard');
@@ -132,6 +138,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
         Route::get('/merchants', [AdminController::class, 'merchants'])->name('merchants');
+        Route::post('/merchant/{id}/approve', [AdminController::class, 'approveMerchant'])->name('merchant.approve');
+        Route::post('/merchant/{id}/reject', [AdminController::class, 'rejectMerchant'])->name('merchant.reject');
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
         Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions');
     });
