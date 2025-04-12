@@ -46,6 +46,7 @@ class BookingController extends Controller
                 'l.id',
                 'l.id_merchant',
                 'l.id_jam_operasional',
+                'l.id_sub_kategori',
                 'l.nama_layanan',
                 'l.deskripsi_layanan',
                 'l.pengalaman',
