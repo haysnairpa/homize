@@ -33,7 +33,7 @@ class HomeController extends Controller
             ->select([
                 'l.*',
                 'tl.harga',
-                'tl.satuan', 
+                'tl.satuan',
                 'a.media_url as gambar',
                 DB::raw('COALESCE(AVG(r.rate), 0) as rating_avg'),
                 DB::raw('COUNT(DISTINCT r.id) as rating_count')
@@ -45,7 +45,7 @@ class HomeController extends Controller
                 'l.id',
                 'l.id_merchant',
                 'l.id_jam_operasional',
-                'l.id_sub_kategori', 
+                'l.id_sub_kategori',
                 'l.nama_layanan',
                 'l.deskripsi_layanan',
                 'l.pengalaman',
@@ -58,30 +58,30 @@ class HomeController extends Controller
             ->orderBy('rating_avg', 'desc')
             ->limit(8)
             ->get();
-            
+
         // Ambil semua kategori untuk filter
         $allKategori = Kategori::all();
 
         $wishlists = [];
         if (Auth::check()) {
             $wishlists = DB::table('wishlists as w')
-            ->select([
-                'w.id_layanan', 
-                'w.id_user',
-                'l.nama_layanan',
-                'l.deskripsi_layanan',
-                'm.nama_usaha',
-                'm.profile_url',
-                'tl.harga',
-                'tl.satuan',
-                'tl.tipe_durasi',
-                'tl.durasi'
-            ])
-            ->leftJoin('layanan as l', 'w.id_layanan', '=', 'l.id')
-            ->leftJoin('merchant as m', 'l.id_merchant', '=', 'm.id')
-            ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
-            ->where('w.id_user', Auth::id())
-            ->get();
+                ->select([
+                    'w.id_layanan',
+                    'w.id_user',
+                    'l.nama_layanan',
+                    'l.deskripsi_layanan',
+                    'm.nama_usaha',
+                    'm.profile_url',
+                    'tl.harga',
+                    'tl.satuan',
+                    'tl.tipe_durasi',
+                    'tl.durasi'
+                ])
+                ->leftJoin('layanan as l', 'w.id_layanan', '=', 'l.id')
+                ->leftJoin('merchant as m', 'l.id_merchant', '=', 'm.id')
+                ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
+                ->where('w.id_user', Auth::id())
+                ->get();
         }
 
         // Update the popular merchants query
@@ -116,24 +116,24 @@ class HomeController extends Controller
             'allKategori' => $allKategori,
             'popularMerchants' => $popularMerchants
         ];
-        
+
         view()->share($sharedData);
 
         return view('home.home', $sharedData);
     }
-    
+
     public function filterLayanan(Request $request)
     {
         $kategoriId = $request->kategori_id;
         $sortBy = $request->sort_by;
         $minPrice = $request->min_price;
         $maxPrice = $request->max_price;
-        
+
         $query = DB::table('layanan as l')
             ->select([
                 'l.*',
                 'tl.harga',
-                'tl.satuan', 
+                'tl.satuan',
                 'sk.id_kategori',
                 DB::raw('COALESCE(AVG(r.rate), 0) as rating_avg'),
                 DB::raw('COUNT(DISTINCT r.id) as rating_count')
@@ -141,24 +141,24 @@ class HomeController extends Controller
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
             ->leftJoin('rating as r', 'l.id', '=', 'r.id_layanan')
             ->leftJoin('sub_kategori as sk', 'l.id_sub_kategori', '=', 'sk.id');
-            
+
         if ($kategoriId) {
             $query->where('sk.id_kategori', $kategoriId);
         }
-        
+
         if ($minPrice) {
             $query->where('tl.harga', '>=', $minPrice);
         }
-        
+
         if ($maxPrice) {
             $query->where('tl.harga', '<=', $maxPrice);
         }
-        
+
         $query->groupBy([
             'l.id',
             'l.id_merchant',
             'l.id_jam_operasional',
-            'l.id_sub_kategori', 
+            'l.id_sub_kategori',
             'l.nama_layanan',
             'l.deskripsi_layanan',
             'l.pengalaman',
@@ -168,7 +168,7 @@ class HomeController extends Controller
             'tl.satuan',
             'sk.id_kategori'
         ]);
-        
+
         switch ($sortBy) {
             case 'price_asc':
                 $query->orderBy('tl.harga', 'asc');
@@ -183,9 +183,9 @@ class HomeController extends Controller
                 $query->orderBy('l.created_at', 'desc');
                 break;
         }
-        
+
         $layanan = $query->limit(20)->get();
-        
+
         return response()->json([
             'html' => view('home.partials.layanan-grid', compact('layanan'))->render()
         ]);

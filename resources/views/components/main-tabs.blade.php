@@ -40,8 +40,8 @@
                         <button @click="open = !open"
                             class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50">
                             <span>Kategori</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 9l-7 7-7-7" />
                             </svg>
@@ -64,8 +64,8 @@
                         <button @click="open = !open"
                             class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50">
                             <span>Harga</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 9l-7 7-7-7" />
                             </svg>
@@ -96,8 +96,8 @@
                         <button @click="open = !open"
                             class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50">
                             <span>Urutkan</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 9l-7 7-7-7" />
                             </svg>
@@ -125,7 +125,7 @@
             @foreach ($layanan as $item)
                 <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                     <div class="relative">
-                        <img src="{{ asset('placeholder.jpg') }}" alt="{{ $item->nama_layanan }}"
+                        <img src="{{ asset($item->gambar) }}" alt="{{ $item->nama_layanan }}"
                             class="w-full h-48 object-cover">
                         <button class="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -135,8 +135,7 @@
                             </svg>
                         </button>
                         @if (isset($item->is_premium) && $item->is_premium)
-                            <span
-                                class="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-md">
+                            <span class="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-md">
                                 Premium
                             </span>
                         @endif
@@ -179,26 +178,26 @@
 
     <div x-show="activeTab === 'merchants'" style="display: none;">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            @foreach($popularMerchants as $merchant)
-                <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-[360px] flex flex-col">
+            @foreach ($popularMerchants as $merchant)
+                <div
+                    class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-[360px] flex flex-col">
                     <div class="p-6 flex-grow flex flex-col items-center text-center">
                         <!-- Merchant Profile Image -->
                         <div class="w-24 h-24 rounded-full bg-gray-200 mb-4 overflow-hidden flex-shrink-0">
-                            <img src="{{ $merchant->profile_url ?: asset('placeholder-merchant.jpg') }}" 
-                                 alt="{{ $merchant->nama_usaha }}"
-                                 class="h-full w-full object-cover">
+                            <img src="{{ $merchant->profile_url ?: asset('placeholder-merchant.jpg') }}"
+                                alt="{{ $merchant->nama_usaha }}" class="h-full w-full object-cover">
                         </div>
-                        
+
                         <!-- Merchant Name -->
                         <h3 class="font-medium mb-2 text-lg line-clamp-1">{{ $merchant->nama_usaha }}</h3>
-                        
+
                         <!-- Rating -->
                         <div class="flex items-center text-amber-500 mb-2">
                             @php
                                 $rating = round($merchant->rating_avg * 2) / 2;
                             @endphp
-                            @for($i = 1; $i <= 5; $i++)
-                                @if($i <= floor($rating))
+                            @for ($i = 1; $i <= 5; $i++)
+                                @if ($i <= floor($rating))
                                     <span>★</span>
                                 @elseif($i - 0.5 == $rating)
                                     <span>★</span>
@@ -206,9 +205,10 @@
                                     <span>☆</span>
                                 @endif
                             @endfor
-                            <span class="text-gray-600 text-sm ml-1">({{ number_format($merchant->rating_avg, 1) }})</span>
+                            <span
+                                class="text-gray-600 text-sm ml-1">({{ number_format($merchant->rating_avg, 1) }})</span>
                         </div>
-                        
+
                         <!-- Stats -->
                         <div class="flex justify-center gap-4 text-sm text-gray-600 mb-2">
                             <div class="flex flex-col items-center">
@@ -221,7 +221,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Action Button -->
                     <div class="px-4 py-3 bg-gray-50 border-t mt-auto">
                         <a href="{{ route('merchant.detail', $merchant->id) }}"
@@ -276,4 +276,4 @@
             </div>
         @endif
     </div>
-</div> 
+</div>
