@@ -67,7 +67,7 @@
                 <div class="flex overflow-x-auto pb-2 gap-3 hide-scrollbar">
                     @foreach ($kategori as $index => $kat)
                         @if ($index < 6)
-                            <a href="{{ route('jasa', $kat->id) }}"
+                            <a href="{{ route('service', $kat->id) }}"
                                 class="flex-shrink-0 bg-white rounded-lg shadow-sm border border-gray-100 p-4 w-[140px] text-center hover:shadow-md transition-shadow">
                                 <div
                                     class="w-12 h-12 bg-homize-blue/10 rounded-full flex items-center justify-center mx-auto mb-3">

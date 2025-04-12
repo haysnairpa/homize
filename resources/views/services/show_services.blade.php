@@ -33,46 +33,56 @@
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <!-- Filters -->
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-8 bg-white p-4 rounded-lg shadow-sm">
-            <div class="flex items-center gap-4">
-                <div x-data="{ open: false }" class="relative">
-                    <button @click="open = !open" class="flex items-center gap-2 px-4 py-2 border rounded-lg hover:border-homize-blue">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-                        </svg>
-                        Filter
-                    </button>
-                    <div x-show="open" @click.away="open = false" class="absolute z-10 mt-2 w-48 bg-white rounded-lg shadow-lg p-4">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Rating</label>
-                                <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-homize-blue focus:ring focus:ring-homize-blue focus:ring-opacity-50">
-                                    <option>Semua Rating</option>
-                                    <option>4+ Bintang</option>
-                                    <option>3+ Bintang</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Harga</label>
-                                <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-homize-blue focus:ring focus:ring-homize-blue focus:ring-opacity-50">
-                                    <option>Semua Harga</option>
-                                    <option>< Rp 100.000</option>
-                                    <option>Rp 100.000 - Rp 500.000</option>
-                                    <option>> Rp 500.000</option>
-                                </select>
+        <form action="{{ route('service', $kategoriData->id) }}" method="GET" id="filterForm" class="mb-8">
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-lg shadow-sm">
+                <div class="flex flex-wrap items-center gap-4">
+                    <div x-data="{ open: false }" class="relative">
+                        <button type="button" @click="open = !open" class="flex items-center gap-2 px-4 py-2 border rounded-lg hover:border-homize-blue">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                            </svg>
+                            Filter
+                        </button>
+                        <div x-show="open" @click.away="open = false" class="absolute z-10 mt-2 w-64 bg-white rounded-lg shadow-lg p-4">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Rating</label>
+                                    <select name="rating" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-homize-blue focus:ring focus:ring-homize-blue focus:ring-opacity-50" onchange="document.getElementById('filterForm').submit()">
+                                        <option value="" {{ ($filters['rating'] ?? '') == '' ? 'selected' : '' }}>Semua Rating</option>
+                                        <option value="4" {{ ($filters['rating'] ?? '') == '4' ? 'selected' : '' }}>4+ Bintang</option>
+                                        <option value="3" {{ ($filters['rating'] ?? '') == '3' ? 'selected' : '' }}>3+ Bintang</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Harga</label>
+                                    <select name="price" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-homize-blue focus:ring focus:ring-homize-blue focus:ring-opacity-50" onchange="document.getElementById('filterForm').submit()">
+                                        <option value="" {{ ($filters['price'] ?? '') == '' ? 'selected' : '' }}>Semua Harga</option>
+                                        <option value="low" {{ ($filters['price'] ?? '') == 'low' ? 'selected' : '' }}>&lt; Rp 100.000</option>
+                                        <option value="medium" {{ ($filters['price'] ?? '') == 'medium' ? 'selected' : '' }}>Rp 100.000 - Rp 500.000</option>
+                                        <option value="high" {{ ($filters['price'] ?? '') == 'high' ? 'selected' : '' }}>&gt; Rp 500.000</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <select name="sort" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-homize-blue" onchange="document.getElementById('filterForm').submit()">
+                        <option value="newest" {{ ($filters['sort'] ?? '') == 'newest' ? 'selected' : '' }}>Terbaru</option>
+                        <option value="rating" {{ ($filters['sort'] ?? '') == 'rating' ? 'selected' : '' }}>Rating Tertinggi</option>
+                        <option value="price_low" {{ ($filters['sort'] ?? '') == 'price_low' ? 'selected' : '' }}>Harga: Rendah ke Tinggi</option>
+                        <option value="price_high" {{ ($filters['sort'] ?? '') == 'price_high' ? 'selected' : '' }}>Harga: Tinggi ke Rendah</option>
+                    </select>
+                    @if(!empty($filters['rating']) || !empty($filters['price']) || ($filters['sort'] ?? '') != 'newest')
+                        <a href="{{ route('service', $kategoriData->id) }}" class="px-4 py-2 text-sm text-gray-700 hover:text-homize-blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Reset Filter
+                        </a>
+                    @endif
                 </div>
-                <select class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-homize-blue">
-                    <option>Terbaru</option>
-                    <option>Rating Tertinggi</option>
-                    <option>Harga: Rendah ke Tinggi</option>
-                    <option>Harga: Tinggi ke Rendah</option>
-                </select>
+                <p class="text-gray-600">{{ $services->count() }} layanan tersedia</p>
             </div>
-            <p class="text-gray-600">{{ $services->count() }} layanan tersedia</p>
-        </div>
+        </form>
 
         <!-- Services Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

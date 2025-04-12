@@ -27,53 +27,63 @@
 
     <!-- Filter & Sort Section -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <div class="flex items-center gap-4">
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center gap-2 hover:border-homize-blue transition-colors">
-                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                        </svg>
-                        Filter
-                    </button>
-                    <div x-show="open" @click.away="open = false" class="absolute z-10 mt-2 w-48 bg-white rounded-lg shadow-lg p-4 space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-                            <div class="space-y-2">
-                                @foreach(range(5, 1) as $rating)
-                                    <label class="flex items-center">
-                                        <input type="checkbox" class="rounded border-gray-300 text-homize-blue focus:ring-homize-blue">
-                                        <span class="ml-2 text-sm text-gray-600">{{ $rating }} Bintang</span>
-                                    </label>
-                                @endforeach
+        <form action="{{ route('jasa', $kategoriData->id) }}" method="GET" id="filterForm">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center gap-2 hover:border-homize-blue transition-colors">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                            </svg>
+                            Filter
+                        </button>
+                        <div x-show="open" @click.away="open = false" class="absolute z-10 mt-2 w-64 bg-white rounded-lg shadow-lg p-4 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                                <div class="space-y-2">
+                                    @foreach(range(5, 1) as $rating)
+                                        <label class="flex items-center">
+                                            <input type="checkbox" name="rating[]" value="{{ $rating }}" class="rounded border-gray-300 text-homize-blue focus:ring-homize-blue"
+                                                {{ in_array($rating, $filters['rating'] ?? []) ? 'checked' : '' }}>
+                                            <span class="ml-2 text-sm text-gray-600">{{ $rating }} Bintang</span>
+                                        </label>
+                                    @endforeach
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Harga</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="radio" name="price" class="text-homize-blue focus:ring-homize-blue">
-                                    <span class="ml-2 text-sm text-gray-600">Termurah</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="price" class="text-homize-blue focus:ring-homize-blue">
-                                    <span class="ml-2 text-sm text-gray-600">Termahal</span>
-                                </label>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Harga</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="radio" name="price" value="lowest" class="text-homize-blue focus:ring-homize-blue"
+                                            {{ ($filters['price'] ?? '') == 'lowest' ? 'checked' : '' }}>
+                                        <span class="ml-2 text-sm text-gray-600">Termurah</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="price" value="highest" class="text-homize-blue focus:ring-homize-blue"
+                                            {{ ($filters['price'] ?? '') == 'highest' ? 'checked' : '' }}>
+                                        <span class="ml-2 text-sm text-gray-600">Termahal</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="pt-2">
+                                <button type="submit" class="w-full px-4 py-2 bg-homize-blue text-white rounded-lg hover:bg-homize-blue-dark transition-colors">
+                                    Terapkan Filter
+                                </button>
                             </div>
                         </div>
                     </div>
+
+                    <select name="sort" class="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-homize-blue" onchange="document.getElementById('filterForm').submit()">
+                        <option value="newest" {{ ($filters['sort'] ?? '') == 'newest' ? 'selected' : '' }}>Terbaru</option>
+                        <option value="rating" {{ ($filters['sort'] ?? '') == 'rating' ? 'selected' : '' }}>Rating Tertinggi</option>
+                        <option value="price_low" {{ ($filters['sort'] ?? '') == 'price_low' ? 'selected' : '' }}>Harga: Rendah ke Tinggi</option>
+                        <option value="price_high" {{ ($filters['sort'] ?? '') == 'price_high' ? 'selected' : '' }}>Harga: Tinggi ke Rendah</option>
+                    </select>
                 </div>
 
-                <select class="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-homize-blue">
-                    <option>Terbaru</option>
-                    <option>Rating Tertinggi</option>
-                    <option>Harga: Rendah ke Tinggi</option>
-                    <option>Harga: Tinggi ke Rendah</option>
-                </select>
+                <p class="text-gray-600">Menampilkan {{ $jasa->count() }} layanan</p>
             </div>
-
-            <p class="text-gray-600">Menampilkan {{ $jasa->count() }} layanan</p>
-        </div>
+        </form>
 
         <!-- Services Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
