@@ -34,7 +34,7 @@
             <h2 class="text-2xl font-semibold text-gray-900 mb-6">Merchant</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 @foreach($merchants as $merchant)
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+                <a href="{{ route('merchant.detail', $merchant->id) }}" class="block bg-white rounded-xl shadow-sm hover:shadow-md hover:-translate-y-1 transition duration-300">
                     <div class="relative">
                         <img src="{{ $merchant->profile_url ?? asset('images/default-merchant.png') }}" 
                              alt="{{ $merchant->nama_usaha }}"
@@ -51,7 +51,7 @@
                             <span class="text-sm text-gray-500">{{ $merchant->review_count }} Review</span>
                         </div>
                     </div>
-                </div>
+                </a>
                 @endforeach
             </div>
         </div>

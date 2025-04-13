@@ -1,3 +1,8 @@
+@php
+    use Illuminate\Support\Facades\Storage;
+    use Illuminate\Support\Facades\DB;
+@endphp
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -24,12 +29,64 @@
             <div class="md:flex">
                 <!-- Image Gallery -->
                 <div class="md:w-1/2">
-                    <div class="relative h-96">
-                        @php
-                            $aset = App\Models\Aset::where('id_layanan', $layanan->id)->first();
-                        @endphp
-                        <img src="{{ $aset ? $aset->media_url : asset('images/default-service.jpg') }}"
-                            alt="{{ $layanan->nama_layanan }}" class="w-full h-full object-cover">
+                    @php
+                        // Get all assets for this service
+                        $assets = DB::table('aset')->where('id_layanan', $layanan->id)->get();
+                        
+                        // Set the default image
+                        $defaultImage = asset('images/default-service.jpg');
+                        
+                        // Array to store all image URLs
+                        $imageUrls = [];
+                        
+                        // If we found assets, process each one
+                        if ($assets && $assets->count() > 0) {
+                            foreach ($assets as $asset) {
+                                // Check if it's already a full URL
+                                if (filter_var($asset->media_url, FILTER_VALIDATE_URL)) {
+                                    $imageUrls[] = $asset->media_url;
+                                } else {
+                                    // Try different approaches to get the correct URL
+                                    if (file_exists(public_path('storage/' . $asset->media_url))) {
+                                        $imageUrls[] = asset('storage/' . $asset->media_url);
+                                    } elseif (file_exists(public_path($asset->media_url))) {
+                                        $imageUrls[] = asset($asset->media_url);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // If no valid images were found, use fallbacks
+                        if (empty($imageUrls)) {
+                            // Try to use merchant profile image as fallback
+                            if (isset($layanan->profile_url)) {
+                                $imageUrls[] = $layanan->profile_url;
+                            } else {
+                                $imageUrls[] = $defaultImage;
+                            }
+                        }
+                    @endphp
+                    
+                    <!-- Image Gallery with Main Image and Thumbnails -->
+                    <div x-data="{ activeImage: '{{ $imageUrls[0] }}', images: {{ json_encode($imageUrls) }} }">
+                        <!-- Main Image -->
+                        <div class="relative h-80 overflow-hidden rounded-t-lg">
+                            <img :src="activeImage" alt="{{ $layanan->nama_layanan }}" class="w-full h-full object-cover">
+                        </div>
+                        
+                        <!-- Thumbnails -->
+                        @if(count($imageUrls) > 1)
+                        <div class="flex overflow-x-auto space-x-2 p-2 bg-gray-100">
+                            @foreach($imageUrls as $index => $url)
+                            <div 
+                                class="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden cursor-pointer transition duration-200"
+                                :class="{ 'ring-2 ring-homize-blue': activeImage === '{{ $url }}' }"
+                                @click="activeImage = '{{ $url }}'">
+                                <img src="{{ $url }}" alt="Thumbnail {{ $index + 1 }}" class="w-full h-full object-cover">
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
                     </div>
                 </div>
 
