@@ -21,7 +21,7 @@ export default {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
             colors: {
-                'homize-blue': '#30A0E0',
+                'homize-blue': '#000',
                 'homize-blue-second': '#1c91c4',
                 'homize-orange': '#FFC973',
                 'homize-white': '#FFFFFF',
