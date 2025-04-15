@@ -1,17 +1,14 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $service->name }} - Homize</title>
-    <link rel="icon" href="{{ asset('homizeiconblue.ico') }}" type="image/x-icon">
-    <link rel="shortcut icon" href="{{ asset('homizeiconblue.ico') }}" type="image/x-icon">
-    @vite('resources/css/app.css')
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body class="font-sans antialiased bg-homize-gray overflow-x-hidden relative min-h-screen min-w-screen">
+<x-guest-layout>
+    <x-slot name="title">{{ $service->name }} - Homize</x-slot>
+    
+    <x-slot name="head">
+        <link rel="icon" href="{{ asset('homizeiconblue.ico') }}" type="image/x-icon">
+        <link rel="shortcut icon" href="{{ asset('homizeiconblue.ico') }}" type="image/x-icon">
+        <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    </x-slot>
+
     <!-- Navigation -->
     @include('components.navigation')
 
@@ -157,5 +154,4 @@
 
     <!-- Footer -->
     @include('components.footer')
-</body>
-</html>
+</x-guest-layout>

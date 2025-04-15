@@ -158,42 +158,7 @@
         </div>
     </div>
 
-    <!-- Reject Modal -->
-    <div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-2">Tolak Merchant</h3>
-                <form id="rejectForm" method="POST">
-                    @csrf
-                    <div class="mb-4">
-                        <label for="rejection_reason" class="block text-sm font-medium text-gray-700">Alasan Penolakan</label>
-                        <textarea
-                            name="rejection_reason"
-                            id="rejection_reason"
-                            rows="3"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            required
-                        ></textarea>
-                    </div>
-                    <div class="flex justify-end space-x-3">
-                        <button
-                            type="button"
-                            onclick="hideRejectModal()"
-                            class="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="submit"
-                            class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        >
-                            Tolak
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Include Chart.js and Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -243,33 +208,54 @@
     </script>
 
     <script>
-        function approveMerchant(id) {
-            if (confirm('Apakah Anda yakin ingin menyetujui merchant ini?')) {
-                fetch(`/admin/merchant/${id}/approve`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(data => {
-                            throw new Error(data.message || 'Terjadi kesalahan saat memproses permintaan');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    alert(data.message);
-                    window.location.reload();
-                })
-                .catch(error => {
-                    alert(error.message || 'Terjadi kesalahan saat memproses permintaan');
-                });
-            }
+        function showApproveModal(id) {
+            const modal = document.getElementById('approveModal');
+            const form = document.getElementById('approveForm');
+            modal.classList.remove('hidden');
+            form.action = `/admin/merchant/${id}/approve`;
         }
+
+        function hideApproveModal() {
+            const modal = document.getElementById('approveModal');
+            const form = document.getElementById('approveForm');
+            modal.classList.add('hidden');
+            form.action = '';
+        }
+
+        function approveMerchant(id) {
+            showApproveModal(id);
+        }
+
+        // Handle approve form submission
+        document.getElementById('approveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Terjadi kesalahan saat memproses permintaan');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideApproveModal();
+                alert(data.message);
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(error.message || 'Terjadi kesalahan saat memproses permintaan');
+            });
+        });
 
         function showRejectModal(id) {
             const modal = document.getElementById('rejectModal');
@@ -324,12 +310,31 @@
             });
         });
     </script>
-    <!-- Reject Modal -->
-    <div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Approve Modal -->
+    <div id="approveModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" aria-labelledby="approve-modal-title" role="dialog" aria-modal="true">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3">
-                <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">Tolak Merchant</h3>
-                <form id="rejectForm" class="mt-4">
+                <h3 class="text-lg font-medium leading-6 text-gray-900" id="approve-modal-title">Setujui Merchant</h3>
+                <form id="approveForm" method="POST" class="mt-4">
+                    @csrf
+                    <div class="mb-4">
+                        <p class="text-gray-700">Apakah Anda yakin ingin menyetujui merchant ini?</p>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideApproveModal()" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Batal</button>
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Setujui</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" aria-labelledby="reject-modal-title" role="dialog" aria-modal="true">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900" id="reject-modal-title">Tolak Merchant</h3>
+                <form id="rejectForm" method="POST" class="mt-4">
                     @csrf
                     <div class="mb-4">
                         <label for="rejection_reason" class="block text-sm font-medium text-gray-700">Alasan Penolakan</label>

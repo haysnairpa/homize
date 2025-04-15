@@ -47,6 +47,30 @@ Route::middleware([
     Route::get('/user/transactions/filter', [DashboardController::class, 'filterTransactions'])->name('user.transactions.filter');
     Route::get('/user/transactions/filter-by-date', [DashboardController::class, 'filterTransactionsByDate'])->name('user.transactions.filter-by-date');
     Route::get('/user/transactions/{id}', [DashboardController::class, 'transactionDetail'])->name('user.transaction.detail');
+
+    // Booking routes
+    Route::get('/booking/{id}', [BookingController::class, 'create'])->name('booking.create');
+    Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+
+    // Pembayaran routes
+    Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
+    Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
+
+    // Midtrans callback
+    Route::post('pembayaran/callback', [MidtransCallbackController::class, 'handle'])->name('pembayaran.callback');
+
+    // Tambahkan route ini di grup yang sesuai
+    Route::get('/pembayaran/{id}/reset-otp', [PembayaranController::class, 'resetOtpAttempts'])->name('pembayaran.reset-otp');
+
+    // Tambahkan route ini
+    Route::get('/pembayaran/check/{id}', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check');
+    Route::get('/pembayaran/force-check/{id}', [PembayaranController::class, 'forceCheckStatus'])->name('pembayaran.force-check');
+
+    Route::get('/pembayaran/{id}/get-token', [PembayaranController::class, 'getToken'])->name('pembayaran.get-token');
+    Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
+
+    Route::get('/pembayaran/{id}/va-number', [PembayaranController::class, 'getVaNumber'])->name('pembayaran.va-number');
+    Route::get('/pembayaran/{id}/qris', [PembayaranController::class, 'showQris'])->name('pembayaran.qris');
 });
 
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
@@ -80,25 +104,10 @@ Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->pre
     Route::get('/analytics', [MerchantController::class, 'analytics'])->name('analytics');
     Route::post('/layanan', [MerchantController::class, 'storeLayanan'])->name('layanan.store');
     Route::get('/orders/{id}/detail', [MerchantController::class, 'orderDetail'])->name('merchant.orders.detail');
+Route::get('/merchant/analytics/data', [MerchantController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
 });
 
-// Booking routes
-Route::get('/booking/{id}', [BookingController::class, 'create'])->name('booking.create');
-Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 
-// Pembayaran routes
-Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
-Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
-
-// Midtrans callback
-Route::post('pembayaran/callback', [MidtransCallbackController::class, 'handle'])->name('pembayaran.callback');
-
-// Tambahkan route ini di grup yang sesuai
-Route::get('/pembayaran/{id}/reset-otp', [PembayaranController::class, 'resetOtpAttempts'])->name('pembayaran.reset-otp');
-
-// Tambahkan route ini
-Route::get('/pembayaran/check/{id}', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check');
-Route::get('/pembayaran/force-check/{id}', [PembayaranController::class, 'forceCheckStatus'])->name('pembayaran.force-check');
 
 Route::get('/search', [SearchController::class, 'search'])->name('search');
 Route::get('/api/search', [SearchController::class, 'apiSearch'])->name('api.search');
@@ -109,8 +118,6 @@ Route::get('/wishlist/content', [WishlistController::class, 'getContent'])->name
 
 Route::get('/merchant/{id}', [MerchantController::class, 'getMerchantDetail'])->name('merchant.detail');
 
-Route::get('/pembayaran/{id}/get-token', [PembayaranController::class, 'getToken'])->name('pembayaran.get-token');
-Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
 Route::get('/merchant/{id}/sort', [MerchantController::class, 'sortLayanan'])->name('merchant.sort');
 
 // Route::post('/merchant/orders/{id}/update-status', [App\Http\Controllers\MerchantController::class, 'updateOrderStatus'])->name('merchant.orders.update-status')->middleware(['auth', 'merchant']);
@@ -124,9 +131,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Tambahkan route ini di bawah route home
 Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filterLayanan'])->name('home.filter');
 
-Route::get('/pembayaran/{id}/va-number', [PembayaranController::class, 'getVaNumber'])->name('pembayaran.va-number');
-
-Route::get('/pembayaran/{id}/qris', [PembayaranController::class, 'showQris'])->name('pembayaran.qris');
 
 Route::prefix('admin')->name('admin.')->group(function () {
     
@@ -146,5 +150,3 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
 });
-
-Route::get('/merchant/analytics/data', [MerchantController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
