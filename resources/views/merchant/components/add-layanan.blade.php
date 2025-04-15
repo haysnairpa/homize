@@ -220,7 +220,7 @@
                         </div>
                     </div>
 
-                    <div id="revisi_fields" class="grid grid-cols-1 md:grid-cols-2 gap-5 hidden">
+                    <div id="revisi_fields" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div class="space-y-2">
                             <label for="revisi_harga" class="block text-sm font-medium text-gray-700">Harga
                                 Revisi</label>
@@ -640,6 +640,7 @@
         if (document.getElementById("tipe_durasi").value === "Pertemuan") {
             document.getElementById("satuan_input_kgs").value = null;
             document.getElementById("satuan").classList.add("hidden");
+            console.log("Tipe durasi is now hidden");
         }
     }
 </script>
