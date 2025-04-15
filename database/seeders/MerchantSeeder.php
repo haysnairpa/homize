@@ -50,6 +50,9 @@ class MerchantSeeder extends Seeder
                 ]),
                 'created_at' => now(),
                 'updated_at' => now(),
+                'verification_status' => 'approved',
+                'rejection_reason' => null,
+                'verified_at' => now()
             ];
         }
 
@@ -73,6 +76,9 @@ class MerchantSeeder extends Seeder
                 ]),
                 'created_at' => now(),
                 'updated_at' => now(),
+                'verification_status' => 'approved',
+                'rejection_reason' => null,
+                'verified_at' => now()
             ];
         }
 

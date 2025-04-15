@@ -65,12 +65,19 @@ class AdminController extends Controller
         // Get total transaction amount
         $totalAmount = \App\Models\Pembayaran::sum('amount');
 
+        // Get pending merchants for verification
+        $pendingMerchants = \App\Models\Merchant::with('user')
+            ->where('verification_status', 'pending')
+            ->latest()
+            ->get();
+
         return view('admin.dashboard', compact(
             'userCount', 
             'merchantCount', 
             'regularUserCount',
             'transactionCount',
-            'totalAmount'
+            'totalAmount',
+            'pendingMerchants'
         ));
     }
 
@@ -147,9 +154,7 @@ class AdminController extends Controller
         $rangeData = collect($ranges)->map(function($range) {
             return [
                 'label' => $range['label'],
-                'count' => \App\Models\Pembayaran::where('amount', '>=', $range['min'])
-                                               ->where('amount', '<', $range['max'])
-                                               ->count()
+                'count' => \App\Models\Pembayaran::where('amount', '>=', $range['min'])->where('amount', '<', $range['max'])->count()
             ];
         });
 
@@ -167,5 +172,65 @@ class AdminController extends Controller
             'minAmount',
             'maxAmount'
         ));
+    }
+
+    public function approveMerchant($id)
+    {
+        $merchant = \App\Models\Merchant::findOrFail($id);
+        
+        if ($merchant->verification_status !== 'pending') {
+            if (request()->expectsJson()) {
+                return response()->json(['message' => 'Merchant sudah diverifikasi atau ditolak.'], 400);
+            }
+            return back()->with('error', 'Merchant sudah diverifikasi atau ditolak.');
+        }
+
+        $merchant->update([
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+            'rejection_reason' => null
+        ]);
+
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Merchant berhasil disetujui.']);
+        }
+        return back()->with('success', 'Merchant berhasil disetujui.');
+    }
+
+    public function rejectMerchant(Request $request, $id)
+    {
+        $validator = validator($request->all(), [
+            'rejection_reason' => 'required|string|max:255'
+        ], [
+            'rejection_reason.required' => 'Alasan penolakan wajib diisi',
+            'rejection_reason.max' => 'Alasan penolakan maksimal 255 karakter'
+        ]);
+
+        if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $validator->errors()->first()], 422);
+            }
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $merchant = \App\Models\Merchant::findOrFail($id);
+        
+        if ($merchant->verification_status !== 'pending') {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Merchant sudah diverifikasi atau ditolak.'], 400);
+            }
+            return back()->with('error', 'Merchant sudah diverifikasi atau ditolak.');
+        }
+
+        $merchant->update([
+            'verification_status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason,
+            'verified_at' => now()
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Merchant berhasil ditolak.']);
+        }
+        return back()->with('success', 'Merchant berhasil ditolak.');
     }
 }

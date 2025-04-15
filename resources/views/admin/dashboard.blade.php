@@ -7,7 +7,63 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+             <!-- Merchant Verification Section -->
+             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mt-6">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Verifikasi Merchant</h3>
+                    
+                    @if($pendingMerchants->isEmpty())
+                        <p class="text-gray-500">Tidak ada merchant yang menunggu verifikasi.</p>
+                    @else
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pemilik</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Daftar</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($pendingMerchants as $merchant)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $merchant->profile_url) }}" alt="">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">{{ $merchant->nama_usaha }}</div>
+                                                    <div class="text-sm text-gray-500">{{ $merchant->alamat }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $merchant->user->name }}</div>
+                                            <div class="text-sm text-gray-500">{{ $merchant->user->email }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $merchant->created_at->format('d M Y H:i') }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button onclick="approveMerchant({{ $merchant->id }})" class="text-green-600 hover:text-green-900 mr-3">
+                                                Setujui
+                                            </button>
+                                            <button onclick="showRejectModal({{ $merchant->id }})" class="text-red-600 hover:text-red-900">
+                                                Tolak
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mt-6">
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Users Card -->
@@ -98,12 +154,15 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>    
         </div>
     </div>
 
-    <!-- Include Chart.js -->
+
+
+    <!-- Include Chart.js and Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
 
     <script>
         // Initialize the pie chart
@@ -147,4 +206,148 @@
             }
         });
     </script>
-</x-admin-layout> 
+
+    <script>
+        function showApproveModal(id) {
+            const modal = document.getElementById('approveModal');
+            const form = document.getElementById('approveForm');
+            modal.classList.remove('hidden');
+            form.action = `/admin/merchant/${id}/approve`;
+        }
+
+        function hideApproveModal() {
+            const modal = document.getElementById('approveModal');
+            const form = document.getElementById('approveForm');
+            modal.classList.add('hidden');
+            form.action = '';
+        }
+
+        function approveMerchant(id) {
+            showApproveModal(id);
+        }
+
+        // Handle approve form submission
+        document.getElementById('approveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Terjadi kesalahan saat memproses permintaan');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideApproveModal();
+                alert(data.message);
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(error.message || 'Terjadi kesalahan saat memproses permintaan');
+            });
+        });
+
+        function showRejectModal(id) {
+            const modal = document.getElementById('rejectModal');
+            const form = document.getElementById('rejectForm');
+            modal.classList.remove('hidden');
+            form.action = `/admin/merchant/${id}/reject`;
+        }
+
+        function hideRejectModal() {
+            const modal = document.getElementById('rejectModal');
+            const form = document.getElementById('rejectForm');
+            const reason = document.getElementById('rejection_reason');
+            modal.classList.add('hidden');
+            form.action = '';
+            reason.value = '';
+        }
+
+        // Handle reject form submission
+        document.getElementById('rejectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+            
+            // Add CSRF token to formData if not already present
+            if (!formData.has('_token')) {
+                formData.append('_token', '{{ csrf_token() }}');
+            }
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json'
+                    // Don't set Content-Type here as it's automatically set with FormData
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Terjadi kesalahan saat memproses permintaan');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideRejectModal();
+                alert(data.message);
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(error.message || 'Terjadi kesalahan saat memproses permintaan');
+            });
+        });
+    </script>
+    <!-- Approve Modal -->
+    <div id="approveModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" aria-labelledby="approve-modal-title" role="dialog" aria-modal="true">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900" id="approve-modal-title">Setujui Merchant</h3>
+                <form id="approveForm" method="POST" class="mt-4">
+                    @csrf
+                    <div class="mb-4">
+                        <p class="text-gray-700">Apakah Anda yakin ingin menyetujui merchant ini?</p>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideApproveModal()" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Batal</button>
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Setujui</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" aria-labelledby="reject-modal-title" role="dialog" aria-modal="true">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900" id="reject-modal-title">Tolak Merchant</h3>
+                <form id="rejectForm" method="POST" class="mt-4">
+                    @csrf
+                    <div class="mb-4">
+                        <label for="rejection_reason" class="block text-sm font-medium text-gray-700">Alasan Penolakan</label>
+                        <textarea id="rejection_reason" name="rejection_reason" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Masukkan alasan penolakan"></textarea>
+                        <!-- Error Message -->
+                        <div id="rejectionError" class="mt-2 text-sm text-red-600 hidden"></div>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideRejectModal()" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Batal</button>
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Tolak</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</x-admin-layout>

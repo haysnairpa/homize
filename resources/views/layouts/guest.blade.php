@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Homize</title>
+    <title>@yield('title', $title ?? 'Homize')</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,8 +14,23 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Custom Head Content -->
+    @stack('head')
+    @isset($head)
+        {{ $head }}
+    @endisset
 </head>
-<body class="font-sans antialiased">
-    {{ $slot }}
-</body>
+
+@hasSection('body')
+    @yield('body')
+@else
+    <body class="font-sans antialiased {{ $bodyClass ?? 'bg-gray-50' }}">
+        @isset($slot)
+            {{ $slot }}
+        @else
+            @yield('content')
+        @endisset
+    </body>
+@endif
 </html>

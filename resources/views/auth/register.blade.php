@@ -19,7 +19,7 @@
         <div class="w-full md:w-1/2 p-6 md:p-12 flex items-center justify-center">
             <div class="w-full max-w-md">
                 <div class="flex justify-end mb-6 md:mb-12">
-                    <a href="#" class="text-gray-600">Butuh bantuan?</a>
+                    <a href="#" class="text-gray-600">Butuh bantuan nih?</a>
                 </div>
 
                 <h1 class="text-xl md:text-2xl font-semibold mb-6 md:mb-8">Daftar Akun Homize</h1>

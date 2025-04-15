@@ -140,14 +140,44 @@ class MerchantController extends Controller
         // Hapus data dari session
         Session::forget('merchant_registration');
 
-        return redirect()->route('merchant.dashboard')
-            ->with('success', 'Pendaftaran merchant berhasil! Selamat datang di dashboard merchant.');
+        return redirect()->route('merchant.verification-status')
+            ->with('success', 'Pendaftaran merchant berhasil! Silakan tunggu verifikasi.');
     }
 
     public function backToStep1()
     {
         // Tidak perlu menghapus data dari session
         return redirect()->route('merchant.register.step1');
+    }
+
+    public function verificationStatus()
+    {
+        $merchant = Auth::user()->merchant;
+        
+        if (!$merchant) {
+            return redirect()->route('merchant.register.step1');
+        }
+
+        if ($merchant->verification_status === 'approved') {
+            return redirect()->route('merchant.dashboard');
+        }
+
+        return view('merchant.verification-status', ['merchant' => $merchant]);
+    }
+
+    public function retryVerification()
+    {
+        $merchant = Auth::user()->merchant;
+        
+        if (!$merchant || $merchant->verification_status === 'approved') {
+            return redirect()->route('merchant.dashboard');
+        }
+
+        // Delete existing merchant record
+        $merchant->delete();
+
+        return redirect()->route('merchant.register.step1')
+            ->with('info', 'Silakan daftar ulang sebagai merchant');
     }
 
     public function dashboard()
