@@ -83,7 +83,7 @@
                         <select id="id_sub_kategori" name="id_sub_kategori" required
                             class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                             <option value="" disabled selected>Pilih Sub Kategori</option>
-                            @foreach($subKategori as $subKat)
+                            @foreach ($subKategori as $subKat)
                                 <option value="{{ $subKat->id }}">{{ $subKat->nama }}</option>
                             @endforeach
                         </select>
@@ -135,23 +135,23 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="space-y-2">
+                        <div class="space-y-2" id="harga_satuan">
                             <label for="harga" class="block text-sm font-medium text-gray-700">Harga <span
                                     class="text-red-500">*</span></label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                     <span class="text-gray-500">Rp</span>
                                 </div>
-                                <input type="number" id="harga" name="harga" min="0"
-                                    placeholder="Masukkan harga layanan" required
+                                <input type="number" id="satuan_input" name="harga" min="0"
+                                    id="harga_satuan_input" placeholder="Masukkan harga layanan" required
                                     class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                             </div>
                         </div>
 
-                        <div class="space-y-2">
+                        <div class="space-y-2" id="satuan">
                             <label for="satuan" class="block text-sm font-medium text-gray-700">Satuan <span
                                     class="text-red-500">*</span></label>
-                            <select name="satuan"
+                            <select name="satuan" id="satuan_input_kgs"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-homize-blue focus:ring-homize-blue">
                                 <option value="kg">Kilogram (kg)</option>
                                 <option value="unit">Unit</option>
@@ -164,14 +164,14 @@
                                     class="text-red-500">*</span></label>
                             <input type="number" id="durasi" name="durasi" min="0"
                                 placeholder="Masukkan durasi layanan" required
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                                class="w-full  px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                         </div>
 
                         <div class="space-y-2">
                             <label for="tipe_durasi" class="block text-sm font-medium text-gray-700">Tipe Durasi <span
                                     class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select id="tipe_durasi" name="tipe_durasi" required
+                                <select onchange="checkPertemuan()" id="tipe_durasi" name="tipe_durasi" required
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
                                     <option value="" disabled selected>Pilih tipe durasi</option>
                                     <option value="Jam">Jam</option>
@@ -635,4 +635,11 @@
             }
         });
     });
+
+    checkPertemuan = () => {
+        if (document.getElementById("tipe_durasi").value === "Pertemuan") {
+            document.getElementById("satuan_input_kgs").value = null;
+            document.getElementById("satuan").classList.add("hidden");
+        }
+    }
 </script>
