@@ -1,14 +1,12 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $kategoriData->nama }} Services - Homize</title>
-    <link rel="icon" href="{{ asset('images/homizeicon.png') }}">
-    @vite('resources/css/app.css')
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="bg-gray-50">
+<x-guest-layout>
+    <x-slot name="title">{{ $kategoriData->nama }} Services - Homize</x-slot>
+    
+    <x-slot name="head">
+        <link rel="icon" href="{{ asset('images/homizeicon.png') }}">
+        <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    </x-slot>
+
     @include('components.navigation')
 
     <!-- Hero Section -->
@@ -31,7 +29,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-gray-50">
         <!-- Filters -->
         <form action="{{ route('service', $kategoriData->id) }}" method="GET" id="filterForm" class="mb-8">
             <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-lg shadow-sm">
@@ -57,9 +55,9 @@
                                     <label class="block text-sm font-medium text-gray-700">Harga</label>
                                     <select name="price" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-homize-blue focus:ring focus:ring-homize-blue focus:ring-opacity-50" onchange="document.getElementById('filterForm').submit()">
                                         <option value="" {{ ($filters['price'] ?? '') == '' ? 'selected' : '' }}>Semua Harga</option>
-                                        <option value="low" {{ ($filters['price'] ?? '') == 'low' ? 'selected' : '' }}>&lt; Rp 100.000</option>
+                                        <option value="low" {{ ($filters['price'] ?? '') == 'low' ? 'selected' : '' }}>< Rp 100.000</option>
                                         <option value="medium" {{ ($filters['price'] ?? '') == 'medium' ? 'selected' : '' }}>Rp 100.000 - Rp 500.000</option>
-                                        <option value="high" {{ ($filters['price'] ?? '') == 'high' ? 'selected' : '' }}>&gt; Rp 500.000</option>
+                                        <option value="high" {{ ($filters['price'] ?? '') == 'high' ? 'selected' : '' }}>> Rp 500.000</option>
                                     </select>
                                 </div>
                             </div>
@@ -126,6 +124,4 @@
     </div>
 
     @include('components.footer')
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-</body>
-</html> 
+</x-guest-layout>
