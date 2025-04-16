@@ -95,10 +95,10 @@
                             <img src="https://cdn.cdnlogo.com/logos/f/91/facebook-icon.svg" alt="Facebook" class="w-4 h-4 md:w-5 md:h-5">
                             Facebook
                         </button>
-                        <button type="button" class="flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2 border border-gray-300 rounded-md">
+                        <a href="{{ route('login.google') }}" class="flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2 border border-gray-300 rounded-md hover:bg-gray-50">
                             <img src="https://cdn.cdnlogo.com/logos/g/35/google-icon.svg" alt="Google" class="w-4 h-4 md:w-5 md:h-5">
                             Google
-                        </button>
+                        </a>
                     </div>
 
                     <div class="text-center text-sm mt-4">

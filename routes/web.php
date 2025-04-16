@@ -134,6 +134,10 @@ Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filter
 // Offline fallback route
 Route::get('/offline', [App\Http\Controllers\HomeController::class, 'offline'])->name('offline');
 
+// Google Login Routes
+Route::get('auth/google', [App\Http\Controllers\SocialiteController::class, 'redirectToGoogle'])->name('login.google');
+Route::get('auth/google/callback', [App\Http\Controllers\SocialiteController::class, 'handleGoogleCallback']);
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
     
