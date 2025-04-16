@@ -190,4 +190,14 @@ class HomeController extends Controller
             'html' => view('home.partials.layanan-grid', compact('layanan'))->render()
         ]);
     }
+
+    /**
+     * Display the offline fallback page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function offline()
+    {
+        return view('errors.offline');
+    }
 }

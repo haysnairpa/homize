@@ -9,6 +9,13 @@ class ExploreServicesController extends Controller
 {
     public function show_services(Request $request, $ids)
     {
+        // Check if category exists first
+        $kategoriData = DB::table('kategori')->where('id', $ids)->first();
+        
+        if (!$kategoriData) {
+            abort(404, 'Category not found');
+        }
+
         // Get navigation data
         app(HomeController::class)->navigation_data();
 
@@ -94,7 +101,6 @@ class ExploreServicesController extends Controller
         }
 
         $services = $query->get();
-        $kategoriData = DB::table('kategori')->where('id', $ids)->first();
 
         // Pass the filter values to the view
         $filters = [

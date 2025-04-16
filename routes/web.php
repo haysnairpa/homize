@@ -131,6 +131,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Tambahkan route ini di bawah route home
 Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filterLayanan'])->name('home.filter');
 
+// Offline fallback route
+Route::get('/offline', [App\Http\Controllers\HomeController::class, 'offline'])->name('offline');
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
     

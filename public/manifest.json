@@ -1,0 +1,19 @@
+{
+  "name": "Homize",
+  "short_name": "Homize",
+  "description": "Platform layanan jasa rumah tangga terpercaya",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#30A0E0",
+  "icons": [
+    {
+      "src": "/homizeiconblue.ico",
+      "sizes": "72x72 96x96 128x128 256x256",
+      "type": "image/x-icon"
+    }
+  ],
+  "orientation": "portrait",
+  "prefer_related_applications": false,
+  "offline_enabled": true
+}

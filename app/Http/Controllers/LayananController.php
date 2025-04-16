@@ -11,7 +11,14 @@ class LayananController extends Controller
 {
     public function show($id)
     {
-        // Ambil data navigasi dari HomeController
+        // Check if layanan exists first
+        $layanan = DB::table('layanan')->where('id', $id)->first();
+        
+        if (!$layanan) {
+            abort(404, 'Service not found');
+        }
+
+        // Get navigation data
         app(HomeController::class)->navigation_data();
 
         $layanan = DB::table('layanan as l')

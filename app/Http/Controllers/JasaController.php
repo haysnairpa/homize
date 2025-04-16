@@ -12,6 +12,13 @@ class JasaController extends Controller
 {
     public function get_jasa(Request $request, $ids)
     {
+        // Check if sub-kategori exists first
+        $subKategori = DB::table('sub_kategori')->where('id', $ids)->first();
+        
+        if (!$subKategori) {
+            abort(404, 'Sub-category not found');
+        }
+
         // Start building the query
         $query = DB::table('layanan as l')
             ->select([
