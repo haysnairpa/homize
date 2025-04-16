@@ -23,5 +23,8 @@
             {{ $slot }}
         </main>
     </div>
+    
+    <!-- Offline Support -->
+    <script src="{{ asset('js/offline-handler.js') }}"></script>
 </body>
 </html>
