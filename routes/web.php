@@ -104,7 +104,7 @@ Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->pre
     Route::get('/analytics', [MerchantController::class, 'analytics'])->name('analytics');
     Route::post('/layanan', [MerchantController::class, 'storeLayanan'])->name('layanan.store');
     Route::get('/orders/{id}/detail', [MerchantController::class, 'orderDetail'])->name('merchant.orders.detail');
-Route::get('/merchant/analytics/data', [MerchantController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
+    Route::get('/merchant/analytics/data', [MerchantController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
 });
 
 
@@ -140,12 +140,12 @@ Route::get('auth/google/callback', [App\Http\Controllers\SocialiteController::cl
 
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    
+
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminController::class, 'login'])->name('login.post');
-    
-     // Protected admin routes
-     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+
+    // Protected admin routes
+    Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
         Route::get('/merchants', [AdminController::class, 'merchants'])->name('merchants');
@@ -154,6 +154,4 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
         Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions');
     });
-
-
 });
