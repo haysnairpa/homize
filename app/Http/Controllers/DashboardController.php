@@ -194,7 +194,7 @@ class DashboardController extends Controller
                                     WHERE b.id = ? AND b.id_user = ?", [$id, $userId]);
 
         if (!$transaction) {
-            return redirect()->route('transactions')->with('error', 'Transaksi tidak ditemukan');
+            abort(404, 'Transaction not found');
         }
 
         return view('user.transaction-detail', compact('transaction'));
