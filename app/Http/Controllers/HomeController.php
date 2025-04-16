@@ -40,7 +40,11 @@ class HomeController extends Controller
             ])
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
             ->leftJoin('rating as r', 'l.id', '=', 'r.id_layanan')
-            ->leftJoin('aset as a', 'l.id', '=', 'a.id_layanan')
+            ->leftJoin(DB::raw('(
+                                    SELECT id_layanan, MIN(media_url) as media_url
+                                    FROM aset
+                                    GROUP BY id_layanan
+                                ) as a'), 'l.id', '=', 'a.id_layanan')
             ->groupBy([
                 'l.id',
                 'l.id_merchant',
@@ -58,6 +62,13 @@ class HomeController extends Controller
             ->orderBy('rating_avg', 'desc')
             ->limit(8)
             ->get();
+
+        $aset = DB::table('aset')
+            ->select('id_layanan', 'media_url', 'deskripsi')
+            ->get()
+            ->groupBy('id_layanan');
+
+
 
         // Ambil semua kategori untuk filter
         $allKategori = Kategori::all();
@@ -114,7 +125,8 @@ class HomeController extends Controller
             'layanan' => $layanan,
             'wishlists' => $wishlists,
             'allKategori' => $allKategori,
-            'popularMerchants' => $popularMerchants
+            'popularMerchants' => $popularMerchants,
+            'aset' => $aset,
         ];
 
         view()->share($sharedData);

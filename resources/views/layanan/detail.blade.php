@@ -170,13 +170,17 @@
             </div>
 
             <!-- Merchant Info -->
-            <div class="border-t border-gray-200 px-8 py-12">
-                <div class="grid grid-cols-12 gap-12">
+            <div class="border-t border-gray-200 px-8 py-8 ">
+                <div class="grid grid-cols-12 gap-4">
                     <!-- Merchant Info Link -->
-                    <div class="col-span-8">
+                    <div class="col-span-8 bg-gray-100 rounded-2xl"
+                        style="background: rgba(243, 244, 246, 0.25);
+                                box-shadow: 0 .5rem 3rem rgba(0, 0, 0, 0.1);
+                                backdrop-filter: blur(.25rem);
+                                -webkit-backdrop-filter: blur(.25rem);">
                         <a href="{{ route('merchant.detail', $layanan->id_merchant) }}"
-                            class="block rounded-lg transition duration-200 p-3">
-                            <div class="flex items-center gap-4">
+                            class="block rounded-lg transition duration-200 p-3 ">
+                            <div class="flex items-center gap-4 ">
                                 <div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
                                     <img src="{{ asset('storage/' . $layanan->profile_url) }}"
                                         alt="{{ $layanan->nama_usaha }}" class="w-full h-full object-scale-down">
@@ -202,7 +206,7 @@
                         @endphp
 
                         <button id="followBtn" data-merchant-id="{{ $layanan->id_merchant }}"
-                            class="w-full px-4 py-2 border-2 border-homize-blue {{ $isFollowing ? 'bg-homize-blue text-white' : 'text-homize-blue bg-white' }} hover:bg-homize-blue hover:text-white rounded-full transition duration-300 flex items-center justify-center gap-2 text-sm">
+                            class="w-full px-4 py-4 border-2 border-homize-blue {{ $isFollowing ? 'bg-homize-blue text-white' : 'bg-white text-homize-blue' }}  hover:bg-homize-blue hover:text-white rounded-full transition duration-300 flex items-center justify-center gap-2 text-md">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="{{ $isFollowing ? 'M5 13l4 4L19 7' : 'M12 4v16m8-8H4' }}" />
@@ -213,7 +217,7 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-8 mt-8">
                     <a href="{{ route('booking.create', $layanan->id) }}"
                         class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
