@@ -23,19 +23,6 @@ class DatabaseSeeder extends Seeder
             SubKategoriSeeder::class,
             StatusSeeder::class,
             HariSeeder::class,
-            UsersSeeder::class,
-            MerchantSeeder::class,
-            JamOperasionalSeeder::class,
-            LayananSeeder::class,
-            TarifLayananSeeder::class,
-            LayananMerchantSeeder::class,
-            BookingScheduleSeeder::class,
-            BookingSeeder::class,
-            PembayaranSeeder::class,
-            RatingSeeder::class,
-            AsetSeeder::class,
-            SertifikasiSeeder::class,
-            TokoFavoritSeeder::class,
         ]);
     }
 }

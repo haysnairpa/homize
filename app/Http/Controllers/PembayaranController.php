@@ -31,16 +31,17 @@ class PembayaranController extends Controller
 
     public function show($id)
     {
-        // Ambil data booking
-        $booking = Booking::with(['user', 'merchant', 'layanan', 'status', 'pembayaran', 'pembayaran.status'])
-            ->findOrFail($id);
+        try {
+        // Find booking or fail with 404
+            $booking = Booking::with(['user', 'merchant', 'layanan', 'status', 'pembayaran', 'pembayaran.status'])
+                ->findOrFail($id);
 
-        // Cek apakah booking milik user yang login
+        // Check if booking belongs to logged in user
         if ($booking->id_user != Auth::id()) {
-            return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini');
+            abort(403, 'You are not authorized to access this page');
         }
 
-        // Cek status pembayaran, jika sudah selesai redirect ke dashboard
+        // Cek apakah booking milik user yang login
         if ($booking->pembayaran->status->nama_status == 'Payment Completed') {
             return redirect()->route('dashboard')->with('success', 'Pembayaran sudah selesai');
         }
@@ -63,18 +64,29 @@ class PembayaranController extends Controller
             ->where('id_layanan', $booking->id_layanan)
             ->first();
 
-        return view('pembayaran.show', compact('booking', 'tarifLayanan'));
+            if (!$tarifLayanan) {
+                abort(404, 'Service rate not found');
+            }
+
+            return view('pembayaran.show', compact('booking', 'tarifLayanan'));
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'Booking not found');
+        } catch (\Exception $e) {
+            abort(500, 'An error occurred while processing your request');
+        }
     }
 
     public function process(Request $request, $id)
     {
-        // Ambil data booking
-        $booking = Booking::with(['user', 'merchant', 'layanan', 'pembayaran'])
-            ->findOrFail($id);
+        try {
+            // Find booking or fail with 404
+            $booking = Booking::with(['user', 'merchant', 'layanan', 'pembayaran'])
+                ->findOrFail($id);
 
-        // Cek apakah booking milik user yang login
+        // Check if booking belongs to logged in user
         if ($booking->id_user != Auth::id()) {
-            return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini');
+            abort(403, 'You are not authorized to access this page');
         }
 
         // Ambil data pembayaran
@@ -99,65 +111,68 @@ class PembayaranController extends Controller
             'gross_amount' => $pembayaran->amount,
         ];
 
-        $customer_details = [
-            'first_name' => $booking->user->name,
-            'email' => $booking->user->email,
-        ];
+            $customer_details = [
+                'first_name' => $booking->user->name,
+                'email' => $booking->user->email,
+            ];
 
-        $item_details = [
-            [
-                'id' => $booking->layanan->id,
-                'price' => $pembayaran->amount,
-                'quantity' => 1,
-                'name' => $booking->layanan->nama_layanan,
-            ]
-        ];
+            $item_details = [
+                [
+                    'id' => $booking->layanan->id,
+                    'price' => $pembayaran->amount,
+                    'quantity' => 1,
+                    'name' => $booking->layanan->nama_layanan,
+                ]
+            ];
 
-        // Konfigurasi payment berdasarkan metode yang dipilih
-        $enabled_payments = [];
+            // Konfigurasi payment berdasarkan metode yang dipilih
+            $enabled_payments = [];
 
-        switch ($paymentMethod) {
-            case 'bank_transfer':
-                $enabled_payments = ['bca_va', 'bni_va', 'bri_va', 'permata_va'];
-                break;
-            case 'e_wallet':
-                $enabled_payments = ['gopay', 'shopeepay'];
-                break;
-            case 'credit_card':
-                $enabled_payments = ['credit_card'];
-                break;
-            case 'qris':
-                $enabled_payments = ['qris'];
-                break;
-            default:
-                $enabled_payments = ['bca_va', 'bni_va', 'bri_va', 'permata_va'];
-        }
+            switch ($paymentMethod) {
+                case 'bank_transfer':
+                    $enabled_payments = ['bca_va', 'bni_va', 'bri_va', 'permata_va'];
+                    break;
+                case 'e_wallet':
+                    $enabled_payments = ['gopay', 'shopeepay'];
+                    break;
+                case 'credit_card':
+                    $enabled_payments = ['credit_card'];
+                    break;
+                case 'qris':
+                    $enabled_payments = ['qris'];
+                    break;
+                default:
+                    $enabled_payments = ['bca_va', 'bni_va', 'bri_va', 'permata_va'];
+            }
 
-
-
-        $transaction = [
-            'transaction_details' => $transaction_details,
-            'customer_details' => $customer_details,
-            'item_details' => $item_details,
-            'enabled_payments' => $enabled_payments
-        ];
+            $transaction = [
+                'transaction_details' => $transaction_details,
+                'customer_details' => $customer_details,
+                'item_details' => $item_details,
+                'enabled_payments' => $enabled_payments
+            ];
 
 
         try {
             // Dapatkan Snap Token
             $snapToken = Snap::getSnapToken($transaction);
 
-            // Update order_id dan snap_token di tabel pembayaran
-            $pembayaran->update([
-                'order_id' => $transaction_details['order_id'],
-                'snap_token' => $snapToken,
-            ]);
+                // Update order_id dan snap_token di tabel pembayaran
+                $pembayaran->update([
+                    'order_id' => $transaction_details['order_id'],
+                    'snap_token' => $snapToken,
+                ]);
 
-            // Untuk semua metode pembayaran, gunakan Snap popup
-            return view('pembayaran.process_popup', compact('booking', 'pembayaran', 'snapToken'));
+                // Untuk semua metode pembayaran, gunakan Snap popup
+                return view('pembayaran.process_popup', compact('booking', 'pembayaran', 'snapToken'));
+            } catch (\Exception $e) {
+                Log::error('Midtrans error: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            }
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'Booking not found');
         } catch (\Exception $e) {
-            Log::error('Midtrans error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            abort(500, 'An error occurred while processing your request');
         }
     }
 
@@ -391,19 +406,30 @@ class PembayaranController extends Controller
     // Tambahkan method untuk halaman process_popup
     public function processPopup($id)
     {
-        // Ambil data booking
-        $booking = Booking::with(['user', 'merchant', 'layanan', 'pembayaran'])
-            ->findOrFail($id);
+        try {
+            // Find booking or fail with 404
+            $booking = Booking::with(['user', 'merchant', 'layanan', 'pembayaran'])
+                ->findOrFail($id);
 
-        // Cek apakah booking milik user yang login
-        if ($booking->id_user != Auth::id()) {
-            return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini');
+            // Check if booking belongs to logged in user
+            if ($booking->id_user != Auth::id()) {
+                abort(403, 'You are not authorized to access this page');
+            }
+
+            // Ambil data pembayaran
+            $pembayaran = $booking->pembayaran;
+
+            if (!$pembayaran) {
+                abort(404, 'Payment data not found');
+            }
+
+            return view('pembayaran.process_popup', compact('booking', 'pembayaran'));
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'Booking not found');
+        } catch (\Exception $e) {
+            abort(500, 'An error occurred while processing your request');
         }
-
-        // Ambil data pembayaran
-        $pembayaran = $booking->pembayaran;
-
-        return view('pembayaran.process_popup', compact('booking', 'pembayaran'));
     }
 
     // Tambahkan method baru untuk cek status pembayaran dari Midtrans
@@ -415,7 +441,7 @@ class PembayaranController extends Controller
             \Midtrans\Config::$isProduction = config('midtrans.is_production');
 
             // Get transaction status dari Midtrans
-            $status = \Midtrans\Transaction::status($pembayaran->order_id);
+            $status = (object) \Midtrans\Transaction::status($pembayaran->order_id);
 
             Log::info('Checking payment status for order_id: ' . $pembayaran->order_id, [
                 'midtrans_status' => $status->transaction_status ?? 'unknown'
@@ -632,8 +658,8 @@ class PembayaranController extends Controller
             \Midtrans\Config::$serverKey = config('midtrans.server_key');
             \Midtrans\Config::$isProduction = config('midtrans.is_production');
 
-            // Get transaction status dari Midtrans
-            $status = \Midtrans\Transaction::status($booking->pembayaran->order_id);
+            // Get transaction status dari Midtrans and cast to object
+            $status = (object) \Midtrans\Transaction::status($booking->pembayaran->order_id);
 
             Log::info('Manual check status: ', [
                 'order_id' => $booking->pembayaran->order_id,
@@ -725,8 +751,8 @@ class PembayaranController extends Controller
             \Midtrans\Config::$serverKey = config('midtrans.server_key');
             \Midtrans\Config::$isProduction = config('midtrans.is_production');
 
-            // Get transaction status dari Midtrans
-            $status = \Midtrans\Transaction::status($booking->pembayaran->order_id);
+            // Get transaction status dari Midtrans and cast to object
+            $status = (object) \Midtrans\Transaction::status($booking->pembayaran->order_id);
 
             // Log untuk debugging
             Log::info('Transaction status for VA number:', [

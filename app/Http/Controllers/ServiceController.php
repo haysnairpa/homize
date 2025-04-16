@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Services;
 use App\Models\Rate;
+use App\Models\Rating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -18,7 +19,7 @@ class ServiceController extends Controller
         $shopIds = $service->shop_services->pluck('shop.id');
 
         // Get rates for these shops
-        $rates = Rate::with(['customer'])
+        $rates = Rating::with(['customer'])
             ->whereIn('id_shop', $shopIds)
             ->orderBy('created_at', 'desc')
             ->get();

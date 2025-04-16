@@ -1,4 +1,5 @@
 <x-guest-layout>
+    <x-slot name="bodyClass">overflow-hidden</x-slot>
     <div class="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:pt-0 overflow-hidden">
         <!-- Enhanced animated background elements -->
         <div class="absolute inset-0 overflow-hidden opacity-20 dark:opacity-15">
@@ -65,7 +66,7 @@
                         
                         <!-- Enhanced typography -->
                         <h1 class="text-5xl sm:text-6xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#30A0E0] to-[#FFC973] mb-4">Anda Sedang Offline</h1>
-                        <p class="text-xl text-black mb-10 max-w-xl mx-auto leading-relaxed">
+                        <p class="text-xl text-white mb-10 max-w-xl mx-auto leading-relaxed">
                             Sepertinya koneksi internet Anda terputus. Periksa koneksi internet Anda dan coba lagi.
                         </p>
                         
