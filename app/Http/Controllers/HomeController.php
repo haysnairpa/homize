@@ -34,7 +34,7 @@ class HomeController extends Controller
                 'l.*',
                 'tl.harga',
                 'tl.satuan',
-                'a.media_url as gambar',
+                'a.media_url',
                 DB::raw('COALESCE(AVG(r.rate), 0) as rating_avg'),
                 DB::raw('COUNT(DISTINCT r.id) as rating_count')
             ])

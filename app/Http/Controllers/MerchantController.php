@@ -64,7 +64,7 @@ class MerchantController extends Controller
         $validated = $request->validate([
             'nama_usaha' => 'required|string|max:255',
             'id_kategori' => 'required|exists:kategori,id',
-            'profile_url' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'profile_url' => 'required|image|mimes:jpeg,png,jpg|max:1024',
         ], [
             'nama_usaha.required' => 'Nama usaha wajib diisi',
             'id_kategori.required' => 'Kategori usaha wajib dipilih',
@@ -75,7 +75,7 @@ class MerchantController extends Controller
         ]);
 
         // Simpan file ke storage
-        $profilePath = $request->file('profile_url')->store('temp-merchant-profiles', 'public');
+        $profilePath = $request->file('profile_url')->store('merchant-profiles', 'public');
 
         // Simpan data ke session
         $merchantData = [

@@ -125,8 +125,8 @@
             @foreach ($layanan as $item)
                 <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                     <div class="relative">
-                        <img src="{{ asset($item->gambar) }}" alt="{{ $item->nama_layanan }}"
-                            class="w-full h-48 object-cover">
+                        <img src="{{ $item ? asset('storage/' . $item->media_url) : asset('images/default-service.jpg') }}"
+                            alt="{{ $item->nama_layanan }}" class="w-full h-48 object-scale-down">
                         <button class="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
@@ -184,8 +184,8 @@
                     <div class="p-6 flex-grow flex flex-col items-center text-center">
                         <!-- Merchant Profile Image -->
                         <div class="w-24 h-24 rounded-full bg-gray-200 mb-4 overflow-hidden flex-shrink-0">
-                            <img src="{{ $merchant->profile_url ?: asset('placeholder-merchant.jpg') }}"
-                                alt="{{ $merchant->nama_usaha }}" class="h-full w-full object-cover">
+                            <img src="{{ $merchant ? asset('storage/' . $merchant->profile_url) : asset('placeholder-merchant.jpg') }}"
+                                alt="{{ $merchant->nama_usaha }}" class="h-full w-full object-scale-down">
                         </div>
 
                         <!-- Merchant Name -->

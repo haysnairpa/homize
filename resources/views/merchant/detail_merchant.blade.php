@@ -22,7 +22,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <h1 class="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4">{{ $merchant->nama_usaha }}</h1>
-                <p class="text-base md:text-xl text-white/80">Temukan layanan terbaik dari {{ $merchant->nama_usaha }}</p>
+                <p class="text-base md:text-xl text-white/80">Temukan layanan terbaik dari {{ $merchant->nama_usaha }}
+                </p>
             </div>
         </div>
     </div>
@@ -33,13 +34,14 @@
             <div class="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
                 <!-- Merchant Image -->
                 <div class="flex-shrink-0">
-                    <img src="{{ $merchant->profile_url }}" alt="{{ $merchant->nama_usaha }}"
-                        class="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-homize-blue">
+                    <img src="{{ asset('storage/' . $merchant->profile_url) }}" alt="{{ $merchant->nama_usaha }}"
+                        class="w-24 h-24 md:w-32 md:h-32 rounded-full object-scale-down border-4 border-homize-blue">
                 </div>
 
                 <!-- Merchant Details -->
                 <div class="flex-grow w-full">
-                    <div class="flex flex-col md:flex-row items-center md:items-start md:justify-between gap-3 md:mb-4 text-center md:text-left">
+                    <div
+                        class="flex flex-col md:flex-row items-center md:items-start md:justify-between gap-3 md:mb-4 text-center md:text-left">
                         <div>
                             <h2 class="text-xl md:text-2xl font-bold text-gray-800">{{ $merchant->nama_usaha }}</h2>
                             <p class="text-gray-600 mt-1 text-sm md:text-base">{{ $merchant->alamat }}</p>
@@ -62,7 +64,8 @@
                     </div>
 
                     <!-- Merchant Stats -->
-                    <div class="flex flex-wrap justify-center md:justify-start items-center gap-4 md:gap-8 mt-3 md:mt-0">
+                    <div
+                        class="flex flex-wrap justify-center md:justify-start items-center gap-4 md:gap-8 mt-3 md:mt-0">
                         <div class="flex items-center gap-1 md:gap-2">
                             <div class="flex items-center">
                                 @for ($i = 1; $i <= 5; $i++)
@@ -73,23 +76,28 @@
                                     </svg>
                                 @endfor
                             </div>
-                            <span class="text-sm md:text-base text-gray-600">{{ number_format($merchant->rating_avg, 1) }}</span>
+                            <span
+                                class="text-sm md:text-base text-gray-600">{{ number_format($merchant->rating_avg, 1) }}</span>
                             <span class="text-xs md:text-sm text-gray-500">({{ $merchant->rating_count }})</span>
                         </div>
                         <div class="flex items-center gap-1 md:gap-2">
-                            <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
-                            <span class="text-sm md:text-base text-gray-600" id="followerCount">{{ $merchant->follower_count }}
+                            <span class="text-sm md:text-base text-gray-600"
+                                id="followerCount">{{ $merchant->follower_count }}
                                 Pengikut</span>
                         </div>
                         <div class="flex items-center gap-1 md:gap-2">
-                            <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
-                            <span class="text-sm md:text-base text-gray-600">{{ $merchant->transaction_count }} Transaksi</span>
+                            <span class="text-sm md:text-base text-gray-600">{{ $merchant->transaction_count }}
+                                Transaksi</span>
                         </div>
                     </div>
                 </div>
@@ -112,7 +120,8 @@
         </div>
 
         <!-- Services Grid -->
-        <div id="servicesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+        <div id="servicesGrid"
+            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
             @include('merchant.partials.layanan-grid', ['layanan' => $layanan])
         </div>
     </div>

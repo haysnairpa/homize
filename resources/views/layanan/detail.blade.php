@@ -31,31 +31,30 @@
                 <div class="md:w-1/2">
                     @php
                         // Get all assets for this service
-                        $assets = DB::table('aset')->where('id_layanan', $layanan->id)->get();
-                        
+                        $assets = DB::table('aset')->where('id_layanan', $layanan->id)->pluck('media_url');
+
                         // Set the default image
                         $defaultImage = asset('images/default-service.jpg');
-                        
+
                         // Array to store all image URLs
                         $imageUrls = [];
-                        
+
                         // If we found assets, process each one
                         if ($assets && $assets->count() > 0) {
                             foreach ($assets as $asset) {
                                 // Check if it's already a full URL
-                                if (filter_var($asset->media_url, FILTER_VALIDATE_URL)) {
-                                    $imageUrls[] = $asset->media_url;
-                                } else {
-                                    // Try different approaches to get the correct URL
-                                    if (file_exists(public_path('storage/' . $asset->media_url))) {
-                                        $imageUrls[] = asset('storage/' . $asset->media_url);
-                                    } elseif (file_exists(public_path($asset->media_url))) {
-                                        $imageUrls[] = asset($asset->media_url);
+        if (filter_var($asset, FILTER_VALIDATE_URL)) {
+            $imageUrls[] = $asset;
+        } else {
+            // Try different approaches to get the correct URL
+            if (file_exists(public_path('storage/' . $asset))) {
+                $imageUrls[] = asset('storage/' . $asset);
+                                    } elseif (file_exists(public_path($asset))) {
+                                        $imageUrls[] = asset($asset);
                                     }
                                 }
                             }
                         }
-                        
                         // If no valid images were found, use fallbacks
                         if (empty($imageUrls)) {
                             // Try to use merchant profile image as fallback
@@ -66,26 +65,27 @@
                             }
                         }
                     @endphp
-                    
+
                     <!-- Image Gallery with Main Image and Thumbnails -->
                     <div x-data="{ activeImage: '{{ $imageUrls[0] }}', images: {{ json_encode($imageUrls) }} }">
                         <!-- Main Image -->
                         <div class="relative h-80 overflow-hidden rounded-t-lg">
-                            <img :src="activeImage" alt="{{ $layanan->nama_layanan }}" class="w-full h-full object-cover">
+                            <img :src="activeImage" alt="{{ $layanan->nama_layanan }}"
+                                class="w-full h-full object-scale-down p-6">
                         </div>
-                        
+
                         <!-- Thumbnails -->
-                        @if(count($imageUrls) > 1)
-                        <div class="flex overflow-x-auto space-x-2 p-2 bg-gray-100">
-                            @foreach($imageUrls as $index => $url)
-                            <div 
-                                class="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden cursor-pointer transition duration-200"
-                                :class="{ 'ring-2 ring-homize-blue': activeImage === '{{ $url }}' }"
-                                @click="activeImage = '{{ $url }}'">
-                                <img src="{{ $url }}" alt="Thumbnail {{ $index + 1 }}" class="w-full h-full object-cover">
+                        @if (count($imageUrls) > 1)
+                            <div class="flex overflow-x-auto space-x-2 p-2 bg-gray-100">
+                                @foreach ($imageUrls as $index => $url)
+                                    <div class="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden cursor-pointer transition duration-200"
+                                        :class="{ 'ring-2 ring-homize-blue': activeImage === '{{ $url }}' }"
+                                        @click="activeImage = '{{ $url }}'">
+                                        <img src="{{ $url }}" alt="Thumbnail {{ $index + 1 }}"
+                                            class="w-full h-full object-cover">
+                                    </div>
+                                @endforeach
                             </div>
-                            @endforeach
-                        </div>
                         @endif
                     </div>
                 </div>
@@ -178,8 +178,8 @@
                             class="block rounded-lg transition duration-200 p-3">
                             <div class="flex items-center gap-4">
                                 <div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
-                                    <img src="{{ $layanan->profile_url }}" alt="{{ $layanan->nama_usaha }}"
-                                        class="w-full h-full object-cover">
+                                    <img src="{{ asset('storage/' . $layanan->profile_url) }}"
+                                        alt="{{ $layanan->nama_usaha }}" class="w-full h-full object-scale-down">
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h2 class="text-lg font-bold text-gray-900 truncate">{{ $layanan->nama_usaha }}
