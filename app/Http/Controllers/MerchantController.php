@@ -153,7 +153,7 @@ class MerchantController extends Controller
     public function verificationStatus()
     {
         $merchant = Auth::user()->merchant;
-        
+
         if (!$merchant) {
             return redirect()->route('merchant.register.step1');
         }
@@ -168,7 +168,7 @@ class MerchantController extends Controller
     public function retryVerification()
     {
         $merchant = Auth::user()->merchant;
-        
+
         if (!$merchant || $merchant->verification_status === 'approved') {
             return redirect()->route('merchant.dashboard');
         }
@@ -1013,14 +1013,30 @@ class MerchantController extends Controller
             // Handle aset (images)
             if ($request->hasFile('aset_layanan')) {
                 foreach ($request->file('aset_layanan') as $file) {
-                    $path = $file->store('layanan-images', 'public');
-                    Aset::create([
-                        'id_layanan' => $layanan->id,
-                        'media_url' => $path,
-                        'deskripsi' => $request->nama_layanan  // Add default description
-                    ]);
+                    if ($file->isValid()) {
+                        if ($file->getSize() > 1000000) {
+                            throw new \Exception("Gambar" . $file . "lebih besar dari 1MB!");
+                        }
+
+                        $path = $file->store('layanan-images', 'public');
+
+                        Aset::create([
+                            'id_layanan' => $layanan->id,
+                            'media_url' => $path,
+                            'deskripsi' => $request->nama_layanan // or any fallback description
+                        ]);
+                    } else {
+                        throw new \Exception("Gambar" . $file . "bukan tipe yang valid (.png, .jpeg, dll)");
+                    }
                 }
+            } else {
+                Aset::create([
+                    'id_layanan' => $layanan->id,
+                    'media_url' => null,
+                    'deskripsi' => "Penjual ini tidak mempunyai foto toko",
+                ]);
             }
+
 
             // Handle sertifikasi
             if ($request->has('sertifikasi')) {

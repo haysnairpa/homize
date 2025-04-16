@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('id_layanan')->index('fk_aset_to_layanan');
             $table->string('deskripsi');
-            $table->string('media_url');
+            $table->string('media_url')->nullable();
             $table->timestamps();
         });
     }
