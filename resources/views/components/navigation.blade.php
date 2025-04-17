@@ -5,8 +5,10 @@
             <!-- Mobile menu button -->
             <div class="flex items-center lg:hidden">
                 <button id="mobileMenuButton" type="button" class="text-white hover:text-homize-orange">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
             </div>
@@ -32,15 +34,14 @@
             <div class="hidden md:flex flex-1 max-w-2xl mx-4">
                 <form action="{{ route('search') }}" method="GET" class="w-full">
                     <div class="relative">
-                        <input type="text" 
-                               name="query" 
-                               value="{{ request('query') }}"
-                               class="w-full bg-white rounded-md py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-homize-blue" 
-                               placeholder="Cari layanan atau merchant...">
-                        
+                        <input type="text" name="query" value="{{ request('query') }}"
+                            class="w-full bg-white rounded-md py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-homize-blue"
+                            placeholder="Cari layanan atau merchant...">
+
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
                     </div>
@@ -51,10 +52,11 @@
             <div class="flex items-center space-x-4 h-full">
 
                 <!-- Bookmark Icon -->
-                <div id="wishlistButton" class="relative group hidden sm:block cursor-pointer">    
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-white hover:fill-homize-orange cursor-pointer"
-                        viewBox="0 0 24 24">
-                        <path d="M16 2H8a3.003 3.003 0 0 0-3 3v16.5a.5.5 0 0 0 .75.434l6.25-3.6l6.25 3.6A.5.5 0 0 0 19 21.5V5a3.003 3.003 0 0 0-3-3zm2 18.635l-5.75-3.312a.51.51 0 0 0-.5 0L6 20.635V5a2.003 2.003 0 0 1 2-2h8a2.003 2.003 0 0 1 2 2v15.635z" />
+                <div id="wishlistButton" class="relative group hidden sm:block cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="w-5 h-5 fill-white hover:fill-homize-orange cursor-pointer" viewBox="0 0 24 24">
+                        <path
+                            d="M16 2H8a3.003 3.003 0 0 0-3 3v16.5a.5.5 0 0 0 .75.434l6.25-3.6l6.25 3.6A.5.5 0 0 0 19 21.5V5a3.003 3.003 0 0 0-3-3zm2 18.635l-5.75-3.312a.51.51 0 0 0-.5 0L6 20.635V5a2.003 2.003 0 0 1 2-2h8a2.003 2.003 0 0 1 2 2v15.635z" />
                     </svg>
                 </div>
 
@@ -67,14 +69,16 @@
                             <button @click="open = !open"
                                 class="flex items-center space-x-2 text-white hover:text-homize-orange">
                                 <span class="text-sm font-medium capitalize">{{ Auth::user()->nama }}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                    fill="currentColor">
                                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
                                         clip-rule="evenodd" />
                                 </svg>
                             </button>
 
                             <div x-show="open" @click.away="open = false"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1" style="display: none;">
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1"
+                                style="display: none;">
                                 <a href="{{ route('dashboard') }}"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a>
                                 <form method="POST" action="{{ route('logout') }}">
@@ -87,7 +91,8 @@
                             </div>
                         </div>
                     @else
-                        <a href="/login" class="text-white hover:text-homize-orange px-3 py-2 text-sm font-medium">Masuk</a>
+                        <a href="/login"
+                            class="text-white hover:text-homize-orange px-3 py-2 text-sm font-medium">Masuk</a>
                         <a href="/register"
                             class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-homize-blue bg-homize-white hover:bg-gray-100">
                             Daftar
@@ -113,14 +118,17 @@
                         }
                     }
                 @endphp
-                @if(isset($bottomNavigation) && count($bottomNavigation) > 0)
-                    <a href="#" class="text-white hover:text-homize-orange">
+                @if (isset($bottomNavigation) && count($bottomNavigation) > 0)
+                    <a href="{{ route('jasa', [$bottomNavigation[$randomNumbers[0]]->id]) }}"
+                        class="text-white hover:text-homize-orange">
                         {{ $bottomNavigation[$randomNumbers[0]]->category_name }}
                     </a>
-                    <a href="#" class="text-white hover:text-homize-orange">
+                    <a href="{{ route('jasa', [$bottomNavigation[$randomNumbers[1]]->id]) }}"
+                        class="text-white hover:text-homize-orange">
                         {{ $bottomNavigation[$randomNumbers[1]]->category_name }}
                     </a>
-                    <a href="#" class="text-white hover:text-homize-orange">
+                    <a href="{{ route('jasa', [$bottomNavigation[$randomNumbers[2]]->id]) }}"
+                        class="text-white hover:text-homize-orange">
                         {{ $bottomNavigation[$randomNumbers[2]]->category_name }}
                     </a>
                 @endif
@@ -133,29 +141,28 @@
         <div class="relative w-full" x-data="searchMobile()">
             <form action="{{ route('search') }}" method="GET">
                 <div class="relative">
-                    <input type="text" 
-                        name="query"
-                        value="{{ request('query') }}"
-                        x-model="searchQuery" 
-                        @input.debounce.300ms="search"
-                        @click.away="closeResults" 
-                        @keydown.escape="closeResults"
+                    <input type="text" name="query" value="{{ request('query') }}" x-model="searchQuery"
+                        @input.debounce.300ms="search" @click.away="closeResults" @keydown.escape="closeResults"
                         @keydown.arrow-down.prevent="navigateResults('down')"
-                        @keydown.arrow-up.prevent="navigateResults('up')"
-                        @keydown.enter.prevent="selectResult"
-                        class="w-full bg-white rounded-md py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-homize-blue" 
+                        @keydown.arrow-up.prevent="navigateResults('up')" @keydown.enter.prevent="selectResult"
+                        class="w-full bg-white rounded-md py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-homize-blue"
                         placeholder="Cari layanan atau merchant...">
-                    
+
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
 
                     <div x-show="isLoading" class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                        <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
                     </div>
                 </div>
@@ -165,17 +172,16 @@
                 class="absolute mt-1 w-full bg-white rounded-md shadow-lg overflow-hidden z-50">
                 <div class="max-h-96 overflow-y-auto">
                     <template x-for="(result, index) in searchResults" :key="result.id">
-                        <a :href="result.url" 
-                           class="block hover:bg-gray-50 transition-colors"
-                           :class="{'bg-gray-50': selectedIndex === index}"
-                           @mouseover="selectedIndex = index">
+                        <a :href="result.url" class="block hover:bg-gray-50 transition-colors"
+                            :class="{ 'bg-gray-50': selectedIndex === index }" @mouseover="selectedIndex = index">
                             <div class="flex items-center p-4">
                                 <img :src="result.image" :alt="result.name"
                                     class="h-12 w-12 object-cover rounded">
                                 <div class="ml-4 flex-1">
                                     <div class="flex items-center justify-between">
                                         <p class="text-sm font-medium text-gray-900" x-text="result.name"></p>
-                                        <p class="text-sm font-medium text-homize-blue" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(result.price)"></p>
+                                        <p class="text-sm font-medium text-homize-blue"
+                                            x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(result.price)"></p>
                                     </div>
                                     <p class="text-sm text-gray-500 mt-1">
                                         <span x-text="result.merchant"></span> •
@@ -185,7 +191,8 @@
                             </div>
                         </a>
                     </template>
-                    <div x-show="searchResults.length === 0 && searchQuery !== ''" class="p-4 text-sm text-gray-500 text-center">
+                    <div x-show="searchResults.length === 0 && searchQuery !== ''"
+                        class="p-4 text-sm text-gray-500 text-center">
                         Tidak ada hasil yang ditemukan
                     </div>
                 </div>
@@ -199,16 +206,20 @@
             <div class="px-3 py-2 text-white font-medium">Kategori</div>
             @foreach ($kategori as $nav)
                 <div class="px-3">
-                    <button class="mobile-category-button w-full text-left text-white hover:text-homize-orange py-2 text-sm font-medium flex items-center justify-between">
+                    <button
+                        class="mobile-category-button w-full text-left text-white hover:text-homize-orange py-2 text-sm font-medium flex items-center justify-between">
                         {{ $nav->nama }}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
                     <div class="mobile-subcategory hidden pl-4 py-2 space-y-2">
                         @foreach ($sub_kategori as $index1 => $sub)
                             @if ($sub->id_kategori == $nav->id)
-                                <a href="{{ route('jasa', [$ids[$index1]->id]) }}" class="block text-white hover:text-homize-orange text-sm py-1">
+                                <a href="{{ route('jasa', [$ids[$index1]->id]) }}"
+                                    class="block text-white hover:text-homize-orange text-sm py-1">
                                     {{ trim($sub->nama) }}
                                 </a>
                             @endif
@@ -216,11 +227,12 @@
                     </div>
                 </div>
             @endforeach
-            
+
             <!-- Mobile Auth Links -->
             <div class="border-t border-homize-blue-second pt-3 mt-3">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">Dashboard</a>
+                    <a href="{{ route('dashboard') }}"
+                        class="block px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">Dashboard</a>
                     <form method="POST" action="{{ route('logout') }}" class="block px-3 py-2">
                         @csrf
                         <button type="submit" class="text-white hover:text-homize-orange text-sm font-medium">
@@ -228,8 +240,10 @@
                         </button>
                     </form>
                 @else
-                    <a href="/login" class="block px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">Masuk</a>
-                    <a href="/register" class="block px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">Daftar</a>
+                    <a href="/login"
+                        class="block px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">Masuk</a>
+                    <a href="/register"
+                        class="block px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">Daftar</a>
                 @endauth
             </div>
         </div>
@@ -270,23 +284,24 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 max-h-[400px] overflow-y-auto" id="wishlistContent">
             <div class="space-y-6">
                 @auth
-                    @if(isset($wishlists) && count($wishlists) > 0)
+                    @if (isset($wishlists) && count($wishlists) > 0)
                         <div class="space-y-4">
-                            @foreach($wishlists as $wishlist)
-                                <div class="bg-white border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors">
+                            @foreach ($wishlists as $wishlist)
+                                <div
+                                    class="bg-white border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors">
                                     <div class="flex items-center gap-4">
                                         <!-- Checkbox (optional) -->
                                         <div class="flex-shrink-0">
-                                            <input type="checkbox" class="h-5 w-5 rounded border-gray-300 text-homize-blue focus:ring-homize-blue">
+                                            <input type="checkbox"
+                                                class="h-5 w-5 rounded border-gray-300 text-homize-blue focus:ring-homize-blue">
                                         </div>
-                                        
+
                                         <!-- Service Image -->
                                         <div class="flex-shrink-0">
-                                            <img src="{{ $wishlist->profile_url ?? asset('images/default-merchant.png') }}" 
-                                                alt="{{ $wishlist->nama_usaha }}" 
-                                                class="h-16 w-16 object-cover rounded">
+                                            <img src="{{ $wishlist->profile_url ?? asset('images/default-merchant.png') }}"
+                                                alt="{{ $wishlist->nama_usaha }}" class="h-16 w-16 object-cover rounded">
                                         </div>
-                                        
+
                                         <!-- Service Info -->
                                         <div class="flex-1">
                                             <h3 class="font-medium text-gray-900">{{ $wishlist->nama_layanan }}</h3>
@@ -295,13 +310,13 @@
                                                 <p>Waktu: {{ $wishlist->durasi }} {{ $wishlist->tipe_durasi }}</p>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Price -->
                                         <div class="flex-shrink-0 text-right">
                                             <div class="text-homize-blue font-medium">
                                                 Rp{{ number_format($wishlist->harga, 0, ',', '.') }}/{{ $wishlist->satuan }}
                                             </div>
-                                        </div>    
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
@@ -309,13 +324,16 @@
                     @else
                         <div class="bg-gray-50 rounded-lg p-8 text-center">
                             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-400" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
                             </div>
                             <h3 class="text-lg font-medium text-gray-900 mb-2">Wishlist Anda Kosong</h3>
                             <p class="text-gray-500 mb-4">Belum ada layanan yang ditambahkan ke wishlist</p>
-                            <a href="#" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md text-white bg-homize-blue hover:bg-homize-blue-second transition-colors">
+                            <a href="#"
+                                class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md text-white bg-homize-blue hover:bg-homize-blue-second transition-colors">
                                 Jelajahi Layanan
                             </a>
                         </div>
@@ -323,17 +341,21 @@
                 @else
                     <div class="bg-gray-50 rounded-lg p-8 text-center">
                         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-400" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 mb-2">Silahkan Login</h3>
                         <p class="text-gray-500 mb-4">Login untuk melihat dan mengelola wishlist Anda</p>
                         <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <a href="/login" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md text-white bg-homize-blue hover:bg-homize-blue-second transition-colors w-full sm:w-auto">
+                            <a href="/login"
+                                class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md text-white bg-homize-blue hover:bg-homize-blue-second transition-colors w-full sm:w-auto">
                                 Masuk
                             </a>
-                            <a href="/register" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md text-homize-blue border border-homize-blue hover:bg-homize-blue hover:text-white transition-colors w-full sm:w-auto">
+                            <a href="/register"
+                                class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md text-homize-blue border border-homize-blue hover:bg-homize-blue hover:text-white transition-colors w-full sm:w-auto">
                                 Daftar
                             </a>
                         </div>
@@ -370,13 +392,15 @@
             button.addEventListener('click', function() {
                 const subcategory = this.nextElementSibling;
                 subcategory.classList.toggle('hidden');
-                
+
                 // Update the arrow icon
                 const arrow = this.querySelector('svg');
                 if (subcategory.classList.contains('hidden')) {
-                    arrow.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />';
+                    arrow.innerHTML =
+                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />';
                 } else {
-                    arrow.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />';
+                    arrow.innerHTML =
+                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />';
                 }
             });
         });
@@ -406,7 +430,7 @@
             if (!kategoriDropdown.contains(e.target) && e.target !== kategoriButton) {
                 kategoriDropdown.classList.add('hidden');
             }
-            
+
             if (!wishlistDropdown.contains(e.target) && e.target !== wishlistButton) {
                 wishlistDropdown.classList.add('hidden');
             }
@@ -416,7 +440,7 @@
         kategoriDropdown.addEventListener('click', function(e) {
             e.stopPropagation();
         });
-        
+
         wishlistDropdown.addEventListener('click', function(e) {
             e.stopPropagation();
         });
@@ -430,7 +454,7 @@
             showResults: false,
             isLoading: false,
             selectedIndex: -1,
-            
+
             async search() {
                 if (this.searchQuery.length < 2) {
                     this.searchResults = [];
@@ -475,4 +499,3 @@
         };
     };
 </script>
-

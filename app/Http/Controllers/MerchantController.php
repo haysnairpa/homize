@@ -1012,10 +1012,10 @@ class MerchantController extends Controller
 
             // Handle aset (images)
             if ($request->hasFile('aset_layanan')) {
-                foreach ($request->file('aset_layanan') as $file) {
+                foreach ($request->file('aset_layanan') as $index => $file) {
                     if ($file->isValid()) {
                         if ($file->getSize() > 1000000) {
-                            throw new \Exception("Gambar" . $file . "lebih besar dari 1MB!");
+                            throw new \Exception("Gambar anda lebih besar dari 1MB!");
                         }
 
                         $path = $file->store('layanan-images', 'public');
@@ -1023,10 +1023,10 @@ class MerchantController extends Controller
                         Aset::create([
                             'id_layanan' => $layanan->id,
                             'media_url' => $path,
-                            'deskripsi' => $request->nama_layanan // or any fallback description
+                            'deskripsi' => $request->nama_layanan
                         ]);
                     } else {
-                        throw new \Exception("Gambar" . $file . "bukan tipe yang valid (.png, .jpeg, dll)");
+                        throw new \Exception("Gambar anda bukan tipe yang valid (.png, .jpeg, dll)");
                     }
                 }
             } else {
@@ -1036,7 +1036,6 @@ class MerchantController extends Controller
                     'deskripsi' => "Penjual ini tidak mempunyai foto toko",
                 ]);
             }
-
 
             // Handle sertifikasi
             if ($request->has('sertifikasi')) {

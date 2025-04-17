@@ -111,7 +111,6 @@ Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->pre
 });
 
 
-
 Route::get('/search', [SearchController::class, 'search'])->name('search');
 Route::get('/api/search', [SearchController::class, 'apiSearch'])->name('api.search');
 

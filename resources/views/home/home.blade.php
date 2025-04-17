@@ -85,7 +85,7 @@
             </div>
 
             <!-- Main Tabs -->
-            <x-main-tabs  />
+            <x-main-tabs />
         </main>
 
         <!-- Bottom Navigation for Mobile -->
