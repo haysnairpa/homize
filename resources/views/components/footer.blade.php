@@ -21,8 +21,8 @@
             <!-- Contact Info -->
             <div>
                 <h3 class="text-white font-semibold mb-4">Contact Us</h3>
-                <p class="text-gray-300 text-sm">Email: support@homize.com</p>
-                <p class="text-gray-300 text-sm">Phone: (123) 456-7890</p>
+                <p class="text-gray-300 text-sm">Email: service.homize@gmail.com</p>
+                <p class="text-gray-300 text-sm">Phone: +6281523740785</p>
             </div>
         </div>
 
