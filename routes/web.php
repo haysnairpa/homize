@@ -103,6 +103,9 @@ Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->pre
     Route::post('/orders/{id}/update-status', [MerchantController::class, 'updateOrderStatus'])->name('orders.update-status');
     Route::get('/analytics', [MerchantController::class, 'analytics'])->name('analytics');
     Route::post('/layanan', [MerchantController::class, 'storeLayanan'])->name('layanan.store');
+    Route::get('/layanan/{id}/edit', [MerchantController::class, 'editLayanan'])->name('layanan.edit');
+    Route::put('/layanan/{id}', [MerchantController::class, 'updateLayanan'])->name('layanan.update');
+    Route::delete('/layanan/{id}', [MerchantController::class, 'deleteLayanan'])->name('layanan.delete');
     Route::get('/orders/{id}/detail', [MerchantController::class, 'orderDetail'])->name('merchant.orders.detail');
     Route::get('/merchant/analytics/data', [MerchantController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
 });
