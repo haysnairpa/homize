@@ -26,7 +26,7 @@ class HomeController extends Controller
 
         $ids = DB::select("SELECT `id` FROM `sub_kategori`;");
 
-        $bottomNavigation = DB::select("SELECT c.nama AS category_name 
+        $bottomNavigation = DB::select("SELECT c.nama AS category_name, id 
                                         FROM sub_kategori c");
 
         $layanan = DB::table('layanan as l')
