@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             SubKategoriSeeder::class,
             StatusSeeder::class,
             HariSeeder::class,
+            PaidSeeder::class,
         ]);
     }
 }

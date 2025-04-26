@@ -13,6 +13,7 @@ class Booking extends Model
         "id_merchant",
         "id_layanan",
         "id_status",
+        "id_paid",
         "id_booking_schedule",
         "tanggal_booking",
         "alamat_pembeli",
@@ -56,6 +57,12 @@ class Booking extends Model
         return $this->belongsTo(Status::class, "id_status", "id");
     }
 
+    // one to one from booking to paid
+    public function paid()
+    {
+        return $this->belongsTo(Paid::class, "id_paid", "id");
+    }
+
     // many to one from booking to booking_schedule
     public function booking_schedule()
     {
@@ -68,7 +75,7 @@ class Booking extends Model
     public function canTransitionTo($targetStatusName)
     {
         $currentStatus = $this->status->nama_status;
-        
+
         // valid transitions
         $validTransitions = [
             'Payment Pending' => ['Payment Completed', 'Payment Failed'],
@@ -80,12 +87,12 @@ class Booking extends Model
             'Cancelled' => [], // final status
             'Completed' => [] // final status
         ];
-        
+
         // check valid transitions
         if (isset($validTransitions[$currentStatus]) && in_array($targetStatusName, $validTransitions[$currentStatus])) {
             return true;
         }
-        
+
         return false;
     }
 }

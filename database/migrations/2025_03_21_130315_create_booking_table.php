@@ -17,7 +17,8 @@ return new class extends Migration
             $table->foreignId('id_merchant')->index('fk_booking_to_merchant');
             $table->foreignId('id_layanan')->index('fk_booking_to_layanan');
             $table->foreignId('id_status')->index('fk_booking_to_status');
-            $table->foreignId("id_booking_schedule")->index("fk_booking_to_booking_schedule");
+            $table->foreignId("id_paid")->index("fk_booking_to_paid");
+            $table->foreignId("id_booking_schedule")->index("fk_booking_to_booking_schedule")->default(1);
             $table->time('tanggal_booking');
             $table->string('catatan');
             $table->string('alamat_pembeli');

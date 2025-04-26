@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -158,7 +159,10 @@ class AdminController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        $paid = DB::select("SELECT id, status_pembayaran FROM `paid`");
+
         return view('admin.transactions', compact(
+            'paid',
             'totalAmount',
             'transactionCount',
             'rangeData',

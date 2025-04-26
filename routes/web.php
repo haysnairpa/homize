@@ -16,6 +16,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\MidtransCallbackController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\AdminController;
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -140,8 +141,10 @@ Route::get('/offline', [App\Http\Controllers\HomeController::class, 'offline'])-
 Route::get('auth/google', [App\Http\Controllers\SocialiteController::class, 'redirectToGoogle'])->name('login.google');
 Route::get('auth/google/callback', [App\Http\Controllers\SocialiteController::class, 'handleGoogleCallback']);
 
-
+// Admin routes
 Route::prefix('admin')->name('admin.')->group(function () {
+    // Paid status update for booking (AJAX)
+    Route::post('/booking/{booking}/update-paid', [AdminController::class, 'updatePaidStatus'])->name('booking.updatePaid');
 
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminController::class, 'login'])->name('login.post');

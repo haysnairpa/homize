@@ -62,6 +62,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -80,8 +81,17 @@
                                         Rp {{ number_format($transaction->amount, 0, ',', '.') }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $transaction->created_at->format('d M Y H:i') }}
-                                    </td>
+    {{ $transaction->created_at->format('d M Y H:i') }}
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+    <select class="paid-status-select rounded border-gray-300" data-booking-id="{{ $transaction->booking->id }}">
+        @foreach($paid as $paidStatus)
+            <option value="{{ $paidStatus->id }}" {{ $transaction->booking->id_paid == $paidStatus->id ? 'selected' : '' }}>
+                {{ $paidStatus->status_pembayaran }}
+            </option>
+        @endforeach
+    </select>
+</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -135,4 +145,31 @@
             });
         });
     </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.paid-status-select').forEach(function(select) {
+        select.addEventListener('change', function(e) {
+            const bookingId = this.getAttribute('data-booking-id');
+            const idPaid = this.value;
+            fetch('/admin/booking/' + bookingId + '/update-paid', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ id_paid: idPaid })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    alert('Status pembayaran berhasil diubah.');
+                } else {
+                    alert('Gagal mengubah status pembayaran.');
+                }
+            })
+            .catch(() => alert('Terjadi kesalahan.'));
+        });
+    });
+});
+</script>
 </x-admin-layout> 
