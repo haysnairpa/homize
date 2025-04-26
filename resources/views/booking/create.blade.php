@@ -485,7 +485,8 @@
                         </div>
 
                         <button type="submit"
-                            class="w-full btn-primary py-4 px-6 rounded-xl font-medium text-lg flex items-center justify-center gap-2 shadow-lg">
+                            class="w-full btn-primary py-4 px-6 rounded-xl font-medium text-lg flex items-center justify-center gap-2 shadow-lg"
+                            disabled>
                             Lanjutkan ke Pembayaran
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
                                 fill="currentColor">
@@ -598,17 +599,8 @@
             // Form validation
             const bookingForm = document.getElementById('bookingForm');
             bookingForm.addEventListener('submit', function(event) {
-                const alamatPembeli = document.getElementById('alamat_pembeli').value;
-
-                if (!alamatPembeli.trim()) {
-                    event.preventDefault();
-                    alert('Alamat lengkap harus diisi!');
-                }
-
-                if (!latitudeInput.value || !longitudeInput.value) {
-                    event.preventDefault();
-                    alert('Silakan dapatkan lokasi Anda terlebih dahulu!');
-                }
+                event.preventDefault(); // Prevent form submission
+                alert('Payment');
             });
 
             // Update estimated completion date when booking date changes
