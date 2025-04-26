@@ -67,6 +67,21 @@
                             class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md" required />
                     </div>
 
+                   
+                    <div>
+                        <div class="mt-1 relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center px-3 text-gray-500 text-sm border-r-[1px]">+62</span>
+                            <x-input id="phone" name="phone" type="text" inputmode="numeric" pattern="[0-9]*" 
+                                placeholder="8123456789"
+                                class="w-full pl-14 pr-3 py-2 md:py-3 border border-gray-300 rounded-md focus:ring-[#38BDF8] focus:border-[#38BDF8]"
+                                required />
+                        </div>
+                        @error('phone')
+                            <p class="mt-1 text-sm text-homize-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+
                     <div class="relative">
                         <x-input id="password" type="password" name="password" placeholder="Password"
                             class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md" required />

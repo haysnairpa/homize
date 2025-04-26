@@ -31,6 +31,7 @@ class User extends Authenticatable
         'profile_url',
         'password',
         'google_id',
+        'phone'
     ];
 
     /**

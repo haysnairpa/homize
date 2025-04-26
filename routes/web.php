@@ -137,6 +137,10 @@ Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filter
 // Offline fallback route
 Route::get('/offline', [App\Http\Controllers\HomeController::class, 'offline'])->name('offline');
 
+// Contact us routes
+Route::get('/contact', [App\Http\Controllers\ContactController::class, 'index'])->name('contact.index');
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit');
+
 // Google Login Routes
 Route::get('auth/google', [App\Http\Controllers\SocialiteController::class, 'redirectToGoogle'])->name('login.google');
 Route::get('auth/google/callback', [App\Http\Controllers\SocialiteController::class, 'handleGoogleCallback']);

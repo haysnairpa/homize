@@ -429,6 +429,12 @@
                                         <input type="email" id="email" value="{{ $user->email }}" readonly
                                             class="form-input bg-gray-50">
                                     </div>
+
+                                    <div>
+                                        <label for="phone" class="form-label">Nomor Telepon</label>
+                                        <input type="text" id="phone" value="{{ $user->phone }}" readonly
+                                            class="form-input bg-gray-50">
+                                    </div>
                                 </div>
                             </div>
                         </div>

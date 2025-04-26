@@ -21,6 +21,7 @@ class UsersSeeder extends Seeder
             $users[] = [
                 'nama' => $faker->name,
                 'email' => $faker->unique()->safeEmail,
+                'phone' => $faker->unique()->phoneNumber,
                 'password' => Hash::make('password123'),
                 'profile_url' => $faker->imageUrl(640, 480, 'people'),
                 'created_at' => now(),
