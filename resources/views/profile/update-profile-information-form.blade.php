@@ -67,6 +67,22 @@
             <x-input-error for="name" class="mt-2" />
         </div>
 
+        <!-- Phone -->
+        <div class="col-span-6 sm:col-span-4 mt-4">
+            <x-label for="phone" value="{{ __('Phone') }}" class="text-lg font-semibold text-gray-700" />
+            <x-input 
+                id="phone" 
+                type="text" 
+                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200" 
+                wire:model="state.phone" 
+                required 
+                autocomplete="tel" 
+                placeholder="Enter your phone number"
+            />
+            <x-input-error for="phone" class="mt-2" />
+        </div>
+
+
         <!-- Email -->
         <div class="col-span-6 sm:col-span-4 mt-4">
             <x-label for="email" value="{{ __('Email') }}" class="text-lg font-semibold text-gray-700" />

@@ -103,10 +103,12 @@ Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->pre
     Route::post('/orders/{id}/update-status', [MerchantController::class, 'updateOrderStatus'])->name('orders.update-status');
     Route::get('/analytics', [MerchantController::class, 'analytics'])->name('analytics');
     Route::post('/layanan', [MerchantController::class, 'storeLayanan'])->name('layanan.store');
+    Route::get('/layanan/{id}/edit', [MerchantController::class, 'editLayanan'])->name('layanan.edit');
+    Route::put('/layanan/{id}', [MerchantController::class, 'updateLayanan'])->name('layanan.update');
+    Route::delete('/layanan/{id}', [MerchantController::class, 'deleteLayanan'])->name('layanan.delete');
     Route::get('/orders/{id}/detail', [MerchantController::class, 'orderDetail'])->name('merchant.orders.detail');
-Route::get('/merchant/analytics/data', [MerchantController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
+    Route::get('/merchant/analytics/data', [MerchantController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
 });
-
 
 
 Route::get('/search', [SearchController::class, 'search'])->name('search');
@@ -131,14 +133,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Tambahkan route ini di bawah route home
 Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filterLayanan'])->name('home.filter');
 
+// Offline fallback route
+Route::get('/offline', [App\Http\Controllers\HomeController::class, 'offline'])->name('offline');
+
+// Contact us routes
+Route::get('/contact', [App\Http\Controllers\ContactController::class, 'index'])->name('contact.index');
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit');
+
+// Google Login Routes
+Route::get('auth/google', [App\Http\Controllers\SocialiteController::class, 'redirectToGoogle'])->name('login.google');
+Route::get('auth/google/callback', [App\Http\Controllers\SocialiteController::class, 'handleGoogleCallback']);
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    
+
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminController::class, 'login'])->name('login.post');
-    
-     // Protected admin routes
-     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+
+    // Protected admin routes
+    Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
         Route::get('/merchants', [AdminController::class, 'merchants'])->name('merchants');
@@ -147,6 +160,4 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
         Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions');
     });
-
-
 });

@@ -9,6 +9,7 @@ use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Jetstream\Jetstream;
 
 class CreateNewUser implements CreatesNewUsers
+
 {
     use PasswordValidationRules;
 
@@ -37,6 +38,7 @@ class CreateNewUser implements CreatesNewUsers
                 'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/'
             ],
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
+            'phone' => ['required', 'string', 'max:15', 'regex:/^[0-9]+$/'], 
         ], [
             'nama.required' => 'Nama lengkap wajib diisi',
             'email.required' => 'Email wajib diisi',
@@ -51,6 +53,7 @@ class CreateNewUser implements CreatesNewUsers
         return User::create([
             'nama' => $input['nama'],
             'email' => $input['email'],
+            'phone' => '+62' . ltrim($input['phone'], '0'),
             'password' => Hash::make($input['password']),
             'profile_url' => 'https://ui-avatars.com/api/?name=' . urlencode($input['nama']) . '&color=7F9CF5&background=EBF4FF',
         ]);

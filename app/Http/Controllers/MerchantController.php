@@ -64,7 +64,7 @@ class MerchantController extends Controller
         $validated = $request->validate([
             'nama_usaha' => 'required|string|max:255',
             'id_kategori' => 'required|exists:kategori,id',
-            'profile_url' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'profile_url' => 'required|image|mimes:jpeg,png,jpg|max:1024',
         ], [
             'nama_usaha.required' => 'Nama usaha wajib diisi',
             'id_kategori.required' => 'Kategori usaha wajib dipilih',
@@ -75,7 +75,7 @@ class MerchantController extends Controller
         ]);
 
         // Simpan file ke storage
-        $profilePath = $request->file('profile_url')->store('temp-merchant-profiles', 'public');
+        $profilePath = $request->file('profile_url')->store('merchant-profiles', 'public');
 
         // Simpan data ke session
         $merchantData = [
@@ -153,7 +153,7 @@ class MerchantController extends Controller
     public function verificationStatus()
     {
         $merchant = Auth::user()->merchant;
-        
+
         if (!$merchant) {
             return redirect()->route('merchant.register.step1');
         }
@@ -168,7 +168,7 @@ class MerchantController extends Controller
     public function retryVerification()
     {
         $merchant = Auth::user()->merchant;
-        
+
         if (!$merchant || $merchant->verification_status === 'approved') {
             return redirect()->route('merchant.dashboard');
         }
@@ -1012,14 +1012,29 @@ class MerchantController extends Controller
 
             // Handle aset (images)
             if ($request->hasFile('aset_layanan')) {
-                foreach ($request->file('aset_layanan') as $file) {
-                    $path = $file->store('layanan-images', 'public');
-                    Aset::create([
-                        'id_layanan' => $layanan->id,
-                        'media_url' => $path,
-                        'deskripsi' => $request->nama_layanan  // Add default description
-                    ]);
+                foreach ($request->file('aset_layanan') as $index => $file) {
+                    if ($file->isValid()) {
+                        if ($file->getSize() > 1000000) {
+                            throw new \Exception("Gambar anda lebih besar dari 1MB!");
+                        }
+
+                        $path = $file->store('layanan-images', 'public');
+
+                        Aset::create([
+                            'id_layanan' => $layanan->id,
+                            'media_url' => $path,
+                            'deskripsi' => $request->nama_layanan
+                        ]);
+                    } else {
+                        throw new \Exception("Gambar anda bukan tipe yang valid (.png, .jpeg, dll)");
+                    }
                 }
+            } else {
+                Aset::create([
+                    'id_layanan' => $layanan->id,
+                    'media_url' => null,
+                    'deskripsi' => "Penjual ini tidak mempunyai foto toko",
+                ]);
             }
 
             // Handle sertifikasi
@@ -1045,6 +1060,192 @@ class MerchantController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    
+    public function editLayanan($id)
+    {
+        try {
+            $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+            $layanan = Layanan::with(['tarif_layanan', 'jam_operasional', 'jam_operasional.hari', 'aset', 'sertifikasi'])
+                ->where('id', $id)
+                ->where('id_merchant', $merchant->id)
+                ->firstOrFail();
+            
+            $subKategori = SubKategori::where('id_kategori', $merchant->id_kategori)->get();
+            $hari = Hari::all();
+            
+            return response()->json([
+                'success' => true,
+                'layanan' => $layanan,
+                'subKategori' => $subKategori,
+                'hari' => $hari,
+                'selectedHari' => $layanan->jam_operasional->hari->pluck('id')->toArray()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 404);
+        }
+    }
+    
+    public function updateLayanan(Request $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+            
+            // Get the merchant and validate ownership
+            $merchant = Auth::user()->merchant;
+            $layanan = Layanan::where('id', $id)
+                ->where('id_merchant', $merchant->id)
+                ->firstOrFail();
+            
+            // Validate sub-kategori belongs to merchant's kategori
+            $subKategori = SubKategori::findOrFail($request->id_sub_kategori);
+            if ($subKategori->id_kategori !== $merchant->id_kategori) {
+                throw new \Exception('Sub kategori tidak sesuai dengan kategori merchant Anda.');
+            }
+            
+            // Update jam operasional
+            $jamOperasional = $layanan->jam_operasional;
+            $jamOperasional->update([
+                'jam_buka' => $request->jam_operasional['jam_buka'],
+                'jam_tutup' => $request->jam_operasional['jam_tutup']
+            ]);
+            
+            // Update hari
+            if (isset($request->jam_operasional['hari']) && is_array($request->jam_operasional['hari'])) {
+                $jamOperasional->hari()->sync($request->jam_operasional['hari']);
+            }
+            
+            // Update layanan
+            $layanan->update([
+                'nama_layanan' => $request->nama_layanan,
+                'deskripsi_layanan' => $request->deskripsi_layanan,
+                'id_sub_kategori' => $request->id_sub_kategori,
+                'pengalaman' => $request->pengalaman ?? 0
+            ]);
+            
+            // Update tarif layanan
+            $tarifLayanan = $layanan->tarif_layanan;
+            if ($tarifLayanan) {
+                $tarifLayanan->update([
+                    'harga' => $request->harga,
+                    'durasi' => $request->durasi,
+                    'tipe_durasi' => $request->tipe_durasi,
+                    'satuan' => $request->satuan
+                ]);
+            }
+            
+            // Handle aset (images) if new ones are uploaded
+            if ($request->hasFile('aset_layanan')) {
+                // Delete existing assets
+                Aset::where('id_layanan', $layanan->id)->delete();
+                
+                foreach ($request->file('aset_layanan') as $file) {
+                    if ($file->isValid()) {
+                        if ($file->getSize() > 1000000) {
+                            throw new \Exception("Gambar" . $file . "lebih besar dari 1MB!");
+                        }
+                        
+                        $path = $file->store('layanan-images', 'public');
+                        
+                        Aset::create([
+                            'id_layanan' => $layanan->id,
+                            'media_url' => $path,
+                            'deskripsi' => $request->nama_layanan
+                        ]);
+                    } else {
+                        throw new \Exception("Gambar" . $file . "bukan tipe yang valid (.png, .jpeg, dll)");
+                    }
+                }
+            }
+            
+            // Update sertifikasi if provided
+            if ($request->has('nama_sertifikasi')) {
+                $sertifikasi = Sertifikasi::where('id_layanan', $layanan->id)->first();
+                
+                if ($sertifikasi) {
+                    $mediaUrl = $sertifikasi->media_url;
+                    
+                    if ($request->hasFile('file_sertifikasi')) {
+                        $mediaUrl = $request->file('file_sertifikasi')->store('sertifikasi', 'public');
+                    }
+                    
+                    $sertifikasi->update([
+                        'nama_sertifikasi' => $request->nama_sertifikasi,
+                        'media_url' => $mediaUrl
+                    ]);
+                } else {
+                    Sertifikasi::create([
+                        'id_layanan' => $layanan->id,
+                        'nama_sertifikasi' => $request->nama_sertifikasi,
+                        'media_url' => $request->hasFile('file_sertifikasi') ? 
+                            $request->file('file_sertifikasi')->store('sertifikasi', 'public') : null
+                    ]);
+                }
+            }
+            
+            DB::commit();
+            
+            return redirect()->route('merchant.services')->with('success', 'Layanan berhasil diperbarui');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    
+    public function deleteLayanan($id)
+    {
+        try {
+            DB::beginTransaction();
+            
+            // Get the merchant and validate ownership
+            $merchant = Auth::user()->merchant;
+            $layanan = Layanan::where('id', $id)
+                ->where('id_merchant', $merchant->id)
+                ->firstOrFail();
+            
+            // Check if there are any bookings for this service
+            $bookingCount = Booking::where('id_layanan', $id)->count();
+            if ($bookingCount > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Layanan tidak dapat dihapus karena sudah memiliki pesanan.'
+                ], 400);
+            }
+            
+            // Delete related records
+            TarifLayanan::where('id_layanan', $id)->delete();
+            Aset::where('id_layanan', $id)->delete();
+            Sertifikasi::where('id_layanan', $id)->delete();
+            
+            // Delete jam operasional and detach hari
+            $jamOperasionalId = $layanan->id_jam_operasional;
+            if ($jamOperasionalId) {
+                $jamOperasional = JamOperasional::find($jamOperasionalId);
+                if ($jamOperasional) {
+                    $jamOperasional->hari()->detach();
+                    $jamOperasional->delete();
+                }
+            }
+            
+            // Finally delete the layanan
+            $layanan->delete();
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Layanan berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 

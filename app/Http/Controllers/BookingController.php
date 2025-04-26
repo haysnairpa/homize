@@ -16,7 +16,14 @@ class BookingController extends Controller
 {
     public function create($id)
     {
-        // Ambil data navigasi dari HomeController
+        // Check if layanan exists first
+        $layananExists = DB::table('layanan')->where('id', $id)->exists();
+        
+        if (!$layananExists) {
+            abort(404, 'Service not found');
+        }
+
+        // Get navigation data
         app(HomeController::class)->navigation_data();
 
         // Ambil data layanan

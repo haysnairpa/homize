@@ -6,6 +6,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="theme-color" content="#30A0E0">
+        <meta name="description" content="Platform layanan jasa rumah tangga terpercaya">
+        <link rel="manifest" href="{{ asset('manifest.json') }}">
 
         <title>User Dashboard</title>
 
@@ -49,5 +52,8 @@
         @stack('modals')
         @stack('scripts')
         @livewireScripts
+        
+        <!-- Offline Support -->
+        <script src="{{ asset('js/offline-handler.js') }}"></script>
     </body>
 </html>
