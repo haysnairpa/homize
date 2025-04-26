@@ -83,7 +83,7 @@
                             </div>
                             <div class="ml-4">
                                 <h3 class="text-lg font-medium text-gray-800">Email</h3>
-                                <p class="mt-1 text-gray-600">service.homize@gmail.com</p>
+                                <p class="mt-1 text-gray-600">homizedigitalindonesia@gmail.com</p>
                                 <p class="mt-1 text-sm text-gray-500">Kami akan membalas dalam 1-2 hari kerja</p>
                             </div>
                         </div>
