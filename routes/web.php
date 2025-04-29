@@ -13,7 +13,7 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\MidtransCallbackController;
+use App\Http\Controllers\XenditCallbackController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\AdminController;
 
@@ -57,13 +57,27 @@ Route::middleware([
     Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
 
-    // Midtrans callback
-    Route::post('pembayaran/callback', [MidtransCallbackController::class, 'handle'])->name('pembayaran.callback');
+    // Xendit callback - without middleware required
+    Route::post('pembayaran/callback', [XenditCallbackController::class, 'handle'])
+        ->withoutMiddleware([
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class
+        ])
+        ->name('pembayaran.callback');
+        
+    // Alternative route
+    Route::post('webhook/xendit', [XenditCallbackController::class, 'handle'])
+        ->withoutMiddleware([
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class
+        ]);
 
-    // Tambahkan route ini di grup yang sesuai
+    // Reset OTP
     Route::get('/pembayaran/{id}/reset-otp', [PembayaranController::class, 'resetOtpAttempts'])->name('pembayaran.reset-otp');
 
-    // Tambahkan route ini
+    // Check status
     Route::get('/pembayaran/check/{id}', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check');
     Route::get('/pembayaran/force-check/{id}', [PembayaranController::class, 'forceCheckStatus'])->name('pembayaran.force-check');
 

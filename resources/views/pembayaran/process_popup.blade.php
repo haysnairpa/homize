@@ -71,8 +71,8 @@
         </div>
     </div>
     
-    <!-- Midtrans JS -->
-    <script src="https://app.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+    <!-- Xendit JS -->
+    <script src="https://js.xendit.co/xendit.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const payButton = document.getElementById('pay-button');
@@ -88,51 +88,8 @@
                     Memproses...
                 `;
                 
-                // Buka Snap popup dengan token yang sudah ada
-                snap.pay('{{ $pembayaran->snap_token }}', {
-                    onSuccess: function(result) {
-                        // Setelah pembayaran berhasil, ambil VA number jika ada
-                        fetchVaNumber();
-                        window.location.href = "{{ route('dashboard') }}?status=success";
-                    },
-                    onPending: function(result) {
-                        // Jika pending (terutama untuk VA/QRIS), ambil VA number
-                        fetchVaNumber();
-                        window.location.href = "{{ route('dashboard') }}?status=pending";
-                    },
-                    onError: function(result) {
-                        // Cek apakah ini error 3DS
-                        if (result.status_code === '202' || 
-                            (result.status_message && result.status_message.toLowerCase().includes('3ds'))) {
-                            
-                            // Tampilkan pesan khusus untuk error 3DS
-                            alert('Verifikasi 3DS gagal. Silakan coba lagi dengan kode OTP yang benar.');
-                            
-                            // Cek apakah masih ada kesempatan
-                            @if($pembayaran->hasOtpAttempts())
-                                // Masih ada kesempatan, reload halaman
-                                window.location.reload();
-                            @else
-                                // Sudah habis kesempatan
-                                alert('Anda telah melebihi batas percobaan OTP. Silakan mulai ulang proses pembayaran.');
-                                window.location.href = "{{ route('pembayaran.show', $booking->id) }}";
-                            @endif
-                        } else {
-                            // Error lainnya
-                            window.location.href = "{{ route('dashboard') }}?status=error";
-                        }
-                    },
-                    onClose: function() {
-                        // Jika user menutup popup tanpa menyelesaikan pembayaran
-                        payButton.disabled = false;
-                        payButton.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                            </svg>
-                            Lanjutkan Pembayaran
-                        `;
-                    }
-                });
+                // Redirect to Xendit invoice URL
+                window.location.href = '{{ $pembayaran->snap_token }}';
             });
             
             // Fungsi untuk mengambil VA number

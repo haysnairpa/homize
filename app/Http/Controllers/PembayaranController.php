@@ -9,24 +9,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Midtrans\Config;
-use Midtrans\Snap;
 use Illuminate\Support\Facades\Route;
 use App\Events\OrderCreated;
 use App\Mail\NewOrderNotification;
 use Illuminate\Support\Facades\Mail;
+use Xendit\Configuration;
+use Xendit\Invoice\InvoiceApi;
+use Xendit\Invoice\CreateInvoiceRequest;
 
 class PembayaranController extends Controller
 {
     public function __construct()
     {
-        // Midtrans Config
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = config('midtrans.is_production');
-        Config::$isSanitized = config('midtrans.is_sanitized');
-        Config::$is3ds = config('midtrans.is_3ds');
-
-        Log::info('Midtrans Callback URL: ' . Config::$overrideNotifUrl);
+        // Xendit Config
+        Configuration::setXenditKey(config('xendit.api_key'));
+        
+        Log::info('Xendit Callback URL configured');
     }
 
     public function show($id)
@@ -46,7 +44,7 @@ class PembayaranController extends Controller
             return redirect()->route('dashboard')->with('success', 'Pembayaran sudah selesai');
         }
 
-        // Cek status pembayaran dari Midtrans jika ada order_id
+        // Cek status pembayaran dari Xendit jika ada order_id
         if ($booking->pembayaran->order_id) {
             $this->checkPaymentStatus($booking->pembayaran);
 
@@ -105,68 +103,146 @@ class PembayaranController extends Controller
             'method' => $paymentMethod,
         ]);
 
-        // Buat transaksi di Midtrans
-        $transaction_details = [
-            'order_id' => 'HOMIZE-' . $booking->id . '-' . time(),
-            'gross_amount' => $pembayaran->amount,
-        ];
+        // Buat transaksi di Xendit
+        $externalId = 'HOMIZE-' . $booking->id . '-' . time();
+        
+        // Konfigurasi payment channels berdasarkan metode yang dipilih
+        $paymentChannels = [];
 
-            $customer_details = [
-                'first_name' => $booking->user->name,
-                'email' => $booking->user->email,
-            ];
-
-            $item_details = [
-                [
-                    'id' => $booking->layanan->id,
-                    'price' => $pembayaran->amount,
-                    'quantity' => 1,
-                    'name' => $booking->layanan->nama_layanan,
-                ]
-            ];
-
-            // Konfigurasi payment berdasarkan metode yang dipilih
-            $enabled_payments = [];
-
-            switch ($paymentMethod) {
-                case 'bank_transfer':
-                    $enabled_payments = ['bca_va', 'bni_va', 'bri_va', 'permata_va'];
-                    break;
-                case 'e_wallet':
-                    $enabled_payments = ['gopay', 'shopeepay'];
-                    break;
-                case 'credit_card':
-                    $enabled_payments = ['credit_card'];
-                    break;
-                case 'qris':
-                    $enabled_payments = ['qris'];
-                    break;
-                default:
-                    $enabled_payments = ['bca_va', 'bni_va', 'bri_va', 'permata_va'];
-            }
-
-            $transaction = [
-                'transaction_details' => $transaction_details,
-                'customer_details' => $customer_details,
-                'item_details' => $item_details,
-                'enabled_payments' => $enabled_payments
-            ];
-
+        switch ($paymentMethod) {
+            case 'bank_transfer':
+                $paymentChannels = ['BCA', 'BNI', 'BRI', 'PERMATA'];
+                break;
+            case 'e_wallet':
+                $paymentChannels = ['OVO', 'DANA', 'SHOPEEPAY', 'LINKAJA'];
+                break;
+            case 'credit_card':
+                $paymentChannels = ['CREDIT_CARD'];
+                break;
+            case 'qris':
+                $paymentChannels = ['QRIS'];
+                break;
+            default:
+                $paymentChannels = ['BCA', 'BNI', 'BRI', 'PERMATA'];
+        }
 
         try {
-            // Dapatkan Snap Token
-            $snapToken = Snap::getSnapToken($transaction);
-
-                // Update order_id dan snap_token di tabel pembayaran
-                $pembayaran->update([
-                    'order_id' => $transaction_details['order_id'],
-                    'snap_token' => $snapToken,
+            // Set Xendit API key directly
+            $apiKey = config('xendit.api_key');
+            
+            // Create invoice using Xendit API directly with cURL
+            $curl = curl_init();
+            
+            // Format amount to ensure it's a valid number (no commas, etc.)
+            $amount = (float) $pembayaran->amount;
+            
+            // Basic required parameters
+            $params = [
+                'external_id' => $externalId,
+                'amount' => $amount,
+                'description' => 'Pembayaran ' . $booking->layanan->nama_layanan,
+                'invoice_duration' => 86400,
+                'currency' => 'IDR',
+                'success_redirect_url' => route('dashboard') . '?status=success',
+                'failure_redirect_url' => route('dashboard') . '?status=failed'
+            ];
+            
+            // Add customer information with default values for required fields
+            $customerName = $booking->user && !empty($booking->user->name) ? $booking->user->name : 'Customer';
+            $customerEmail = $booking->user && !empty($booking->user->email) ? $booking->user->email : 'customer@example.com';
+            
+            $params['customer'] = [
+                'given_names' => $customerName,
+                'email' => $customerEmail
+            ];
+            
+            // Add payment methods if specified - format them correctly for Xendit API
+            if (!empty($paymentChannels)) {
+                // For Xendit API, we need to use the correct format for payment methods
+                // Convert array of payment methods to array of objects with payment_method.type
+                $formattedPaymentMethods = [];
+                foreach ($paymentChannels as $method) {
+                    $formattedPaymentMethods[] = [
+                        'payment_method_id' => strtolower($method)
+                    ];
+                }
+                $params['available_payment_methods'] = $formattedPaymentMethods;
+            }
+            
+            // Log the request parameters for debugging
+            Log::info('Xendit API request parameters', [
+                'params' => $params,
+                'booking_id' => $booking->id
+            ]);
+            
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://api.xendit.co/v2/invoices',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => json_encode($params),
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Basic ' . base64_encode($apiKey . ':'),
+                    'Content-Type: application/json'
+                ],
+            ]);
+            
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+            
+            curl_close($curl);
+            
+            if ($err) {
+                throw new \Exception('cURL Error: ' . $err);
+            }
+            
+            $result = json_decode($response, true);
+            
+            if (isset($result['error_code'])) {
+                // Log the full error response for debugging
+                Log::error('Xendit API error response', [
+                    'error_code' => $result['error_code'],
+                    'message' => $result['message'] ?? 'Unknown error',
+                    'full_response' => $result,
+                    'request_params' => $params
                 ]);
-
-                // Untuk semua metode pembayaran, gunakan Snap popup
-                return view('pembayaran.process_popup', compact('booking', 'pembayaran', 'snapToken'));
+                
+                throw new \Exception('Xendit Error: ' . ($result['message'] ?? 'Unknown error'));
+            }
+            
+            // Get the invoice URL and ID from the result
+            $invoiceUrl = $result['invoice_url'];
+            $invoiceId = $result['id'];
+            
+            // Update order_id dan snap_token di tabel pembayaran
+            // Menggunakan invoice_url sebagai snap_token untuk kompatibilitas
+            $pembayaran->update([
+                'order_id' => $invoiceId, // Use the Xendit invoice ID as order_id
+                'snap_token' => $invoiceUrl,
+            ]);
+            
+            // Log successful invoice creation
+            Log::info('Xendit invoice created successfully', [
+                'invoice_id' => $invoiceId,
+                'invoice_url' => $invoiceUrl,
+                'booking_id' => $booking->id,
+                'response' => $result
+            ]);
+            
+            // Redirect ke halaman invoice Xendit
+            return redirect()->to($invoiceUrl);
             } catch (\Exception $e) {
-                Log::error('Midtrans error: ' . $e->getMessage());
+                // Log detailed error information
+                Log::error('Xendit error: ' . $e->getMessage(), [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString(),
+                    'payment_method' => $paymentMethod,
+                    'booking_id' => $booking->id
+                ]);
                 return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
             }
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -179,17 +255,17 @@ class PembayaranController extends Controller
     public function callback(Request $request)
     {
         // Log semua request untuk debugging
-        Log::info('Midtrans callback received', $request->all());
+        Log::info('Xendit callback received', $request->all());
 
         try {
-            // Cek apakah ini request test dari Midtrans
+            // Cek apakah ini request test dari Xendit
             if ($request->isMethod('get')) {
                 // Kembalikan 200 OK untuk test request
                 return response('OK', 200);
             }
 
             // Kode lainnya tetap sama
-            $serverKey = config('midtrans.server_key');
+            $callbackToken = config('xendit.callback_token');
             $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
 
             if ($hashed == $request->signature_key) {
@@ -283,7 +359,7 @@ class PembayaranController extends Controller
 
                         // Ini adalah kegagalan 3DS, tambah jumlah percobaan
                         $attempts = $pembayaran->otp_attempts + 1;
-                        $maxAttempts = config('midtrans.max_otp_attempts', 3);
+                        $maxAttempts = config('xendit.max_otp_attempts', 3);
 
                         if ($attempts >= $maxAttempts) {
                             // Jika sudah melebihi batas percobaan, anggap gagal
@@ -337,7 +413,7 @@ class PembayaranController extends Controller
             Log::warning('Invalid signature for order_id: ' . $request->order_id);
             return response()->json(['status' => 'error', 'message' => 'Invalid signature']);
         } catch (\Exception $e) {
-            Log::error('Error processing Midtrans callback: ' . $e->getMessage());
+            Log::error('Error processing Xendit callback: ' . $e->getMessage());
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
@@ -361,7 +437,7 @@ class PembayaranController extends Controller
             return response()->json(['error' => 'Pembayaran sudah selesai']);
         }
 
-        // Buat transaksi di Midtrans
+        // Buat transaksi di Xendit
         $transaction_details = [
             'order_id' => 'HOMIZE-' . $booking->id . '-' . time(),
             'gross_amount' => $pembayaran->amount,
@@ -432,26 +508,38 @@ class PembayaranController extends Controller
         }
     }
 
-    // Tambahkan method baru untuk cek status pembayaran dari Midtrans
+    // Tambahkan method baru untuk cek status pembayaran dari Xendit
     private function checkPaymentStatus($pembayaran)
     {
         try {
-            // Set konfigurasi Midtrans
-            \Midtrans\Config::$serverKey = config('midtrans.server_key');
-            \Midtrans\Config::$isProduction = config('midtrans.is_production');
+            // Set konfigurasi Xendit
+            \Xendit\Configuration::setXenditKey(config('xendit.api_key'));
 
-            // Get transaction status dari Midtrans
-            $status = (object) \Midtrans\Transaction::status($pembayaran->order_id);
+            // Inisialisasi Xendit Invoice API
+            $apiInstance = new \Xendit\Invoice\InvoiceApi();
+            
+            // Get invoice status dari Xendit
+            try {
+                $invoice = $apiInstance->getInvoiceById($pembayaran->order_id);
+                $status = $invoice->getStatus();
+            } catch (\Exception $e) {
+                // If there's an error getting the invoice, log it and return null
+                Log::error('Error getting Xendit invoice: ' . $e->getMessage(), [
+                    'order_id' => $pembayaran->order_id,
+                    'payment_id' => $pembayaran->id
+                ]);
+                return null;
+            }
 
             Log::info('Checking payment status for order_id: ' . $pembayaran->order_id, [
-                'midtrans_status' => $status->transaction_status ?? 'unknown'
+                'xendit_status' => $status ?? 'unknown'
             ]);
 
-            // Update status pembayaran berdasarkan response dari Midtrans
-            if ($status && isset($status->transaction_status)) {
-                Log::info('Status transaksi: ' . $status->transaction_status);
+            // Update status pembayaran berdasarkan response dari Xendit
+            if ($status) {
+                Log::info('Status transaksi: ' . $status);
 
-                if ($status->transaction_status == 'capture' || $status->transaction_status == 'settlement') {
+                if ($status == 'PAID') {
                     // Payment success
                     $statusCompleted = Status::where('nama_status', 'Payment Completed')->first();
 
@@ -532,17 +620,16 @@ class PembayaranController extends Controller
 
                     Log::info('Payment completed for order_id: ' . $pembayaran->order_id);
                     return true;
-                } elseif ($status->transaction_status == 'deny' || $status->transaction_status == 'cancel' || $status->transaction_status == 'expire') {
+                } elseif ($status == 'EXPIRED' || $status == 'FAILED') {
                     // Cek apakah ini kegagalan 3DS
-                    if (
-                        $status->status_code == '202' ||
-                        (isset($status->fraud_status) && $status->fraud_status == 'challenge') ||
-                        (isset($status->status_message) && strpos(strtolower($status->status_message), '3ds') !== false)
-                    ) {
+                    $paymentMethod = $invoice->getPaymentMethod();
+                    $failureReason = $invoice->getFailureReason() ?? '';
+                    
+                    if (strpos(strtolower($failureReason), '3ds') !== false) {
 
                         // Ini adalah kegagalan 3DS, tambah jumlah percobaan
                         $attempts = $pembayaran->otp_attempts + 1;
-                        $maxAttempts = config('midtrans.max_otp_attempts', 3);
+                        $maxAttempts = config('xendit.max_otp_attempts', 3);
 
                         if ($attempts >= $maxAttempts) {
                             // Jika sudah melebihi batas percobaan, anggap gagal
@@ -596,7 +683,7 @@ class PembayaranController extends Controller
                         return false;
                     }
                 } else {
-                    Log::info('Payment status masih pending: ' . $status->transaction_status);
+                    Log::info('Payment status masih pending: ' . $status);
                 }
             } else {
                 Log::warning('Tidak ada status transaksi dari Midtrans untuk order_id: ' . $pembayaran->order_id);
@@ -621,7 +708,7 @@ class PembayaranController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // Cek status pembayaran dari Midtrans jika ada order_id
+        // Cek status pembayaran dari Xendit jika ada order_id
         if ($booking->pembayaran->order_id) {
             // PENTING: Tambahkan parameter true untuk force refresh
             $paymentResult = $this->checkPaymentStatus($booking->pembayaran);
@@ -654,7 +741,7 @@ class PembayaranController extends Controller
         }
 
         try {
-            // Set konfigurasi Midtrans
+            // Set konfigurasi Xendit
             \Midtrans\Config::$serverKey = config('midtrans.server_key');
             \Midtrans\Config::$isProduction = config('midtrans.is_production');
 
@@ -747,7 +834,7 @@ class PembayaranController extends Controller
         }
 
         try {
-            // Set konfigurasi Midtrans
+            // Set konfigurasi Xendit
             \Midtrans\Config::$serverKey = config('midtrans.server_key');
             \Midtrans\Config::$isProduction = config('midtrans.is_production');
 
@@ -808,7 +895,7 @@ class PembayaranController extends Controller
             return redirect()->route('dashboard')->with('info', 'Pembayaran sudah selesai');
         }
 
-        // Buat transaksi di Midtrans khusus untuk QRIS
+        // Buat transaksi di Xendit khusus untuk QRIS
         $transaction_details = [
             'order_id' => 'HOMIZE-' . $booking->id . '-' . time(),
             'gross_amount' => $pembayaran->amount,

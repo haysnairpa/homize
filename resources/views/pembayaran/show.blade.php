@@ -276,9 +276,9 @@
         </div>
     </div>
     
-    <!-- Midtrans JS -->
+    <!-- Xendit JS -->
     @if($booking->pembayaran->status->nama_status == 'Payment Pending' || $booking->pembayaran->status->nama_status == 'Pending')
-    <script src="https://app.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+    <script src="https://js.xendit.co/xendit.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const payButton = document.getElementById('pay-button');
