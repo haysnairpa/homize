@@ -613,23 +613,23 @@
 
             // Update estimated completion date when booking date changes
             const bookingDateInput = document.getElementById('tanggal_booking');
-            
+
             if (bookingDateInput) {
                 bookingDateInput.addEventListener('change', function() {
                     updateEstimatedCompletionDate();
                 });
-                
+
                 // Function to update the estimated completion date
                 function updateEstimatedCompletionDate() {
                     const bookingDate = new Date(bookingDateInput.value);
                     const estimatedCompletionElement = document.querySelector('.bg-blue-50.rounded-lg');
-                    
+
                     if (bookingDate && estimatedCompletionElement) {
                         const durationType = "{{ $layanan->tipe_durasi }}";
                         const durationValue = {{ $layanan->durasi }};
-                        
+
                         let estimatedCompletionDate = new Date(bookingDate);
-                        
+
                         // Calculate estimated completion date based on duration type
                         if (durationType === "Jam") {
                             estimatedCompletionDate.setHours(estimatedCompletionDate.getHours() + durationValue);
@@ -638,30 +638,30 @@
                         } else if (durationType === "Pertemuan") {
                             estimatedCompletionDate.setDate(estimatedCompletionDate.getDate() + durationValue);
                         }
-                        
+
                         // Format the date for display
                         const formattedDate = formatDate(estimatedCompletionDate);
                         estimatedCompletionElement.textContent = formattedDate;
                     }
                 }
-                
+
                 // Helper function to format date
                 function formatDate(date) {
                     const months = [
                         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
                     ];
-                    
+
                     const day = date.getDate();
                     const month = months[date.getMonth()];
                     const year = date.getFullYear();
                     const hours = String(date.getHours()).padStart(2, '0');
                     const minutes = String(date.getMinutes()).padStart(2, '0');
-                    
+
                     return `${day} ${month} ${year}, ${hours}:${minutes}`;
                 }
             }
-            
+
             // Tambahkan script untuk modal konfirmasi
             const homeLink = document.getElementById('homeLink');
             const confirmModal = document.getElementById('confirmModal');

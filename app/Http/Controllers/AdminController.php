@@ -232,4 +232,26 @@ class AdminController extends Controller
         }
         return back()->with('success', 'Merchant berhasil ditolak.');
     }
+
+    /**
+     * Update pembayaran status for a booking (AJAX)
+     */
+    public function updatePaidStatus(\Illuminate\Http\Request $request, $bookingId)
+    {
+        try {
+            $validated = $request->validate([
+                'id_paid' => 'required|integer|exists:paid,id',
+            ]);
+
+            $booking = \App\Models\Booking::findOrFail($bookingId);
+            $booking->id_paid = $validated['id_paid'];
+            $booking->save();
+
+            return response()->json(['success' => true]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan'], 500);
+        }
+    }
 }

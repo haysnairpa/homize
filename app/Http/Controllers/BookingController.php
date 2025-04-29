@@ -18,7 +18,7 @@ class BookingController extends Controller
     {
         // Check if layanan exists first
         $layananExists = DB::table('layanan')->where('id', $id)->exists();
-        
+
         if (!$layananExists) {
             abort(404, 'Service not found');
         }
@@ -98,6 +98,7 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
+        // dd("clicked!");
         $request->validate([
             'id_layanan' => 'required|exists:layanan,id',
             'id_merchant' => 'required|exists:merchant,id',
@@ -148,6 +149,7 @@ class BookingController extends Controller
                 'id_merchant' => $request->id_merchant,
                 'id_layanan' => $request->id_layanan,
                 'id_status' => $statusPending->id,
+                'id_paid' => 1,
                 'id_booking_schedule' => $bookingSchedule->id,
                 'tanggal_booking' => $waktuMulai->format('H:i:s'),
                 'alamat_pembeli' => $request->alamat_pembeli,
@@ -182,6 +184,7 @@ class BookingController extends Controller
             return redirect()->route('pembayaran.show', $booking->id)->with('success', 'Booking berhasil dibuat! Silahkan lakukan pembayaran.');
         } catch (\Exception $e) {
             DB::rollBack();
+            // dd("error happened");
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
