@@ -4,12 +4,6 @@
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
     "keywords": ["laravel", "framework"],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/xendit/xendit-php.git"
-        }
-    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -75,7 +69,8 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
+        },
+        "github-protocols": ["https"]
     },
     "minimum-stability": "stable",
     "prefer-stable": true
