@@ -176,8 +176,8 @@ class BookingController extends Controller
                 'postal_code' => $request->postal_code,
                 'tanggal_booking' => $waktuMulai->format('H:i:s'),
                 'catatan' => $request->catatan ?? '',
-                'latitude' => $request->latitude ?: null,
-                'longitude' => $request->longitude ?: null,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
             ]);
 
             // Buat pembayaran dengan status Payment Pending
