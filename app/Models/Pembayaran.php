@@ -56,14 +56,14 @@ class Pembayaran extends Model
     // OTP attempts tracking
     public function hasOtpAttempts()
     {
-        $maxAttempts = config('midtrans.max_otp_attempts', 3);
+        $maxAttempts = config('xendit.max_otp_attempts', 3);
         return $this->otp_attempts < $maxAttempts;
     }
     
     // OTP remaining attempts
     public function remainingOtpAttempts()
     {
-        $maxAttempts = config('midtrans.max_otp_attempts', 3);
+        $maxAttempts = config('xendit.max_otp_attempts', 3);
         return $maxAttempts - $this->otp_attempts;
     }
 }

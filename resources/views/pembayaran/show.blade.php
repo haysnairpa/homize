@@ -32,6 +32,33 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- Informasi Booking -->
                         <div class="space-y-6">
+                             <!-- Informasi Pembeli -->
+                             <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Pembeli</h3>
+                                
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-sm text-gray-500">Nama</p>
+                                        <p class="text-gray-700">{{ $booking->first_name }} {{ $booking->last_name }}</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <p class="text-sm text-gray-500">Email</p>
+                                        <p class="text-gray-700">{{ $booking->contact_email }}</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <p class="text-sm text-gray-500">Nomor Telepon</p>
+                                        <p class="text-gray-700">{{ $booking->contact_phone ?? 'Tidak ada' }}</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <p class="text-sm text-gray-500">Alamat</p>
+                                        <p class="text-gray-700">{{ $booking->alamat_pembeli }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
                                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Booking</h3>
                                 
@@ -166,56 +193,10 @@
                                     
                                     @if($booking->pembayaran->status->nama_status == 'Payment Pending' || $booking->pembayaran->status->nama_status == 'Pending')
                                     <div class="mt-4">
-                                        <p class="text-sm text-gray-500 mb-2">Pilih Metode Pembayaran</p>
-                                        <form
-                                            {{-- action="{{ route('pembayaran.process', $booking->id) }}"  --}}
-                                            action=""
-                                            method="GET" 
-                                            id="payment-form"
-                                        >
-                                            <div class="grid grid-cols-2 gap-3 mb-4">
-                                                <div>
-                                                    <input type="radio" name="payment_method" id="bank_transfer" value="bank_transfer" class="hidden peer" checked>
-                                                    <label for="bank_transfer" class="flex items-center p-3 border rounded-lg cursor-pointer peer-checked:border-homize-blue peer-checked:bg-blue-50 hover:bg-gray-100">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-homize-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                                                        </svg>
-                                                        <span>Transfer Bank</span>
-                                                    </label>
-                                                </div>
-                                                
-                                                <div>
-                                                    <input type="radio" name="payment_method" id="e_wallet" value="e_wallet" class="hidden peer">
-                                                    <label for="e_wallet" class="flex items-center p-3 border rounded-lg cursor-pointer peer-checked:border-homize-blue peer-checked:bg-blue-50 hover:bg-gray-100">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-homize-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                                                        </svg>
-                                                        <span>E-Wallet</span>
-                                                    </label>
-                                                </div>
-                                                
-                                                <div>
-                                                    <input type="radio" name="payment_method" id="credit_card" value="credit_card" class="hidden peer">
-                                                    <label for="credit_card" class="flex items-center p-3 border rounded-lg cursor-pointer peer-checked:border-homize-blue peer-checked:bg-blue-50 hover:bg-gray-100">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-homize-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                                                        </svg>
-                                                        <span>Kartu Kredit</span>
-                                                    </label>
-                                                </div>
-                                                
-                                                <div>
-                                                    <input type="radio" name="payment_method" id="qris" value="qris" class="hidden peer">
-                                                    <label for="qris" class="flex items-center p-3 border rounded-lg cursor-pointer peer-checked:border-homize-blue peer-checked:bg-blue-50 hover:bg-gray-100">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-homize-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                                                        </svg>
-                                                        <span>QRIS</span>
-                                                    </label>
-                                                </div>
-                                            </div>
+                                        <form action="{{ route('pembayaran.process', $booking->id) }}" method="GET" id="payment-form">
+                                            <input type="hidden" name="payment_method" value="bank_transfer">
                                             
-                                            <button disabled type="submit" class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                                            <button type="submit" class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
                                                 </svg>
@@ -249,31 +230,26 @@
                                         <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-homize-blue text-white text-sm font-medium mr-3">
                                             1
                                         </div>
-                                        <p class="text-gray-600">Pilih metode pembayaran yang Anda inginkan</p>
+                                        <p class="text-gray-600">Klik tombol "Bayar Sekarang" untuk melanjutkan</p>
                                     </div>
                                     
                                     <div class="flex items-start">
                                         <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-homize-blue text-white text-sm font-medium mr-3">
                                             2
                                         </div>
-                                        <p class="text-gray-600">Klik tombol "Bayar Sekarang" untuk melanjutkan</p>
+                                        <p class="text-gray-600">Ikuti petunjuk pembayaran yang muncul dan selesaikan pembayaran</p>
                                     </div>
                                     
                                     <div class="flex items-start">
                                         <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-homize-blue text-white text-sm font-medium mr-3">
                                             3
                                         </div>
-                                        <p class="text-gray-600">Ikuti petunjuk pembayaran yang muncul dan selesaikan pembayaran</p>
-                                    </div>
-                                    
-                                    <div class="flex items-start">
-                                        <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-homize-blue text-white text-sm font-medium mr-3">
-                                            4
-                                        </div>
                                         <p class="text-gray-600">Status pembayaran akan diperbarui secara otomatis setelah pembayaran berhasil</p>
                                     </div>
                                 </div>
                             </div>
+                            
+                           
                         </div>
                     </div>
                 </div>
@@ -281,9 +257,9 @@
         </div>
     </div>
     
-    <!-- Midtrans JS -->
+    <!-- Xendit JS -->
     @if($booking->pembayaran->status->nama_status == 'Payment Pending' || $booking->pembayaran->status->nama_status == 'Pending')
-    <script src="https://app.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+    <script src="https://js.xendit.co/xendit.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const payButton = document.getElementById('pay-button');
@@ -435,34 +411,5 @@
         });
     </script>
 
-    <!-- Tambahkan informasi tentang status pembayaran -->
-    @if($booking->pembayaran->status->nama_status == 'Payment Pending')
-        <div class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">Perhatian</h3>
-                    <div class="mt-2 text-sm text-yellow-700">
-                        <p>Jika Anda sudah melakukan pembayaran tetapi status belum berubah, silakan klik tombol di bawah untuk memeriksa status pembayaran.</p>
-                    </div>
-                    <div class="mt-2">
-                        <a href="{{ route('pembayaran.check', $booking->id) }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                            Periksa Status Pembayaran
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <div class="mt-4">
-        <a href="{{ route('pembayaran.force-check', $booking->id) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 active:bg-blue-700 focus:outline-none focus:border-blue-700 focus:ring focus:ring-blue-300 disabled:opacity-25 transition">
-            Cek Status Pembayaran
-        </a>
-    </div>
 </body>
 </html>

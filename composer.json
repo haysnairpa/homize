@@ -4,6 +4,12 @@
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
     "keywords": ["laravel", "framework"],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/xendit/xendit-php.git"
+        }
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -13,7 +19,7 @@
         "laravel/socialite": "^5.19",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.0",
-        "midtrans/midtrans-php": "^2.6"
+        "xendit/xendit-php": "^6.3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

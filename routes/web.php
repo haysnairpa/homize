@@ -15,6 +15,7 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MidtransCallbackController;
 use App\Http\Controllers\RatingController;
+use App\Http\Controllers\XenditCallbackController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,8 +57,24 @@ Route::middleware([
     Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
 
-    // Midtrans callback
-    Route::post('pembayaran/callback', [MidtransCallbackController::class, 'handle'])->name('pembayaran.callback');
+    // Xendit callback - without middleware required
+    Route::post('pembayaran/callback', [XenditCallbackController::class, 'handle'])
+        ->withoutMiddleware([
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class
+        ])
+        ->name('pembayaran.callback');
+        
+    // Alternative route
+    Route::post('webhook/xendit', [XenditCallbackController::class, 'handle'])
+        ->withoutMiddleware([
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class
+        ]);
+
+    // Reset OTP
 
     // Tambahkan route ini di grup yang sesuai
     Route::get('/pembayaran/{id}/reset-otp', [PembayaranController::class, 'resetOtpAttempts'])->name('pembayaran.reset-otp');

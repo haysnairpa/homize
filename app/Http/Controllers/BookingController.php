@@ -101,12 +101,28 @@ class BookingController extends Controller
         $request->validate([
             'id_layanan' => 'required|exists:layanan,id',
             'id_merchant' => 'required|exists:merchant,id',
-            'alamat_pembeli' => 'required|string',
+            'contact_email' => 'required|email',
+            'contact_phone' => 'required|string',
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'country' => 'required|string',
+            'city' => 'required|string',
+            'province' => 'required|string',
+            'postal_code' => 'required|string',
+            'address' => 'required|string',
             'catatan' => 'nullable|string',
-            'latitude' => 'required',
-            'longitude' => 'required',
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
             'tanggal_booking' => 'required|date',
         ]);
+
+        // Format phone number to ensure it has +62 prefix
+        $phoneNumber = $request->contact_phone;
+        if (substr($phoneNumber, 0, 1) === '0') {
+            $phoneNumber = '+62' . substr($phoneNumber, 1);
+        } elseif (substr($phoneNumber, 0, 1) !== '+') {
+            $phoneNumber = '+' . $phoneNumber;
+        }
 
         try {
             DB::beginTransaction();
@@ -149,8 +165,16 @@ class BookingController extends Controller
                 'id_layanan' => $request->id_layanan,
                 'id_status' => $statusPending->id,
                 'id_booking_schedule' => $bookingSchedule->id,
+                'contact_email' => $request->contact_email,
+                'contact_phone' => $phoneNumber,
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'country' => $request->country,
+                'city' => $request->city,
+                'province' => $request->province,
+                'alamat_pembeli' => $request->address,
+                'postal_code' => $request->postal_code,
                 'tanggal_booking' => $waktuMulai->format('H:i:s'),
-                'alamat_pembeli' => $request->alamat_pembeli,
                 'catatan' => $request->catatan ?? '',
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
