@@ -87,9 +87,6 @@
             }
         }
         
-        // Automatically get user location when page loads
-        getLocation();
-        
         if (useAccountInfoCheckbox) {
             useAccountInfoCheckbox.addEventListener('change', function() {
                 if (this.checked) {
@@ -136,12 +133,7 @@
                 // Format the complete address
                 const completeAddress = `${address}, ${city}, ${province} ${postalCode}, ${country}`;
                 
-                // Validate required fields
-                if (!latitudeInput.value || !longitudeInput.value) {
-                    // Show custom modal alert instead of browser alert
-                    showAlertModal('Silakan dapatkan lokasi Anda terlebih dahulu!');
-                    return;
-                }
+                // Location is now optional
                 
                 // Submit the form
                 this.submit();

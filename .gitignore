@@ -5,6 +5,8 @@
 /public/storage/layanan-images/**
 /public/storage/merchant-profiles/**
 /public/storage/temp-merchant-profiles/**
+/public/storage/sertifikasi/**
+/public/storage/transaction-receipts/**
 /vendor
 .env
 .env.backup
