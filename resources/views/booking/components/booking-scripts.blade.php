@@ -16,6 +16,80 @@
         const userEmailInput = document.getElementById('user_email');
         const userPhoneInput = document.getElementById('user_phone');
         
+        // Function to get user location
+        function getLocation() {
+            if (navigator.geolocation) {
+                if (locationStatus) {
+                    locationStatus.textContent = 'Mendapatkan lokasi Anda...';
+                }
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        
+                        // Set nilai input hidden
+                        latitudeInput.value = latitude;
+                        longitudeInput.value = longitude;
+                        
+                        // Tampilkan peta
+                        if (mapContainer) {
+                            mapContainer.classList.remove('hidden');
+                            initMap(latitude, longitude);
+                        }
+                        
+                        if (locationStatus) {
+                            locationStatus.textContent = 'Lokasi berhasil didapatkan!';
+                            locationStatus.classList.add('text-green-600');
+                        }
+                    },
+                    function(error) {
+                        let errorMessage = 'Gagal mendapatkan lokasi: ';
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += 'Izin lokasi ditolak.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += 'Informasi lokasi tidak tersedia.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += 'Permintaan lokasi habis waktu.';
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMessage += 'Terjadi kesalahan yang tidak diketahui.';
+                                break;
+                        }
+                        
+                        if (locationStatus) {
+                            locationStatus.textContent = errorMessage;
+                            locationStatus.classList.remove('text-gray-500', 'text-green-500');
+                            locationStatus.classList.add('text-red-500');
+                        }
+                        
+                        // Show alert if location permission denied
+                        if (error.code === error.PERMISSION_DENIED) {
+                            showAlertModal('Untuk melanjutkan pemesanan, izin lokasi diperlukan. Silakan aktifkan izin lokasi di browser Anda.');
+                        }
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                if (locationStatus) {
+                    locationStatus.textContent = 'Geolocation tidak didukung oleh browser Anda.';
+                    locationStatus.classList.add('text-red-600');
+                }
+                showAlertModal('Browser Anda tidak mendukung geolocation. Silakan gunakan browser lain untuk melanjutkan pemesanan.');
+            }
+        }
+        
+        // Automatically get user location when page loads
+        getLocation();
+        
         if (useAccountInfoCheckbox) {
             useAccountInfoCheckbox.addEventListener('change', function() {
                 if (this.checked) {
@@ -75,61 +149,11 @@
         }
         
         // Tambahkan event listener untuk tombol lokasi
-        getLocationBtn.addEventListener('click', function() {
-            if (navigator.geolocation) {
-                locationStatus.textContent = 'Mendapatkan lokasi Anda...';
-                
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        const latitude = position.coords.latitude;
-                        const longitude = position.coords.longitude;
-                        
-                        // Set nilai input hidden
-                        latitudeInput.value = latitude;
-                        longitudeInput.value = longitude;
-                        
-                        // Tampilkan map
-                        mapContainer.classList.remove('hidden');
-                        
-                        // Initialize map
-                        initMap(latitude, longitude);
-                        
-                        locationStatus.textContent = 'Lokasi berhasil didapatkan!';
-                        locationStatus.classList.add('text-green-600');
-                    },
-                    function(error) {
-                        let errorMessage = 'Gagal mendapatkan lokasi: ';
-                        
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                errorMessage += 'Izin lokasi ditolak.';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                errorMessage += 'Informasi lokasi tidak tersedia.';
-                                break;
-                            case error.TIMEOUT:
-                                errorMessage += 'Permintaan lokasi habis waktu.';
-                                break;
-                            case error.UNKNOWN_ERROR:
-                                errorMessage += 'Terjadi kesalahan yang tidak diketahui.';
-                                break;
-                        }
-                        
-                        locationStatus.textContent = errorMessage;
-                        locationStatus.classList.remove('text-gray-500', 'text-green-500');
-                        locationStatus.classList.add('text-red-500');
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    }
-                );
-            } else {
-                locationStatus.textContent = 'Geolocation tidak didukung oleh browser Anda.';
-                locationStatus.classList.add('text-red-600');
-            }
-        });
+        if (getLocationBtn) {
+            getLocationBtn.addEventListener('click', function() {
+                getLocation();
+            });
+        }
         
         if (bookingDateInput) {
             bookingDateInput.addEventListener('change', function() {
