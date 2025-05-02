@@ -21,8 +21,8 @@ return new class extends Migration
             $table->time('tanggal_booking');
             $table->string('catatan');
             $table->string('alamat_pembeli');
-            $table->string('latitude');
-            $table->string('longitude');
+            $table->string('latitude')->nullable();
+            $table->string('longitude')->nullable();
             $table->timestamps();
         });
     }

@@ -62,13 +62,6 @@
                 // Format the complete address
                 const completeAddress = `${address}, ${city}, ${province} ${postalCode}, ${country}`;
                 
-                // Validate required fields
-                if (!latitudeInput.value || !longitudeInput.value) {
-                    // Show custom modal alert instead of browser alert
-                    showAlertModal('Silakan dapatkan lokasi Anda terlebih dahulu!');
-                    return;
-                }
-                
                 // Submit the form
                 this.submit();
             });
