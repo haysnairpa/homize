@@ -173,7 +173,8 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {{ $transaction->created_at->format('d M Y H:i') }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-green-400">
-                                                <select class="paid-status-select bg-gray-400 font-bold p-2 rounded border-gray-300"
+                                                <select
+                                                    class="paid-status-select bg-gray-400 font-bold p-2 rounded border-gray-300"
                                                     data-booking-id="{{ $transaction->booking->id }}">
                                                     @foreach ($paid as $paidStatus)
                                                         <option value="{{ $paidStatus->id }}"
@@ -196,58 +197,118 @@
         </div>
     </div>
 
+    <!-- Modal for Confirming Paid Status Change -->
+    <div id="paidStatusModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md relative">
+            <button id="closePaidStatusModal"
+                class="absolute top-2 right-2 text-gray-400 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            <div class="p-6">
+                <h2 class="text-lg font-semibold mb-4">Konfirmasi Perubahan Status Pembayaran</h2>
+                <p class="mb-6">Apakah Anda yakin ingin mengubah status pembayaran?</p>
+                <button id="confirmPaidStatusModal"
+                    class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Konfirmasi</button>
+            </div>
+        </div>
+    </div>
+    <style>
+        /* Modal Styles */
+        #paidStatusModal {
+            display: none;
+        }
+
+        #paidStatusModal.active {
+            display: flex;
+        }
+    </style>
     <!-- Chart.js Script -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.addEventListener('change', function(e) {
-                if (e.target.classList.contains('paid-status-select')) {
-                    const select = e.target;
-                    const bookingId = select.getAttribute('data-booking-id');
-                    const idPaid = select.value;
-                    const row = select.closest('tr');
-                    // Debug log
-                    console.log('Dropdown changed:', {
-                        bookingId,
-                        idPaid,
-                        row
-                    });
-                    fetch('/admin/booking/' + bookingId + '/update-paid', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                    .getAttribute('content')
-                            },
-                            body: JSON.stringify({
-                                id_paid: idPaid
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                let targetTbody = null;
-                                if (idPaid == '1') {
-                                    targetTbody = document.getElementById('belum-dibayar-tbody');
-                                } else if (idPaid == '2') {
-                                    targetTbody = document.getElementById('sudah-dibayar-tbody');
-                                }
-                                if (targetTbody && !targetTbody.contains(row)) {
-                                    row.parentNode.removeChild(row);
-                                    targetTbody.prepend(row);
-                                    // Optionally update dropdown value
-                                    row.querySelector('.paid-status-select').value = idPaid;
-                                }
-                                console.log('Status pembayaran berhasil diubah.');
-                            } else {
-                                console.log('Gagal mengubah status pembayaran.');
-                            }
-                        })
-                        .catch((err) => {
-                            console.error('AJAX error:', err);
-                            alert('Terjadi kesalahan.');
-                        });
+            let previousPaidStatus = {};
+            let pendingSelect = null;
+            let pendingIdPaid = null;
+
+            // Intercept change on .paid-status-select
+            document.querySelectorAll('.paid-status-select').forEach(function(select) {
+                // Store initial value
+                previousPaidStatus[select.getAttribute('data-booking-id')] = select.value;
+                select.addEventListener('change', function(e) {
+                    // Show modal
+                    pendingSelect = this;
+                    pendingIdPaid = this.value;
+                    // Reset dropdown to previous value for now
+                    this.value = previousPaidStatus[this.getAttribute('data-booking-id')];
+                    document.getElementById('paidStatusModal').classList.add('active');
+                });
+            });
+
+            // Close modal function
+            function closeModal() {
+                document.getElementById('paidStatusModal').classList.remove('active');
+                if (pendingSelect) {
+                    // Restore previous value
+                    pendingSelect.value = previousPaidStatus[pendingSelect.getAttribute('data-booking-id')];
                 }
+                pendingSelect = null;
+                pendingIdPaid = null;
+            }
+
+            // Confirm modal function
+            function confirmModal() {
+                if (!pendingSelect) return;
+                const select = pendingSelect;
+                const bookingId = select.getAttribute('data-booking-id');
+                const idPaid = pendingIdPaid;
+                const row = select.closest('tr');
+                // AJAX as before
+                fetch('/admin/booking/' + bookingId + '/update-paid', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        },
+                        body: JSON.stringify({
+                            id_paid: idPaid
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            let targetTbody = null;
+                            if (idPaid == '1') {
+                                targetTbody = document.getElementById('belum-dibayar-tbody');
+                            } else if (idPaid == '2') {
+                                targetTbody = document.getElementById('sudah-dibayar-tbody');
+                            }
+                            if (targetTbody && !targetTbody.contains(row)) {
+                                row.parentNode.removeChild(row);
+                                targetTbody.prepend(row);
+                                row.querySelector('.paid-status-select').value = idPaid;
+                            }
+                            // Update stored previous value
+                            previousPaidStatus[bookingId] = idPaid;
+                            select.value = idPaid;
+                            console.log('Status pembayaran berhasil diubah.');
+                        } else {
+                            console.log('Gagal mengubah status pembayaran.');
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('AJAX error:', err);
+                        alert('Terjadi kesalahan.');
+                    });
+                document.getElementById('paidStatusModal').classList.remove('active');
+                pendingSelect = null;
+                pendingIdPaid = null;
+            }
+
+            // Modal button event listeners
+            document.getElementById('closePaidStatusModal').addEventListener('click', closeModal);
+            document.getElementById('confirmPaidStatusModal').addEventListener('click', confirmModal);
+            // Also close modal if click outside modal content
+            document.getElementById('paidStatusModal').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
             });
         });
     </script>
