@@ -28,6 +28,18 @@ Route::get('/', function () {
     return redirect()->route('home');
 });
 
+// Xendit webhook at root URL - completely bypass web middleware
+Route::post('/', [XenditCallbackController::class, 'handleWebhook'])
+    ->middleware([])
+    ->withoutMiddleware('web')
+    ->name('webhook.root');
+
+// Xendit webhook at /webhooks/xendit - also bypass web middleware
+Route::post('/webhooks/xendit', [XenditCallbackController::class, 'handleWebhook'])
+    ->middleware([])
+    ->withoutMiddleware('web')
+    ->name('webhook.xendit');
+
 Route::get('/home', [HomeController::class, 'navigation_data'])->name('home');
 
 Route::middleware([
