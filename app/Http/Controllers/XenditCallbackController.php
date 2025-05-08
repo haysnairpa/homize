@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Pembayaran;
-use App\Models\Status;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -78,8 +78,8 @@ class XenditCallbackController extends Controller
             // Log current status before update
             Log::info('Current payment status before update', [
                 'payment_id' => $pembayaran->id,
-                'status' => $pembayaran->status->nama_status,
-                'booking_status' => $pembayaran->booking->status->nama_status
+                'status' => $pembayaran->status_pembayaran,
+                'booking_status' => $pembayaran->booking->status_proses
             ]);
 
             // Update status based on the payment status
@@ -109,44 +109,32 @@ class XenditCallbackController extends Controller
     
     private function updatePaymentSuccess($pembayaran, $paymentMethod)
     {
-        // Cari status 'Payment Completed'
-        $statusCompleted = Status::where('nama_status', 'Payment Completed')->first();
-        if (!$statusCompleted) {
-            Log::error('Status "Payment Completed" not found in database');
-            return;
-        }
-        
-        // Update pembayaran ke status 'Payment Completed'
         $pembayaran->update([
-            'id_status' => $statusCompleted->id,
-            'method' => $paymentMethod ?: $pembayaran->method, // Gunakan metode yang ada jika tidak ada yang baru
+            'status_pembayaran' => 'Berhasil', // Standarisasi status
+            'method' => $paymentMethod ?: $pembayaran->method,
             'payment_date' => now(),
-            'otp_attempts' => 0, // Reset percobaan OTP
+            'otp_attempts' => 0,
         ]);
-        
+
         // Refresh model untuk mendapatkan data terbaru
         $pembayaran->refresh();
+
+        // Update status proses booking jika masih Pending
+        $booking = $pembayaran->booking;
+        if ($booking && strtolower($booking->status_proses) === 'pending') {
+            $booking->status_proses = 'Dikonfirmasi';
+            $booking->save();
+        }
         
         // Log status pembayaran setelah update
-        Log::info('Payment status updated to "Payment Completed"', [
+        Log::info('Payment status updated to "Selesai"', [
             'payment_id' => $pembayaran->id,
             'order_id' => $pembayaran->order_id,
-            'new_status_id' => $pembayaran->id_status,
-            'new_status_name' => $pembayaran->status->nama_status
+            'new_status' => $pembayaran->status_pembayaran
         ]);
-        
-        // Cari status 'Pending'
-        $statusPending = Status::where('nama_status', 'Pending')->first();
-        if (!$statusPending) {
-            Log::error('Status "Pending" not found in database');
-            return;
-        }
         
         // Update booking ke status 'Pending'
         $booking = $pembayaran->booking;
-        $booking->update([
-            'id_status' => $statusPending->id,
-        ]);
         
         // Refresh model untuk mendapatkan data terbaru
         $booking->refresh();
@@ -154,8 +142,7 @@ class XenditCallbackController extends Controller
         // Log status booking setelah update
         Log::info('Booking status updated to "Pending"', [
             'booking_id' => $booking->id,
-            'new_status_id' => $booking->id_status,
-            'new_status_name' => $booking->status->nama_status
+            'new_status' => $booking->status_proses
         ]);
         
         // Trigger event atau notifikasi jika diperlukan
@@ -166,17 +153,13 @@ class XenditCallbackController extends Controller
     
     private function updatePayment3DSFailed($pembayaran, $paymentMethod)
     {
-        // Tambah jumlah percobaan OTP
         $attempts = $pembayaran->otp_attempts + 1;
         $maxAttempts = config('xendit.max_otp_attempts', 3);
         
         if ($attempts >= $maxAttempts) {
-            // Jika sudah melebihi batas percobaan, anggap gagal
             $this->updatePaymentFailed($pembayaran, $paymentMethod);
             Log::info('Payment failed after ' . $attempts . ' OTP attempts for order_id: ' . $pembayaran->order_id);
         } else {
-            // Masih ada kesempatan, tetap di status pending
-            $statusPending = Status::where('nama_status', 'Payment Pending')->first();
             $pembayaran->update([
                 'method' => $paymentMethod,
                 'otp_attempts' => $attempts,
@@ -188,16 +171,11 @@ class XenditCallbackController extends Controller
     
     private function updatePaymentFailed($pembayaran, $paymentMethod)
     {
-        $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
         $pembayaran->update([
-            'id_status' => $statusFailed->id,
+            'status_pembayaran' => 'Dibatalkan',
             'method' => $paymentMethod,
             'payment_date' => now(),
-            'otp_attempts' => 0, // Reset percobaan OTP
-        ]);
-        
-        $pembayaran->booking->update([
-            'id_status' => $statusFailed->id,
+            'otp_attempts' => 0,
         ]);
         
         Log::info('Payment failed for order_id: ' . $pembayaran->order_id);
@@ -209,23 +187,21 @@ class XenditCallbackController extends Controller
         return response('OK', 200);
     }
     
-    /**
-     * Handle Xendit webhook without web middleware
-     * This method is specifically for API routes to avoid session and CSRF issues
-     */
     public function handleWebhook(Request $request)
     {
-        // Log semua request untuk debugging
         Log::info('Xendit API webhook received', [
             'method' => $request->method(),
             'all_data' => $request->all(),
-            'headers' => $request->header(),
-            'ip' => $request->ip(),
-            'url' => $request->fullUrl()
         ]);
+
+        $token = $request->header('x-callback-token');
+        $expectedToken = config('xendit.callback_token');
+        if ($token !== $expectedToken) {
+            Log::warning('Xendit callback token mismatch', ['token' => $token]);
+            return response('Unauthorized', 401);
+        }
         
         try {
-            // Process callback - support both webhook and redirect callback formats
             $invoiceId = $request->id ?? $request->input('id');
             $externalId = $request->external_id ?? $request->input('external_id');
             $status = $request->status ?? $request->input('status');
@@ -261,8 +237,8 @@ class XenditCallbackController extends Controller
             // Log current status before update
             Log::info('Current payment status before update', [
                 'payment_id' => $pembayaran->id,
-                'status' => $pembayaran->status->nama_status,
-                'booking_status' => $pembayaran->booking->status->nama_status
+                'status' => $pembayaran->status_pembayaran,
+                'booking_status' => $pembayaran->booking->status_proses
             ]);
 
             // Update status based on the payment status

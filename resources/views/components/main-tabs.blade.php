@@ -1,4 +1,4 @@
-<div x-data="{ activeTab: 'services' }" class="mb-8">
+<div x-data="mainTabsComponent()" x-init="init()" class="mb-8">
     <!-- Tab Navigation -->
     <div class="border-b mb-4">
         <div class="flex space-x-4">
@@ -35,6 +35,43 @@
                 </div>
 
                 <div class="flex flex-1 flex-wrap gap-2">
+    <!-- Script Alpine.js untuk filter -->
+    <script>
+        function mainTabsComponent() {
+            return {
+                activeTab: 'services',
+                kategori_id: '',
+                min_price: '',
+                max_price: '',
+                sort_by: 'newest',
+                isLoading: false,
+                init() {
+                    // Optionally: auto-load if needed
+                },
+                applyFilter() {
+                    this.isLoading = true;
+                    fetch("{{ route('home.filter') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                        },
+                        body: JSON.stringify({
+                            kategori_id: this.kategori_id,
+                            min_price: this.min_price,
+                            max_price: this.max_price,
+                            sort_by: this.sort_by
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('layanan-grid').innerHTML = data.html;
+                        this.isLoading = false;
+                    });
+                }
+            }
+        }
+    </script>
                     <!-- Kategori Dropdown -->
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open"
@@ -51,10 +88,14 @@
                             class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border"
                             style="display: none;">
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                                data-kategori-id="">Semua Kategori</a>
+                                @click.prevent="$data.kategori_id = ''; applyFilter()"
+                                :class="{ 'bg-homize-blue text-white': $data.kategori_id === '' }"
+                            >Semua Kategori</a>
                             @foreach ($allKategori as $kat)
                                 <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                                    data-kategori-id="{{ $kat->id }}">{{ $kat->nama }}</a>
+                                    @click.prevent="$data.kategori_id = '{{ $kat->id }}'; applyFilter()"
+                                    :class="{ 'bg-homize-blue text-white': $data.kategori_id === '{{ $kat->id }}' }"
+                                >{{ $kat->nama }}</a>
                             @endforeach
                         </div>
                     </div>
@@ -74,16 +115,16 @@
                         <div x-show="open" @click.away="open = false"
                             class="absolute left-0 mt-2 w-80 bg-white rounded-md shadow-lg z-10 border p-4"
                             style="display: none;">
-                            <p class="mb-2 font-medium">Rentang Harga</p>
+                            <p class="mb-2 font-medium">Rentang Harga (IDR)</p>
                             <div class="space-y-4">
                                 <div class="flex items-center justify-between">
-                                    <input type="number" id="min-price" placeholder="Min"
-                                        class="w-[45%] border border-gray-300 rounded-lg focus:ring-homize-blue focus:border-homize-blue">
+                                    <input type="number" placeholder="Min" x-model="$data.min_price"
+                                        class="w-[45%] border border-gray-300 rounded-lg focus:ring-homize-blue focus:border-homize-blue outline-none px-2 py-1">
                                     <span>-</span>
-                                    <input type="number" id="max-price" placeholder="Max"
-                                        class="w-[45%] border border-gray-300 rounded-lg focus:ring-homize-blue focus:border-homize-blue">
+                                    <input type="number" placeholder="Max" x-model="$data.max_price"
+                                        class="w-[45%] border border-gray-300 rounded-lg focus:ring-homize-blue focus:border-homize-blue outline-none px-2 py-1">
                                 </div>
-                                <button id="apply-filter"
+                                <button @click.prevent="applyFilter()"
                                     class="w-full bg-homize-blue text-white px-4 py-2 rounded-lg hover:bg-homize-blue-second transition-colors">
                                     Terapkan
                                 </button>
@@ -107,13 +148,21 @@
                             class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border"
                             style="display: none;">
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                                data-sort="newest">Terbaru</a>
+                                @click.prevent="$data.sort_by = 'newest'; applyFilter()"
+                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'newest' }"
+                            >Terbaru</a>
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                                data-sort="rating">Rating Tertinggi</a>
+                                @click.prevent="$data.sort_by = 'rating'; applyFilter()"
+                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'rating' }"
+                            >Rating Tertinggi</a>
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                                data-sort="price_asc">Harga: Rendah ke Tinggi</a>
+                                @click.prevent="$data.sort_by = 'price_asc'; applyFilter()"
+                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'price_asc' }"
+                            >Harga: Rendah ke Tinggi</a>
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                                data-sort="price_desc">Harga: Tinggi ke Rendah</a>
+                                @click.prevent="$data.sort_by = 'price_desc'; applyFilter()"
+                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'price_desc' }"
+                            >Harga: Tinggi ke Rendah</a>
                         </div>
                     </div>
                 </div>

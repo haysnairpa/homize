@@ -114,10 +114,10 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log('Payment status:', data.status);
-                    if (data.status === 'completed') {
+                    if (data.status === 'selesai') {
                         // Redirect ke halaman sukses
                         window.location.href = '/dashboard';
-                    } else if (data.status === 'failed') {
+                    } else if (data.status === 'dibatalkan') {
                         // Tampilkan pesan error
                         alert('Pembayaran gagal. Silakan coba lagi.');
                     } else {

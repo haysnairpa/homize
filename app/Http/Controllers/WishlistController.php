@@ -51,11 +51,17 @@ class WishlistController extends Controller
                 'tl.harga',
                 'tl.satuan',
                 'tl.tipe_durasi',
-                'tl.durasi'
+                'tl.durasi',
+                'a.media_url'
             ])
             ->leftJoin('layanan as l', 'w.id_layanan', '=', 'l.id')
             ->leftJoin('merchant as m', 'l.id_merchant', '=', 'm.id')
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
+            ->leftJoin(DB::raw('(
+                                    SELECT id_layanan, MIN(media_url) as media_url
+                                    FROM aset
+                                    GROUP BY id_layanan
+                                ) as a'), 'l.id', '=', 'a.id_layanan')
             ->where('w.id_user', Auth::id())
             ->get();
 

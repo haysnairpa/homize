@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <!-- Total Amount Card -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
                     <div class="flex items-center">
@@ -21,6 +21,36 @@
                             <h3 class="text-lg font-semibold text-gray-700">Total Transaksi</h3>
                             <p class="text-2xl font-bold text-green-500">Rp {{ number_format($totalAmount, 0, ',', '.') }}</p>
                             <p class="text-sm text-gray-500">dari {{ number_format($transactionCount) }} transaksi</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pending Card -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-yellow-400">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-yellow-400 bg-opacity-10">
+                            <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-700">Total Payment Pending</h3>
+                            <p class="text-2xl font-bold text-yellow-500">{{ number_format($paymentPendingCount) }}</p>
+                            <p class="text-sm text-gray-500">Rp {{ number_format($paymentPendingAmount, 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Confirmed Card -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-500 bg-opacity-10">
+                            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-700">Total Payment Confirmed</h3>
+                            <p class="text-2xl font-bold text-blue-500">{{ number_format($paymentConfirmedCount) }}</p>
+                            <p class="text-sm text-gray-500">Rp {{ number_format($paymentConfirmedAmount, 0, ',', '.') }}</p>
                         </div>
                     </div>
                 </div>
@@ -62,6 +92,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -81,6 +112,9 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $transaction->created_at->format('d M Y H:i') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $transaction->status_pembayaran ?? '-' }}
                                     </td>
                                 </tr>
                                 @endforeach

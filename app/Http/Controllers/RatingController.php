@@ -20,8 +20,8 @@ class RatingController extends Controller
             return redirect()->route('dashboard')->with('error', 'Pesanan tidak ditemukan');
         }
         
-        // Cek apakah status pesanan sudah completed
-        if ($booking->status->nama_status !== 'Completed') {
+        // Cek apakah status pesanan sudah selesai
+        if ($booking->status_proses !== 'Selesai') {
             return redirect()->route('dashboard')->with('error', 'Anda hanya dapat memberikan rating untuk pesanan yang telah selesai');
         }
         

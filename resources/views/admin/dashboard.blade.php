@@ -76,7 +76,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <h3 class="text-lg font-semibold text-gray-700">Total Users</h3>
-                                    <p class="text-3xl font-bold text-gray-900">{{ $regularUserCount }}</p>
+                                    <p class="text-3xl font-bold text-gray-900">{{ $userCount }}</p>
                                 </div>
                             </div>
                         </div>
@@ -123,19 +123,24 @@
                         <canvas id="userDistributionChart"></canvas>
                     </div>
                     <!-- Statistics Summary -->
-                    <div class="mt-4 grid grid-cols-2 gap-4">
-                        <div class="text-center p-3 bg-blue-50 rounded-lg">
-                            <p class="text-sm text-gray-600">Regular Users</p>
-                            <p class="text-xl font-bold text-blue-600">{{ $regularUserCount }}</p>
-                            <p class="text-sm text-gray-500">
-                                ({{ number_format(($regularUserCount / $userCount) * 100, 1) }}%)
-                            </p>
+                    <div class="mt-4 grid grid-cols-3 gap-4">
+                        <div class="text-center p-3 bg-indigo-50 rounded-lg">
+                            <p class="text-sm text-gray-600">Total Users</p>
+                            <p class="text-xl font-bold text-indigo-600">{{ $userCount }}</p>
+                            <p class="text-sm text-gray-500">100%</p>
                         </div>
                         <div class="text-center p-3 bg-green-50 rounded-lg">
-                            <p class="text-sm text-gray-600">Merchants</p>
+                            <p class="text-sm text-gray-600">Users who are Merchants</p>
                             <p class="text-xl font-bold text-green-600">{{ $merchantCount }}</p>
                             <p class="text-sm text-gray-500">
                                 ({{ number_format(($merchantCount / $userCount) * 100, 1) }}%)
+                            </p>
+                        </div>
+                        <div class="text-center p-3 bg-orange-50 rounded-lg">
+                            <p class="text-sm text-gray-600">Regular Users (Not Merchants)</p>
+                            <p class="text-xl font-bold text-orange-600">{{ $regularUserCount }}</p>
+                            <p class="text-sm text-gray-500">
+                                ({{ number_format(($regularUserCount / $userCount) * 100, 1) }}%)
                             </p>
                         </div>
                     </div>
@@ -165,6 +170,52 @@
     <script src="//unpkg.com/alpinejs" defer></script>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var ctx = document.getElementById('userDistributionChart').getContext('2d');
+            var userDistributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Total Users', 'Users who are Merchants', 'Regular Users (Not Merchants)'],
+                    datasets: [{
+                        data: [
+                            {{ $userCount }},
+                            {{ $merchantCount }},
+                            {{ $regularUserCount }}
+                        ],
+                        backgroundColor: [
+                            'rgba(99, 102, 241, 0.7)', // indigo
+                            'rgba(16, 185, 129, 0.7)', // green
+                            'rgba(251, 146, 60, 0.7)'  // orange
+                        ],
+                        borderColor: [
+                            'rgba(99, 102, 241, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(251, 146, 60, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    let value = context.raw || 0;
+                                    let total = context.chart._metasets[context.datasetIndex].total;
+                                    let percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
         // Initialize the pie chart
         const ctx = document.getElementById('userDistributionChart').getContext('2d');
         new Chart(ctx, {
@@ -174,11 +225,11 @@
                 datasets: [{
                     data: [{{ $regularUserCount }}, {{ $merchantCount }}],
                     backgroundColor: [
-                        'rgba(59, 130, 246, 0.8)', // Blue for regular users
+                        'rgba(251, 146, 60, 0.8)', // Orange for regular users
                         'rgba(16, 185, 129, 0.8)'  // Green for merchants
                     ],
                     borderColor: [
-                        'rgba(59, 130, 246, 1)',
+                        'rgba(251, 146, 60, 1)',
                         'rgba(16, 185, 129, 1)'
                     ],
                     borderWidth: 1

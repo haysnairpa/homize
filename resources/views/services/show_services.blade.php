@@ -88,7 +88,7 @@
                 <a href="{{ route('layanan.detail', $service->id) }}" class="group">
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
                         <div class="relative">
-                            <img src="{{ $service->profile_url }}" alt="{{ $service->nama_usaha }}" class="w-full h-48 object-cover">
+                            <img src="{{ $service->media_url ? asset('storage/' . $service->media_url) : asset('images/service-default.jpg') }}" alt="{{ $service->nama_usaha }}" class="w-full h-48 object-scale-down">
                             <div class="absolute top-3 right-3">
                                 <div class="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
                                     <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">

@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Mail\NewOrderNotification;
 use App\Models\Booking;
-use App\Models\Status;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -19,37 +18,26 @@ class ResendNewOrderNotification extends Command
         
         if ($bookingId) {
             // Kirim untuk booking tertentu
-            $booking = Booking::with(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule'])
-                ->find($bookingId);
-                
+            $booking = Booking::with(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule'])->find($bookingId);
             if (!$booking) {
                 $this->error("Booking dengan ID {$bookingId} tidak ditemukan");
                 return 1;
             }
-            
             $this->sendEmail($booking);
         } else {
-            // Kirim untuk semua booking dengan status Pending
-            $statusPending = Status::where('nama_status', 'Pending')->first();
-            
-            if (!$statusPending) {
-                $this->error("Status Pending tidak ditemukan");
-                return 1;
-            }
-            
+            // Kirim untuk semua booking dengan status_proses 'pending'
             $bookings = Booking::with(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule'])
-                ->where('id_status', $statusPending->id)
+                ->where('status_proses', 'pending')
                 ->get();
-                
-            $this->info("Ditemukan " . $bookings->count() . " booking dengan status Pending");
-            
+            $this->info("Ditemukan " . $bookings->count() . " booking dengan status proses 'pending'");
             foreach ($bookings as $booking) {
                 $this->sendEmail($booking);
             }
         }
-        
         return 0;
     }
+
+    
     
     private function sendEmail(Booking $booking)
     {

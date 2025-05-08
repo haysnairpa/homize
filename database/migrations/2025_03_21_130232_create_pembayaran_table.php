@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('order_id')->nullable(); // Untuk Midtrans order ID
             $table->integer('amount');
             $table->string('method');
-            $table->foreignId('id_status')->index('fk_pembayaran_to_status');
+            $table->enum('status_pembayaran', ['Pending', 'Selesai', 'Dibatalkan'])->default('Pending');
             $table->string('snap_token')->nullable(); // Untuk menyimpan token Midtrans
             $table->timestamp('payment_date');
             $table->timestamps();

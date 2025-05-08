@@ -32,6 +32,7 @@ class ExploreServicesController extends Controller
                 'k.nama as main_kategori',
                 'tl.harga',
                 'tl.satuan',
+                'a.media_url',
                 DB::raw('COALESCE(AVG(r.rate), 0) as rating_avg'),
                 DB::raw('COUNT(DISTINCT r.id) as rating_count')
             ])
@@ -40,6 +41,11 @@ class ExploreServicesController extends Controller
             ->join('kategori as k', 'sk.id_kategori', '=', 'k.id')
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
             ->leftJoin('rating as r', 'l.id', '=', 'r.id_layanan')
+            ->leftJoin(DB::raw('(
+                SELECT id_layanan, MIN(media_url) as media_url
+                FROM aset
+                GROUP BY id_layanan
+            ) as a'), 'l.id', '=', 'a.id_layanan')
             ->where('k.id', '=', $ids);
 
         // Apply rating filter if provided
@@ -73,7 +79,8 @@ class ExploreServicesController extends Controller
             'sk.nama',
             'k.nama',
             'tl.harga',
-            'tl.satuan'
+            'tl.satuan',
+            'a.media_url'
         ]);
 
         // Apply sorting if provided

@@ -102,26 +102,26 @@
                                     <div>
                                         <p class="text-sm text-gray-500">Status Booking</p>
                                         <div class="flex items-center mt-1">
-                                            @if($booking->status->nama_status == 'Confirmed')
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    <svg class="mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
+                                            @if($booking->status_proses == 'Dikonfirmasi')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-blue-400" fill="currentColor" viewBox="0 0 8 8">
                                                         <circle cx="4" cy="4" r="3" />
                                                     </svg>
-                                                    Terkonfirmasi
+                                                    Dikonfirmasi
                                                 </span>
-                                            @elseif($booking->status->nama_status == 'Cancelled')
+                                            @elseif($booking->status_proses == 'Dibatalkan')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    <svg class="mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
+                                                    <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
                                                         <circle cx="4" cy="4" r="3" />
                                                     </svg>
                                                     Dibatalkan
                                                 </span>
                                             @else
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                    <svg class="mr-1.5 h-2 w-2 text-yellow-400" fill="currentColor" viewBox="0 0 8 8">
+                                                    <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-yellow-400" fill="currentColor" viewBox="0 0 8 8">
                                                         <circle cx="4" cy="4" r="3" />
                                                     </svg>
-                                                    Menunggu Konfirmasi
+                                                    {{ $booking->status_proses ?? 'Menunggu Konfirmasi' }}
                                                 </span>
                                             @endif
                                         </div>
@@ -166,21 +166,21 @@
                                     <div>
                                         <p class="text-sm text-gray-500">Status Pembayaran</p>
                                         <div class="flex items-center mt-1">
-                                            @if($booking->pembayaran->status->nama_status == 'Payment Completed')
+                                            @if($booking->pembayaran->status_pembayaran == 'Selesai')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     <svg class="mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
                                                         <circle cx="4" cy="4" r="3" />
                                                     </svg>
                                                     Pembayaran Selesai
                                                 </span>
-                                            @elseif($booking->pembayaran->status->nama_status == 'Payment Failed')
+                                            @elseif($booking->pembayaran->status_pembayaran == 'Dibatalkan')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                                     <svg class="mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
                                                         <circle cx="4" cy="4" r="3" />
                                                     </svg>
                                                     Pembayaran Gagal
                                                 </span>
-                                            @elseif($booking->pembayaran->status->nama_status == 'Payment Pending' || $booking->pembayaran->status->nama_status == 'Pending')
+                                            @elseif($booking->pembayaran->status_pembayaran == 'Pending')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                     <svg class="mr-1.5 h-2 w-2 text-yellow-400" fill="currentColor" viewBox="0 0 8 8">
                                                         <circle cx="4" cy="4" r="3" />
@@ -191,7 +191,7 @@
                                         </div>
                                     </div>
                                     
-                                    @if($booking->pembayaran->status->nama_status == 'Payment Pending' || $booking->pembayaran->status->nama_status == 'Pending')
+                                    @if($booking->pembayaran->status_pembayaran == 'Pending')
                                     <div class="mt-4">
                                         <form action="{{ route('pembayaran.process', $booking->id) }}" method="GET" id="payment-form">
                                             <input type="hidden" name="payment_method" value="bank_transfer">
@@ -204,18 +204,40 @@
                                             </button>
                                         </form>
                                     </div>
-                                    @elseif($booking->pembayaran->status->nama_status == 'Payment Failed')
+                                    @elseif($booking->pembayaran->status_pembayaran == 'Dibatalkan')
                                     <div class="mt-4">
                                         <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                                            <p class="text-red-700">Pembayaran gagal. Silakan coba lagi.</p>
+                                            <p class="text-red-700">Pembayaran dibatalkan. Anda dapat mencoba membayar ulang dengan menekan tombol di bawah ini.</p>
                                         </div>
-                                        
-                                        <a href="{{ route('pembayaran.process', $booking->id) }}" class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                                            </svg>
-                                            Coba Bayar Lagi
-                                        </a>
+                                        <form action="{{ route('pembayaran.process', $booking->id) }}" method="GET" id="payment-form-ulang">
+                                            <input type="hidden" name="payment_method" value="bank_transfer">
+                                            
+                                            <button type="submit" class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                                </svg>
+                                                Coba Bayar Lagi
+                                            </button>
+                                        </form>
+                                        <div class="mt-4">
+                                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Petunjuk Pembayaran Ulang</h3>
+                                                <div class="space-y-4">
+                                                    <div class="flex items-start">
+                                                        <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-homize-blue text-white text-sm font-medium mr-3">1</div>
+                                                        <p class="text-gray-600">Klik tombol "Coba Bayar Lagi" untuk melanjutkan</p>
+                                                    </div>
+                                                    <div class="flex items-start">
+                                                        <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-homize-blue text-white text-sm font-medium mr-3">2</div>
+                                                        <p class="text-gray-600">Ikuti petunjuk pembayaran yang muncul dan selesaikan pembayaran</p>
+                                                    </div>
+                                                    <div class="flex items-start">
+                                                        <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-homize-blue text-white text-sm font-medium mr-3">3</div>
+                                                        <p class="text-gray-600">Status pembayaran akan diperbarui secara otomatis setelah pembayaran berhasil</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     @endif
                                 </div>
@@ -258,7 +280,7 @@
     </div>
     
     <!-- Xendit JS -->
-    @if($booking->pembayaran->status->nama_status == 'Payment Pending' || $booking->pembayaran->status->nama_status == 'Pending')
+    @if($booking->pembayaran->status_pembayaran == 'Pending')
     <script src="https://js.xendit.co/xendit.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

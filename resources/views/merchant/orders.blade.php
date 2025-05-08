@@ -26,22 +26,6 @@
                 </div>
             @endif
 
-            <!-- Tambahkan informasi di halaman orders -->
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-blue-700">
-                            Status pembayaran (Payment Pending, Payment Completed, Payment Failed) berubah secara otomatis berdasarkan aktivitas transaksi dan tidak dapat diubah secara manual.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                 <!-- Status Filter -->
                 <div class="mb-6">
@@ -60,7 +44,7 @@
                     <select id="status-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-homize-blue focus:border-homize-blue sm:text-sm rounded-md">
                         <option value="all">Semua Status</option>
                         @foreach($statuses as $status)
-                            <option value="{{ $status->nama_status }}">{{ $status->nama_status }}</option>
+                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -94,7 +78,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pelanggan</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Layanan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Proses</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -102,22 +87,39 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($orders as $order)
-                            <tr>
+                            <tr data-order-id="{{ $order->id }}">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{{ $order->id }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->nama_user }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->nama_layanan }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @php
-                                        $statusClass = match ($order->nama_status) {
-                                            'Payment Completed' => 'bg-green-100 text-green-800',
-                                            'Pending' => 'bg-yellow-100 text-yellow-800',
-                                            'In Progress' => 'bg-blue-100 text-blue-800',
-                                            'Completed' => 'bg-green-100 text-green-800',
-                                            default => 'bg-red-100 text-red-800',
+                                        $statusProses = $order->status_proses;
+                                        $statusProsesClass = match ($statusProses) {
+                                            'selesai' => 'bg-green-100 text-green-800',
+                                            'pending' => 'bg-yellow-100 text-yellow-800',
+                                            'dikonfirmasi' => 'bg-blue-100 text-blue-800',
+                                            'dibatalkan' => 'bg-red-100 text-red-800',
+                                            'diproses' => 'bg-orange-100 text-orange-800',
+                                            default => 'bg-gray-100 text-gray-800',
                                         };
                                     @endphp
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                        {{ $order->nama_status }}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusProsesClass }}">
+                                        {{ ucfirst($statusProses) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap status-pembayaran-cell">
+                                    @php
+                                        $statusPembayaran = $order->status_pembayaran;
+                                        $statusPembayaranClass = match ($statusPembayaran) {
+                                            'berhasil' => 'bg-green-100 text-green-800',
+                                            'pending' => 'bg-yellow-100 text-yellow-800',
+                                            'gagal' => 'bg-red-100 text-red-800',
+                                            'dibatalkan' => 'bg-red-100 text-red-800',
+                                            default => 'bg-gray-100 text-gray-800',
+                                        };
+                                    @endphp
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusPembayaranClass }}">
+                                        {{ ucfirst($statusPembayaran) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -128,7 +130,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button class="text-homize-blue hover:text-homize-blue-second mr-3 view-order" data-id="{{ $order->id }}">Detail</button>
-                                    <button class="text-indigo-600 hover:text-indigo-900 update-status" data-id="{{ $order->id }}">Update Status</button>
+                                    <a href="javascript:void(0)" class="text-indigo-600 hover:text-indigo-900 update-status" data-id="{{ $order->id }}">Update Status Proses</a>
                                 </td>
                             </tr>
                             @endforeach
@@ -198,9 +200,9 @@
                 @csrf
                 <div class="mb-4">
                     <label for="status_id" class="block text-sm font-medium text-gray-700 mb-1">Status Baru</label>
-                    <select name="status_id" id="status_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
+                    <select name="status_proses" id="status_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
                         @foreach($statuses as $status)
-                            <option value="{{ $status->id }}">{{ $status->nama_status }}</option>
+                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -213,140 +215,166 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const orderDetailModal = document.getElementById('orderDetailModal');
-            const updateStatusModal = document.getElementById('updateStatusModal');
-            const updateStatusForm = document.getElementById('updateStatusForm');
-            const closeButtons = document.querySelectorAll('.close-modal');
-            const statusFilter = document.getElementById('status-filter');
-            const orderRows = document.querySelectorAll('tbody tr');
-            
-            // View Order Detail
-            document.querySelectorAll('.view-order').forEach(button => {
-                button.addEventListener('click', function() {
-                    const orderId = this.getAttribute('data-id');
-                    fetchOrderDetail(orderId);
-                });
-            });
-            
-            // Fungsi untuk fetch detail pesanan
-            function fetchOrderDetail(orderId) {
-                fetch(`/merchant/orders/${orderId}/detail`, {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showOrderDetailModal(data.data);
-                    } else {
-                        alert('Gagal memuat detail pesanan, error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan saat memuat detail pesanan, error: ' + error);
-                });
-            }
-            
-            // Fungsi untuk menampilkan modal detail pesanan
-            function showOrderDetailModal(order) {
-                const orderDetailContent = document.getElementById('orderDetailContent');
-                orderDetailContent.innerHTML = `
-                    <div class="border-b pb-4 mb-4">
-                        <h4 class="text-lg font-medium text-gray-900">Pesanan #${order.id}</h4>
-                        <p class="text-sm text-gray-500">Tanggal: ${order.tanggal}</p>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <h5 class="font-medium text-gray-700 mb-2">Detail Pelanggan</h5>
-                            <p class="text-sm text-gray-600">Nama: ${order.pelanggan.nama}</p>
-                            <p class="text-sm text-gray-600">Email: ${order.pelanggan.email}</p>
-                            <p class="text-sm text-gray-600">Alamat: ${order.pelanggan.alamat}</p>
-                        </div>
-                        <div>
-                            <h5 class="font-medium text-gray-700 mb-2">Detail Layanan</h5>
-                            <p class="text-sm text-gray-600">Layanan: ${order.layanan.nama}</p>
-                            <p class="text-sm text-gray-600">Harga: Rp ${new Intl.NumberFormat('id-ID').format(order.layanan.harga)}</p>
-                            <p class="text-sm text-gray-600">Durasi: ${order.layanan.durasi}</p>
-                            <p class="text-sm text-gray-600">Jadwal: ${order.jadwal.mulai} - ${order.jadwal.selesai}</p>
-                        </div>
-                    </div>
-                    <div class="border-t pt-4">
-                        <h5 class="font-medium text-gray-700 mb-2">Status</h5>
-                        <p class="text-sm text-gray-600 mb-3">
-                            <span class="px-2 py-1 rounded-full ${getStatusClass(order.status)}">
-                                ${order.status}
-                            </span>
-                        </p>
-                        <h5 class="font-medium text-gray-700 mb-2">Total Pembayaran</h5>
-                        <p class="text-sm font-semibold text-gray-800 mb-3">Rp ${new Intl.NumberFormat('id-ID').format(order.total)}</p>
-                        <h5 class="font-medium text-gray-700 mb-2">Catatan</h5>
-                        <p class="text-sm text-gray-600">${order.catatan || 'Tidak ada catatan'}</p>
-                    </div>
-                `;
-                orderDetailModal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+    const orderDetailModal = document.getElementById('orderDetailModal');
+    const updateStatusModal = document.getElementById('updateStatusModal');
+    const updateStatusForm = document.getElementById('updateStatusForm');
+    const closeButtons = document.querySelectorAll('.close-modal');
+    const statusFilter = document.getElementById('status-filter');
+    const orderRows = document.querySelectorAll('tbody tr');
 
-            // Fungsi untuk mendapatkan class status
-            function getStatusClass(status) {
-                return status === 'Payment Completed' ? 'bg-green-100 text-green-800' :
-                    status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                    status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
-                    status === 'Completed' ? 'bg-green-100 text-green-800' :
-                    'bg-red-100 text-red-800';
-            }
-            
-            // Update Order Status
-            document.querySelectorAll('.update-status').forEach(button => {
-                button.addEventListener('click', function() {
-                    const orderId = this.dataset.id;
-                    const modal = document.getElementById('updateStatusModal');
-                    const form = document.getElementById('updateStatusForm');
-                    
-                    // Set form action URL dengan benar
-                    form.action = `/merchant/orders/${orderId}/update-status`;
-                    
-                    modal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                });
-            });
-            
-            // Close Modals
-            closeButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    orderDetailModal.classList.add('hidden');
-                    updateStatusModal.classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                });
-            });
-            
-            // Close modal when clicking outside
-            [orderDetailModal, updateStatusModal].forEach(modal => {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        modal.classList.add('hidden');
-                        document.body.style.overflow = 'auto';
-                    }
-                });
-            });
-
-            statusFilter.addEventListener('change', function() {
-                const selectedStatus = this.value;
-                
-                orderRows.forEach(row => {
-                    const statusCell = row.querySelector('td:nth-child(4)');
-                    const statusText = statusCell.textContent.trim();
-                    
-                    if (selectedStatus === 'all' || statusText === selectedStatus) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
+    // View Order Detail
+    document.querySelectorAll('.view-order').forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.getAttribute('data-id');
+            fetchOrderDetail(orderId);
         });
-    </script>
+    });
+
+    // Fungsi untuk fetch detail pesanan
+    function fetchOrderDetail(orderId) {
+        fetch(`/merchant/orders/${orderId}/detail`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showOrderDetailModal(data.data);
+            } else {
+                alert('Gagal memuat detail pesanan, error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memuat detail pesanan, error: ' + error);
+        });
+    }
+
+    // Fungsi untuk menampilkan modal detail pesanan
+    function showOrderDetailModal(order) {
+        const orderDetailContent = document.getElementById('orderDetailContent');
+
+        // Helper untuk badge status
+        function statusBadge(text, type) {
+            let colorClass = 'bg-gray-100 text-gray-800';
+            if (type === 'proses') {
+                switch ((text || '').toLowerCase()) {
+                    case 'selesai': colorClass = 'bg-green-100 text-green-800'; break;
+                    case 'pending': colorClass = 'bg-yellow-100 text-yellow-800'; break;
+                    case 'dikonfirmasi': colorClass = 'bg-blue-100 text-blue-800'; break;
+                    case 'dibatalkan': colorClass = 'bg-red-100 text-red-800'; break;
+                    case 'sedang diproses': colorClass = 'bg-orange-100 text-orange-800'; break;
+                }
+            } else if (type === 'pembayaran') {
+                switch ((text || '').toLowerCase()) {
+                    case 'berhasil': colorClass = 'bg-green-100 text-green-800'; break;
+                    case 'pending': colorClass = 'bg-yellow-100 text-yellow-800'; break;
+                    case 'dibatalkan': colorClass = 'bg-red-100 text-red-800'; break;
+                }
+            }
+            return `<span class="px-2 py-1 rounded-full text-xs font-semibold ${colorClass}">${text ? text : '-'}</span>`;
+        }
+
+        orderDetailContent.innerHTML = `
+            <div class="border-b pb-4 mb-4">
+                <h4 class="text-lg font-medium text-gray-900">Pesanan #${order.id}</h4>
+                <p class="text-sm text-gray-500">Tanggal: ${order.tanggal || '-'}</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h5 class="font-medium text-gray-700 mb-2">Detail Pelanggan</h5>
+                    <p class="text-sm text-gray-600">Nama: ${order.pelanggan?.nama || '-'}</p>
+                    <p class="text-sm text-gray-600">Email: ${order.pelanggan?.email || '-'}</p>
+                    <p class="text-sm text-gray-600">Alamat: ${order.pelanggan?.alamat || '-'}</p>
+                </div>
+                <div>
+                    <h5 class="font-medium text-gray-700 mb-2">Detail Layanan</h5>
+                    <p class="text-sm text-gray-600">Layanan: ${order.layanan?.nama || '-'}</p>
+                    <p class="text-sm text-gray-600">Harga: Rp ${order.layanan?.harga ? new Intl.NumberFormat('id-ID').format(order.layanan.harga) : '-'}</p>
+                    <p class="text-sm text-gray-600">Durasi: ${order.layanan?.durasi || '-'}</p>
+                    <p class="text-sm text-gray-600">Jadwal: ${(order.jadwal?.mulai || '-')} - ${(order.jadwal?.selesai || '-')}</p>
+                </div>
+            </div>
+            <div class="border-t pt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h5 class="font-medium text-gray-700 mb-2">Status Proses</h5>
+                    <p class="text-sm text-gray-600 mb-3">
+                        ${statusBadge(order.status_proses, 'proses')}
+                    </p>
+                </div>
+                <div>
+                    <h5 class="font-medium text-gray-700 mb-2">Status Pembayaran</h5>
+                    <p class="text-sm text-gray-600 mb-3">
+                        ${statusBadge(order.status_pembayaran, 'pembayaran')}
+                    </p>
+                </div>
+            </div>
+            <div class="border-t pt-4">
+                <h5 class="font-medium text-gray-700 mb-2">Total Pembayaran</h5>
+                <p class="text-sm font-semibold text-gray-800 mb-3">Rp ${order.total ? new Intl.NumberFormat('id-ID').format(order.total) : '-'}</p>
+                <h5 class="font-medium text-gray-700 mb-2">Catatan</h5>
+                <p class="text-sm text-gray-600">${order.catatan || 'Tidak ada catatan'}</p>
+            </div>
+        `;
+        orderDetailModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Fungsi untuk mendapatkan class status
+    function getStatusClass(status) {
+        return status === 'Payment Completed' ? 'bg-green-100 text-green-800' :
+            status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+            status === 'Dikonfirmasi' ? 'bg-blue-100 text-blue-800' :
+            status === 'Sedang diproses' ? 'bg-green-100 text-green-800' :
+            'bg-red-100 text-red-800';
+    }
+
+    // Update Order Status
+    document.querySelectorAll('.update-status').forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.dataset.id;
+            const modal = document.getElementById('updateStatusModal');
+            const form = document.getElementById('updateStatusForm');
+            // Set form action URL dengan benar
+            form.action = `/merchant/orders/${orderId}/update-status`;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+    });
+
+    // Close Modals
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            orderDetailModal.classList.add('hidden');
+            updateStatusModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        });
+    });
+
+    // Close modal when clicking outside
+    [orderDetailModal, updateStatusModal].forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
+
+    statusFilter.addEventListener('change', function() {
+        const selectedStatus = this.value;
+        orderRows.forEach(row => {
+            const statusCell = row.querySelector('td:nth-child(4)');
+            const statusText = statusCell.textContent.trim();
+            if (selectedStatus === 'all' || statusText === selectedStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
 </x-merchant-layout> 
