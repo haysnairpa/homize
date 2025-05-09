@@ -42,10 +42,22 @@
                             <p class="text-white/90 mb-4">
                                 Temukan layanan terbaik untuk kebutuhan rumah Anda hari ini.
                             </p>
-                            <a href="#layanan-section"
-                                class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-homize-blue bg-white hover:bg-gray-100 shadow-md transition-colors">
-                                Jelajahi Layanan
-                            </a>
+                            <div class="flex flex-wrap gap-3">
+                                <a href="#layanan-section"
+                                    class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-homize-blue bg-white hover:bg-gray-100 shadow-md transition-colors">
+                                    Jelajahi Layanan
+                                </a>
+                                
+                                @if(Auth::user()->merchant)
+                                <a href="{{ route('merchant') }}"
+                                    class="inline-flex items-center px-6 py-3 border border-white text-base font-medium rounded-md text-white hover:bg-blue-600 shadow-md transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    Cek Dashboard Merchant
+                                </a>
+                                @endif
+                            </div>
                         </div>
                         <div class="absolute right-0 bottom-0 opacity-20">
                             <svg class="w-48 h-48 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -60,6 +72,35 @@
                     </div>
                 </div>
             </div>
+            
+            @if(Auth::user()->merchant)
+            <!-- Merchant Info Banner -->
+            <div class="mb-6">
+                <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-homize-blue/10 mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-homize-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">Anda terdaftar sebagai Merchant</h3>
+                                <p class="text-gray-600">Pantau pesanan dan kelola layanan Anda melalui dashboard merchant.</p>
+                            </div>
+                            <div class="ml-auto">
+                                <a href="{{ route('merchant') }}" class="inline-flex items-center px-4 py-2 bg-homize-blue border border-transparent rounded-md font-medium text-sm text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150">
+                                    Buka Dashboard
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             <!-- Categories Scrollable -->
             <div class="mb-8">

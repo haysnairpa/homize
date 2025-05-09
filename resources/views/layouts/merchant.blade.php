@@ -52,8 +52,17 @@
                         </div>
                     </div>
 
-                    <!-- User Menu -->
+                    <!-- User Menu & Navigation -->
                     <div class="hidden sm:flex sm:items-center sm:ml-6">
+                        <!-- Dashboard User Button -->
+                        <a href="{{ route('dashboard') }}" class="mr-4 px-4 py-2 bg-white text-homize-blue rounded-md hover:bg-gray-100 transition-colors duration-200 text-sm font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                            Dashboard User
+                        </a>
+                        
+                        <!-- User Menu -->
                         <div class="ml-3 relative" x-data="{ open: false }">
                             <div>
                                 <button @click="open = !open" class="flex items-center text-white hover:text-homize-orange transition-colors">
@@ -64,7 +73,6 @@
                                 </button>
                             </div>
                             <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5" style="display: none;">
-                                <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard User</a>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -121,10 +129,17 @@
                         </div>
                     </div>
 
-                    <div class="mt-3 space-y-1">
-                        <a href="{{ route('dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-300 hover:text-white hover:bg-homize-blue-second text-base font-medium focus:outline-none transition duration-150 ease-in-out">
+                    <!-- Dashboard User Button (Mobile) -->
+                    <div class="mt-3 px-4">
+                        <a href="{{ route('dashboard') }}" class="flex items-center justify-center w-full px-4 py-2 bg-white text-homize-blue rounded-md hover:bg-gray-100 transition-colors duration-200 text-sm font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
                             Dashboard User
                         </a>
+                    </div>
+
+                    <div class="mt-3 space-y-1">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-300 hover:text-white hover:bg-homize-blue-second text-base font-medium focus:outline-none transition duration-150 ease-in-out w-full text-left">

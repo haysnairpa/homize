@@ -49,6 +49,9 @@ Route::middleware([
 ])->group(function () {
     // User Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])->name('dashboard');
+    
+    // User Profile Photo Upload
+    Route::post('/user/profile-photo', [\App\Http\Controllers\UserProfilePhotoController::class, 'update'])->name('user-profile-photo.update');
 
     Route::get('/transactions', [DashboardController::class, 'transactions'])->name('transactions');
     Route::get('/transactions/filter', [DashboardController::class, 'filterTransactions'])->name('transactions.filter');
