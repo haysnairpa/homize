@@ -16,6 +16,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Cloudinary\Cloudinary;
 use Carbon\Carbon;
 
 class LayananController extends Controller
@@ -66,7 +67,13 @@ class LayananController extends Controller
             Sertifikasi::create([
                 'id_layanan' => $layanan->id,
                 'nama_sertifikasi' => $request->nama_sertifikasi,
-                'media_url' => $request->file_sertifikasi ? $request->file_sertifikasi->store('sertifikasi', 'public') : null,
+                'media_url' => $request->file_sertifikasi ? (new Cloudinary(config('cloudinary.cloud_url')))
+                ->uploadApi()->upload(
+                    $request->file_sertifikasi->getRealPath(),
+                    [
+                        'upload_preset' => config('cloudinary.upload_preset'),
+                    ]
+                )['secure_url'] : null,
             ]);
 
             // Handle revisi if enabled
@@ -99,11 +106,18 @@ class LayananController extends Controller
                             throw new \Exception("Gambar anda lebih besar dari 1MB!");
                         }
 
-                        $path = $file->store('layanan-images', 'public');
+                        $cloudinary = new Cloudinary(config('cloudinary.cloud_url'));
+                        $result = $cloudinary->uploadApi()->upload(
+                            $file->getRealPath(),
+                            [
+                                'upload_preset' => config('cloudinary.layanan_upload_preset', config('cloudinary.upload_preset')),
+                            ]
+                        );
+                        $cloudinaryUrl = $result['secure_url'];
 
                         Aset::create([
                             'id_layanan' => $layanan->id,
-                            'media_url' => $path,
+                            'media_url' => $cloudinaryUrl,
                             'deskripsi' => $request->nama_layanan
                         ]);
                     } else {
@@ -116,23 +130,6 @@ class LayananController extends Controller
                     'media_url' => null,
                     'deskripsi' => "Penjual ini tidak mempunyai foto toko",
                 ]);
-            }
-
-            // Handle sertifikasi
-            if ($request->has('sertifikasi')) {
-                foreach ($request->sertifikasi as $sertifikasi) {
-                    if (!empty($sertifikasi['nama'])) {
-                        $filePath = null;
-                        if (isset($sertifikasi['file']) && $sertifikasi['file']) {
-                            $filePath = $sertifikasi['file']->store('sertifikasi', 'public');
-                        }
-                        Sertifikasi::create([
-                            'id_layanan' => $layanan->id,
-                            'nama' => $sertifikasi['nama'],
-                            'file_url' => $filePath
-                        ]);
-                    }
-                }
             }
 
             DB::commit();
@@ -173,6 +170,7 @@ class LayananController extends Controller
     
     public function updateLayanan(Request $request, $id)
     {
+
         try {
             DB::beginTransaction();
             
@@ -188,19 +186,19 @@ class LayananController extends Controller
             if ($subKategori->id_kategori !== $merchant->id_kategori) {
                 throw new \Exception('Sub kategori tidak sesuai dengan kategori merchant Anda.');
             }
-            
+
             // Update jam operasional
             $jamOperasional = $layanan->jam_operasional;
             $jamOperasional->update([
                 'jam_buka' => $request->jam_operasional['jam_buka'],
                 'jam_tutup' => $request->jam_operasional['jam_tutup']
             ]);
-            
+
             // Update hari
             if (isset($request->jam_operasional['hari']) && is_array($request->jam_operasional['hari'])) {
                 $jamOperasional->hari()->sync($request->jam_operasional['hari']);
             }
-            
+
             // Update layanan
             $layanan->update([
                 'nama_layanan' => $request->nama_layanan,
@@ -208,7 +206,7 @@ class LayananController extends Controller
                 'id_sub_kategori' => $request->id_sub_kategori,
                 'pengalaman' => $request->pengalaman ?? 0
             ]);
-            
+
             // Update tarif layanan
             $tarifLayanan = $layanan->tarif_layanan;
             if ($tarifLayanan) {
@@ -219,42 +217,44 @@ class LayananController extends Controller
                     'satuan' => $request->satuan
                 ]);
             }
-            
+
             // Handle aset (images) if new ones are uploaded
             if ($request->hasFile('aset_layanan')) {
                 // Delete existing assets
                 Aset::where('id_layanan', $layanan->id)->delete();
                 
                 foreach ($request->file('aset_layanan') as $file) {
-                    if ($file->isValid()) {
-                        if ($file->getSize() > 1000000) {
-                            throw new \Exception("Gambar" . $file . "lebih besar dari 1MB!");
-                        }
-                        
-                        $path = $file->store('layanan-images', 'public');
-                        
-                        Aset::create([
-                            'id_layanan' => $layanan->id,
-                            'media_url' => $path,
-                            'deskripsi' => $request->nama_layanan
-                        ]);
-                    } else {
-                        throw new \Exception("Gambar" . $file . "bukan tipe yang valid (.png, .jpeg, dll)");
-                    }
+                    $cloudinary = new Cloudinary(config('cloudinary.cloud_url'));
+                    $result = $cloudinary->uploadApi()->upload(
+                        $file->getRealPath(),
+                        [
+                            'upload_preset' => config('cloudinary.layanan_upload_preset', config('cloudinary.upload_preset')),
+                        ]
+                    );
+                    $cloudinaryUrl = $result['secure_url'];
+                    Aset::create([
+                        'id_layanan' => $layanan->id,
+                        'media_url' => $cloudinaryUrl,
+                        'deskripsi' => $request->nama_layanan
+                    ]);
                 }
             }
-            
+
             // Update sertifikasi if provided
             if ($request->has('nama_sertifikasi')) {
                 $sertifikasi = Sertifikasi::where('id_layanan', $layanan->id)->first();
-                
                 if ($sertifikasi) {
                     $mediaUrl = $sertifikasi->media_url;
-                    
                     if ($request->hasFile('file_sertifikasi')) {
-                        $mediaUrl = $request->file('file_sertifikasi')->store('sertifikasi', 'public');
+                        $cloudinary = new Cloudinary(config('cloudinary.cloud_url'));
+                        $result = $cloudinary->uploadApi()->upload(
+                            $request->file('file_sertifikasi')->getRealPath(),
+                            [
+                                'upload_preset' => config('cloudinary.sertifikasi_upload_preset'),
+                            ]
+                        );
+                        $mediaUrl = $result['secure_url'];
                     }
-                    
                     $sertifikasi->update([
                         'nama_sertifikasi' => $request->nama_sertifikasi,
                         'media_url' => $mediaUrl
@@ -263,71 +263,26 @@ class LayananController extends Controller
                     Sertifikasi::create([
                         'id_layanan' => $layanan->id,
                         'nama_sertifikasi' => $request->nama_sertifikasi,
-                        'media_url' => $request->hasFile('file_sertifikasi') ? 
-                            $request->file('file_sertifikasi')->store('sertifikasi', 'public') : null
+                        'media_url' => $request->hasFile('file_sertifikasi') ? (function() use ($request) {
+                            $cloudinary = new Cloudinary(config('cloudinary.cloud_url'));
+                            $result = $cloudinary->uploadApi()->upload(
+                                $request->file('file_sertifikasi')->getRealPath(),
+                                [
+                                    'upload_preset' => config('cloudinary.upload_preset'),
+                                ]
+                            );
+                            return $result['secure_url'];
+                        })() : null
                     ]);
                 }
             }
             
             DB::commit();
-            
+        
             return redirect()->route('merchant.services')->with('success', 'Layanan berhasil diperbarui');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', $e->getMessage());
-        }
-    }
-    
-    public function deleteLayanan($id)
-    {
-        try {
-            DB::beginTransaction();
-            
-            // Get the merchant and validate ownership
-            $merchant = Auth::user()->merchant;
-            $layanan = Layanan::where('id', $id)
-                ->where('id_merchant', $merchant->id)
-                ->firstOrFail();
-            
-            // Check if there are any bookings for this service
-            $bookingCount = Booking::where('id_layanan', $id)->count();
-            if ($bookingCount > 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Layanan tidak dapat dihapus karena sudah memiliki pesanan.'
-                ], 400);
-            }
-            
-            // Delete related records
-            TarifLayanan::where('id_layanan', $id)->delete();
-            Aset::where('id_layanan', $id)->delete();
-            Sertifikasi::where('id_layanan', $id)->delete();
-            
-            // Delete jam operasional and detach hari
-            $jamOperasionalId = $layanan->id_jam_operasional;
-            if ($jamOperasionalId) {
-                $jamOperasional = JamOperasional::find($jamOperasionalId);
-                if ($jamOperasional) {
-                    $jamOperasional->hari()->detach();
-                    $jamOperasional->delete();
-                }
-            }
-            
-            // Finally delete the layanan
-            $layanan->delete();
-            
-            DB::commit();
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Layanan berhasil dihapus'
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
         }
     }
 
@@ -443,8 +398,7 @@ class LayananController extends Controller
         );
 
         $kategori = DB::select("SELECT nama, id FROM kategori");
-        $sub_kategori = DB::select("SELECT s.nama, s.seri_sub_kategori, s.id, s.id_kategori
-                                FROM sub_kategori s");
+        $sub_kategori = DB::select("SELECT s.nama, s.seri_sub_kategori, s.id, s.id_kategori FROM sub_kategori s");
         $ids = DB::select("SELECT `id` FROM `sub_kategori`;");
 
         return view('merchant.detail_merchant', compact('merchant', 'layanan', 'kategori', 'sub_kategori', 'ids'));
@@ -508,5 +462,5 @@ class LayananController extends Controller
         $subKategori = SubKategori::where('id_kategori', $merchant->id_kategori)->get();
         return view('merchant.components.add-layanan', compact('subKategori', 'merchant'));
     }
-    // The rest of the CRUD and sortLayanan, editLayanan, updateLayanan, deleteLayanan, showAddLayananForm
+    
 }

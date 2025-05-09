@@ -10,7 +10,7 @@
 @foreach ($layanan as $item)
     <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
         <div class="relative">
-            <img src="{{ asset('storage/' . $item->media_url) }}" alt="{{ $item->nama_layanan }}"
+            <img src="{{ $item->media_url }}" alt="{{ $item->nama_layanan }}"
                 class="w-full h-48 object-cover">
             @php
     $isWishlisted = false;

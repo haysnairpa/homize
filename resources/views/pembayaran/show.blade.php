@@ -135,7 +135,7 @@
                                 
                                 <div class="flex items-center space-x-4 mb-4">
                                     <div class="flex-shrink-0">
-                                        <img src="{{ $booking->merchant->profile_url ? asset('storage/' . $booking->merchant->profile_url) : asset('images/default-merchant.png') }}" 
+                                        <img src="{{ $booking->merchant->profile_url ? $booking->merchant->profile_url : asset('images/default-merchant.png') }}" 
                                             alt="{{ $booking->merchant->nama_usaha }}" 
                                             class="h-12 w-12 rounded-full object-cover">
                                     </div>

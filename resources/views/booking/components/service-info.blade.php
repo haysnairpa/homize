@@ -5,9 +5,9 @@
     <div class="form-card-body">
         <div class="flex items-start gap-4 mb-6">
             <div class="flex-shrink-0">
-                <img src="{{ asset('storage/' . $layanan->profile_url) }}"
+                <img src="{{ $layanan->profile_url }}"
                     alt="{{ $layanan->nama_usaha }}"
-                    class="service-image object-scale-down h-full w-full rounded-full">
+                    class="service-image object-contain h-full w-full rounded-full">
             </div>
             <div>
                 <h4 class="font-semibold text-gray-800 text-lg">{{ $layanan->nama_layanan }}

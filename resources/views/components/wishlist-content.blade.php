@@ -11,7 +11,7 @@
                         
                         <!-- Service Image -->
                         <div class="flex-shrink-0">
-                            <img src="{{ asset('storage/' . $wishlist->media_url) }}" 
+                            <img src="{{ $wishlist->media_url }}" 
                                 alt="{{ $wishlist->nama_layanan }}" 
                                 class="h-16 w-16 object-cover rounded">
                         </div>

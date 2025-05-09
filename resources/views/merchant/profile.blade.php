@@ -27,7 +27,7 @@
                         <div class="md:col-span-1">
                             <div class="flex flex-col items-center">
                                 <div class="mb-4">
-                                    <img src="{{ asset('storage/' . $merchant->profile_url) }}" alt="{{ $merchant->nama_usaha }}" class="w-40 h-40 object-cover rounded-full border-4 border-homize-blue">
+                                    <img src="{{ $merchant->profile_url }}" alt="{{ $merchant->nama_usaha }}" class="w-40 h-40 object-cover rounded-full border-4 border-homize-blue">
                                 </div>
                                 <div class="w-full">
                                     <label for="profile_url" class="block text-sm font-medium text-gray-700 mb-1">Foto Profil</label>

@@ -50,7 +50,7 @@
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 h-10 w-10">
                                             @if($item->aset)
-                                                <img class="h-10 w-10 rounded-full object-scale-down" src="{{ asset('storage/' . $item->aset->media_url) }}" alt="{{ $item->nama_layanan }}">
+                                                <img class="h-10 w-10 rounded-full object-contain" src="{{ $item->aset->media_url }}" alt="{{ $item->nama_layanan }}">
                                             @else
                                                 <div class="h-10 w-10 rounded-full bg-homize-gray flex items-center justify-center">
                                                     <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -490,7 +490,7 @@
                 currentImageDiv.innerHTML = '';
                 if (layanan.aset && layanan.aset.media_url) {
                     const img = document.createElement('img');
-                    img.src = `/storage/${layanan.aset.media_url}`;
+                    img.src = `${layanan.aset.media_url}`;
                     img.alt = layanan.nama_layanan;
                     img.className = 'h-24 w-24 object-cover rounded-md';
                     currentImageDiv.appendChild(img);
