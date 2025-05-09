@@ -71,7 +71,7 @@
                         <!-- Main Image -->
                         <div class="relative h-80 overflow-hidden rounded-t-lg">
                             <img :src="activeImage" alt="{{ $layanan->nama_layanan }}"
-                                class="w-full h-full object-scale-down p-6">
+                                class="w-full h-full object-contain p-6">
                         </div>
 
                         <!-- Thumbnails -->
@@ -182,8 +182,8 @@
                             class="block rounded-lg transition duration-200 p-3 ">
                             <div class="flex items-center gap-4 ">
                                 <div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
-                                    <img src="{{ asset('storage/' . $layanan->profile_url) }}"
-                                        alt="{{ $layanan->nama_usaha }}" class="w-full h-full object-scale-down">
+                                    <img src="{{ $layanan->profile_url }}"
+                                        alt="{{ $layanan->nama_usaha }}" class="w-full h-full object-contain">
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h2 class="text-lg font-bold text-gray-900 truncate">{{ $layanan->nama_usaha }}

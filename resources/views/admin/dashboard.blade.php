@@ -7,8 +7,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-             <!-- Merchant Verification Section -->
-             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mt-6">
+            <!-- Merchant Verification Section -->
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mt-6">
                 <div class="p-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Verifikasi Merchant</h3>
                     
@@ -31,7 +31,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-10 w-10">
-                                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $merchant->profile_url) }}" alt="">
+                                                    <img class="h-10 w-10 rounded-full object-cover" src="{{$merchant->profile_url}}" alt="">
                                                 </div>
                                                 <div class="ml-4">
                                                     <div class="text-sm font-medium text-gray-900">{{ $merchant->nama_usaha }}</div>

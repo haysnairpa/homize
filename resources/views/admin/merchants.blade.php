@@ -15,7 +15,7 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         <a href="{{ route('admin.merchants', ['sort' => 'id', 'direction' => $sortField === 'id' && $sortDirection === 'asc' ? 'desc' : 'asc']) }}"
-                                           class="flex items-center cursor-pointer hover:text-gray-700">
+                                        class="flex items-center cursor-pointer hover:text-gray-700">
                                             ID
                                             @if($sortField === 'id')
                                                 <span class="ml-1">

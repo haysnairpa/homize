@@ -8,6 +8,7 @@ use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Cloudinary\Cloudinary;
 
 class RegisterController extends Controller
 {
@@ -35,23 +36,53 @@ class RegisterController extends Controller
 
     public function storeStep1(Request $request)
     {
-        $validated = $request->validate([
+        // If returning from step 2 for testing, ensure session is clean and not corrupted
+        if ($request->has('reset') || (Session::has('merchant_registration') && !is_array(Session::get('merchant_registration')))) {
+            Session::forget('merchant_registration');
+        }
+
+        // If session is missing when coming back from step 2, redirect with error
+        if ($request->isMethod('post') && !Session::has('merchant_registration') && $request->has('back_from_step2')) {
+            return redirect()->route('merchant.register.step1')->with('error', 'Session pendaftaran tidak ditemukan. Silakan mulai ulang.');
+        }
+
+        $oldData = Session::get('merchant_registration', []);
+        $rules = [
             'nama_usaha' => 'required|string|max:255',
             'id_kategori' => 'required|exists:kategori,id',
-            'profile_url' => 'required|image|mimes:jpeg,png,jpg|max:1024',
-        ], [
+        ];
+        if (empty($oldData['profile_url'])) {
+            $rules['profile_url'] = 'required|image|mimes:jpeg,png,jpg,webp|max:3072';
+        } else {
+            $rules['profile_url'] = 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072';
+        }
+        $validated = $request->validate($rules, [
             'nama_usaha.required' => 'Nama usaha wajib diisi',
             'id_kategori.required' => 'Kategori usaha wajib dipilih',
             'profile_url.required' => 'Foto profil usaha wajib diunggah',
             'profile_url.image' => 'File harus berupa gambar',
-            'profile_url.mimes' => 'Format gambar harus jpeg, png, atau jpg',
-            'profile_url.max' => 'Ukuran gambar maksimal 2MB',
+            'profile_url.mimes' => 'Format gambar harus jpeg, png, jpg, atau webp',
+            'profile_url.max' => 'Ukuran gambar maksimal 3MB',
         ]);
-        $profilePath = $request->file('profile_url')->store('merchant-profiles', 'public');
-        $merchantData = [
+
+        // Upload ke Cloudinary jika ada upload baru, jika tidak pakai dari session
+        $uploadedFileUrl = $oldData['profile_url'] ?? null;
+        if ($request->hasFile('profile_url')) {
+            $uploadedFile = $request->file('profile_url');
+            $cloudinary = new Cloudinary(config('cloudinary.cloud_url'));
+            $result = $cloudinary->uploadApi()->upload(
+                $uploadedFile->getRealPath(),
+                [
+                    'upload_preset' => config('cloudinary.upload_preset'), 
+                ],
+            );
+            $uploadedFileUrl = $result['secure_url'];
+        }
+
+        $merchantData = [   
             'nama_usaha' => $validated['nama_usaha'],
             'id_kategori' => $validated['id_kategori'],
-            'profile_url' => $profilePath,
+            'profile_url' => $uploadedFileUrl,
         ];
         Session::put('merchant_registration', $merchantData);
         return redirect()->route('merchant.register.step2');

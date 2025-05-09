@@ -119,10 +119,10 @@ Route::middleware(['auth', \App\Http\Middleware\PreventMerchantReregistration::c
     Route::get('/merchant', [RegisterController::class, 'index'])->name('merchant');
     Route::get('/merchant/register/step1', [RegisterController::class, 'step1'])->name('merchant.register.step1');
     Route::post('/merchant/register/step1', [RegisterController::class, 'storeStep1'])->name('merchant.register.storeStep1');
-Route::post('/merchant/register/step1', [RegisterController::class, 'storeStep1'])->name('merchant.register.step1.store');
+    Route::post('/merchant/register/step1', [RegisterController::class, 'storeStep1'])->name('merchant.register.step1.store');
     Route::get('/merchant/register/step2', [RegisterController::class, 'step2'])->name('merchant.register.step2');
     Route::post('/merchant/register/step2', [RegisterController::class, 'storeStep2'])->name('merchant.register.storeStep2');
-Route::post('/merchant/register/step2', [RegisterController::class, 'storeStep2'])->name('merchant.register.step2.store');
+    Route::post('/merchant/register/step2', [RegisterController::class, 'storeStep2'])->name('merchant.register.step2.store');
     Route::post('/merchant/register/back-to-step1', [RegisterController::class, 'backToStep1'])->name('merchant.register.backToStep1');
     Route::get('/merchant/verification-status', [MerchantDashboardController::class, 'verificationStatus'])->name('merchant.verification-status');
     Route::post('/merchant/retry-verification', [MerchantDashboardController::class, 'retryVerification'])->name('merchant.retryVerification');

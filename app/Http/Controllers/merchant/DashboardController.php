@@ -8,7 +8,6 @@ use App\Models\SubKategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
 
 class DashboardController extends Controller
 {
@@ -34,6 +33,7 @@ class DashboardController extends Controller
         $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
         $subKategori = SubKategori::all();
         $mediaSosial = json_decode($merchant->media_sosial, true) ?? [];
+
         return view('merchant.profile', compact('merchant', 'subKategori', 'mediaSosial'));
     }
 
@@ -49,10 +49,19 @@ class DashboardController extends Controller
             'whatsapp' => 'required|string',
             'profile_url' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
+
         if ($request->hasFile('profile_url')) {
-            $profilePath = $request->file('profile_url')->store('merchant-profiles', 'public');
-            $merchant->profile_url = $profilePath;
+            $uploadedFile = $request->file('profile_url');
+            $cloudinary = new \Cloudinary\Cloudinary(config('cloudinary.cloud_url'));
+            $result = $cloudinary->uploadApi()->upload(
+                $uploadedFile->getRealPath(),
+                [
+                    'upload_preset' => config('cloudinary.upload_preset'),
+                ]
+            );
+            $merchant->profile_url = $result['secure_url'];
         }
+
         $merchant->nama_usaha = $validated['nama_usaha'];
         $merchant->id_kategori = $validated['id_kategori'];
         $merchant->alamat = $validated['alamat'];
@@ -61,6 +70,7 @@ class DashboardController extends Controller
             'facebook' => $validated['facebook'] ?? '',
             'whatsapp' => $validated['whatsapp']
         ]);
+
         $merchant->save();
         return redirect()->route('merchant.profile')->with('success', 'Profil berhasil diperbarui');
     }
@@ -71,9 +81,11 @@ class DashboardController extends Controller
         if (!$merchant) {
             return redirect()->route('merchant.register.step1');
         }
+
         if ($merchant->verification_status === 'approved') {
             return redirect()->route('merchant.dashboard');
         }
+
         return view('merchant.verification-status', ['merchant' => $merchant]);
     }
 
@@ -83,7 +95,9 @@ class DashboardController extends Controller
         if (!$merchant || $merchant->verification_status === 'approved') {
             return redirect()->route('merchant.dashboard');
         }
+
         $merchant->delete();
+
         return redirect()->route('merchant.register.step1')
             ->with('info', 'Silakan daftar ulang sebagai merchant');
     }
