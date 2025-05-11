@@ -43,6 +43,9 @@
                             <a href="{{ route('merchant.orders') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('merchant.orders') ? 'border-homize-orange text-white' : 'border-transparent text-gray-300 hover:text-white' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
                                 Pesanan
                             </a>
+                            <a href="{{ route('merchant.penarikan') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('merchant.penarikan') ? 'border-homize-orange text-white' : 'border-transparent text-gray-300 hover:text-white' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                                Penarikan
+                            </a>
                             <a href="{{ route('merchant.profile') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('merchant.profile') ? 'border-homize-orange text-white' : 'border-transparent text-gray-300 hover:text-white' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
                                 Profil
                             </a>
@@ -106,6 +109,9 @@
                     </a>
                     <a href="{{ route('merchant.orders') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('merchant.orders') ? 'border-homize-orange text-white bg-homize-blue-second' : 'border-transparent text-gray-300 hover:text-white hover:bg-homize-blue-second' }} text-base font-medium focus:outline-none transition duration-150 ease-in-out">
                         Pesanan
+                    </a>
+                    <a href="{{ route('merchant.penarikan') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('merchant.penarikan') ? 'border-homize-orange text-white bg-homize-blue-second' : 'border-transparent text-gray-300 hover:text-white hover:bg-homize-blue-second' }} text-base font-medium focus:outline-none transition duration-150 ease-in-out">
+                        Penarikan
                     </a>
                     <a href="{{ route('merchant.profile') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('merchant.profile') ? 'border-homize-orange text-white bg-homize-blue-second' : 'border-transparent text-gray-300 hover:text-white hover:bg-homize-blue-second' }} text-base font-medium focus:outline-none transition duration-150 ease-in-out">
                         Profil

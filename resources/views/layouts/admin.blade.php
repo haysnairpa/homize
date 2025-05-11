@@ -47,6 +47,9 @@
                             <x-nav-link href="{{ route('admin.transactions') }}" :active="request()->routeIs('admin.transactions')">
                                 {{ __('Transactions') }}
                             </x-nav-link>
+                            <x-nav-link href="{{ route('admin.penarikan') }}" :active="request()->routeIs('admin.penarikan')">
+                                {{ __('Penarikan') }}
+                            </x-nav-link>
                         </div>
                     </div>
 

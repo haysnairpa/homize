@@ -22,6 +22,8 @@ use App\Http\Controllers\MidtransCallbackController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\XenditCallbackController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\merchant\PenarikanController;
+use App\Http\Controllers\Admin\PenarikanController as AdminPenarikanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -136,6 +138,11 @@ Route::middleware(['auth'])->group(function () {
 
 // Merchant Dashboard Routes (pastikan tidak menggunakan middleware prevent-merchant-reregistration)
 Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->prefix('merchant')->name('merchant.')->group(function () {
+    // Penarikan merchant
+    Route::get('/penarikan', [PenarikanController::class, 'index'])->name('penarikan');
+    Route::get('/penarikan/riwayat', [PenarikanController::class, 'riwayat'])->name('penarikan.riwayat');
+    Route::post('/penarikan/ajukan', [PenarikanController::class, 'ajukan'])->name('penarikan.ajukan');
+    Route::post('/penarikan/tambah-rekening', [PenarikanController::class, 'tambahRekening'])->name('penarikan.tambahRekening');
     Route::get('/dashboard', [MerchantDashboardController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [MerchantDashboardController::class, 'profile'])->name('profile');
     Route::post('/profile/update', [MerchantDashboardController::class, 'updateProfile'])->name('profile.update');
@@ -175,6 +182,9 @@ Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filter
 // Offline fallback route
 Route::get('/offline', [App\Http\Controllers\HomeController::class, 'offline'])->name('offline');
 
+// Tambah rekening merchant (POST)
+
+
 // Contact us routes
 Route::get('/contact', [App\Http\Controllers\ContactController::class, 'index'])->name('contact.index');
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit');
@@ -185,6 +195,9 @@ Route::get('auth/google/callback', [App\Http\Controllers\SocialiteController::cl
 
 
 Route::prefix('admin')->name('admin.')->group(function () {
+    // Penarikan admin
+    Route::get('/penarikan', [AdminPenarikanController::class, 'index'])->name('penarikan');
+    Route::put('/penarikan/{id}', [AdminPenarikanController::class, 'update'])->name('penarikan.update');
 
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminController::class, 'login'])->name('login.post');
