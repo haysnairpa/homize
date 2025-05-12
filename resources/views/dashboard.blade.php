@@ -92,7 +92,10 @@
                                     Layanan</th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status</th>
+                                    Status Proses</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status Pembayaran</th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Tanggal</th>
@@ -109,13 +112,22 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $booking->nama_layanan }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span
-                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ $booking->status_proses }}</span>
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                            {{ $booking->status_proses == 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                            {{ $booking->status_proses }} 
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                            {{ ($booking->status_pembayaran ?? '-') == 'Selesai' ? 'bg-green-100 text-green-800' : (($booking->status_pembayaran ?? '-') == 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                            {{ $booking->status_pembayaran ?? '-' }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $booking->updated_at }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp
-                                        {{ $booking->amount }}</td>
+                                        {{ number_format($booking->amount ?? 0, 0, ',', '.') }}
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

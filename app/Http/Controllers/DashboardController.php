@@ -13,7 +13,7 @@ class DashboardController extends Controller
     public function mainDashboard()
     {
         $userId = Auth::id();
-        $bookings = DB::select("SELECT sk.seri_sub_kategori, l.nama_layanan, b.status_proses, b.updated_at, p.amount, bs.waktu_mulai, bs.waktu_selesai, b.id
+        $bookings = DB::select("SELECT sk.seri_sub_kategori, l.nama_layanan, b.status_proses, b.updated_at, p.amount, p.status_pembayaran, bs.waktu_mulai, bs.waktu_selesai, b.id
                                 FROM booking b
                                 JOIN layanan l ON l.id = b.id_layanan
                                 JOIN sub_kategori sk ON sk.id = l.id_sub_kategori
@@ -43,7 +43,8 @@ class DashboardController extends Controller
                                     b.created_at AS tanggal_booking,
                                     b.updated_at AS tanggal_selesai, 
                                     b.updated_at, 
-                                    p.amount, 
+                                    p.amount,
+                                    p.status_pembayaran,
                                     bs.waktu_mulai, 
                                     bs.waktu_selesai, 
                                     b.alamat_pembeli, 
