@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\BookingSchedule;
 use App\Models\Layanan;
-use App\Models\Status;
+
 use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -152,18 +152,12 @@ class BookingController extends Controller
                 'waktu_selesai' => $waktuSelesai->format('Y-m-d H:i:s'),
             ]);
 
-            // Ambil status "Pending"
-            $statusPending = Status::where('nama_status', 'Pending')->first();
-            if (!$statusPending) {
-                throw new \Exception('Status Pending tidak ditemukan');
-            }
-
             // Buat booking
             $booking = Booking::create([
                 'id_user' => Auth::id(),
                 'id_merchant' => $request->id_merchant,
                 'id_layanan' => $request->id_layanan,
-                'id_status' => $statusPending->id,
+                'status_proses' => 'Pending',
                 'id_booking_schedule' => $bookingSchedule->id,
                 'contact_email' => $request->contact_email,
                 'contact_phone' => $phoneNumber,
@@ -180,23 +174,12 @@ class BookingController extends Controller
                 'longitude' => $request->longitude ?: null,
             ]);
 
-            // Buat pembayaran dengan status Payment Pending
-            $statusPembayaranPending = Status::where('nama_status', 'Payment Pending')->first();
-            if (!$statusPembayaranPending) {
-                // Fallback ke status Pending biasa jika Payment Pending tidak ada
-                throw new \Exception('Status Payment Pending tidak ditemukan');
-            }
-
-            // Status booking awal adalah Payment Pending juga
-            $booking->update([
-                'id_status' => $statusPembayaranPending->id
-            ]);
-
+            // Buat pembayaran dengan status_pembayaran string enum
             Pembayaran::create([
                 'id_booking' => $booking->id,
                 'amount' => $tarifLayanan->harga,
                 'method' => 'Belum dipilih',
-                'id_status' => $statusPembayaranPending->id,
+                'status_pembayaran' => 'Pending',
                 'payment_date' => now(),
             ]);
 

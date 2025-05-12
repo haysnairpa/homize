@@ -80,12 +80,55 @@
                                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1"
                                 style="display: none;">
                                 <a href="{{ route('dashboard') }}"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a>
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                        </svg>
+                                        Dashboard User
+                                    </div>
+                                </a>
+                                <a href="{{ route('profile.show') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        Profil Saya
+                                    </div>
+                                </a>
+                                @if(Auth::user()->merchant)
+                                <a href="{{ route('merchant') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                        Dashboard Merchant
+                                    </div>
+                                </a>
+                                @else
+                                <a href="{{ route('merchant') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                        Daftar Merchant
+                                    </div>
+                                </a>
+                                @endif
+                                <div class="border-t border-gray-100 my-1"></div>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit"
                                         class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        Logout
+                                        <div class="flex items-center text-red-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                            </svg>
+                                            Logout
+                                        </div>
                                     </button>
                                 </form>
                             </div>
@@ -231,11 +274,45 @@
             <!-- Mobile Auth Links -->
             <div class="border-t border-homize-blue-second pt-3 mt-3">
                 @auth
+                    <div class="px-3 py-2 text-white font-medium">Akun Saya</div>
                     <a href="{{ route('dashboard') }}"
-                        class="block px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">Dashboard</a>
+                        class="flex items-center px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Dashboard User
+                    </a>
+                    <a href="{{ route('profile.show') }}"
+                        class="flex items-center px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Profil Saya
+                    </a>
+                    @if(Auth::user()->merchant)
+                    <a href="{{ route('merchant') }}"
+                        class="flex items-center px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        Dashboard Merchant
+                    </a>
+                    @else
+                    <a href="{{ route('merchant') }}"
+                        class="flex items-center px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Daftar Merchant
+                    </a>
+                    @endif
+                    <div class="border-t border-homize-blue-second my-2"></div>
                     <form method="POST" action="{{ route('logout') }}" class="block px-3 py-2">
                         @csrf
-                        <button type="submit" class="text-white hover:text-homize-orange text-sm font-medium">
+                        <button type="submit" class="flex items-center text-white hover:text-red-300 text-sm font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
                             Logout
                         </button>
                     </form>
@@ -298,8 +375,8 @@
 
                                         <!-- Service Image -->
                                         <div class="flex-shrink-0">
-                                            <img src="{{ $wishlist->profile_url ?? asset('images/default-merchant.png') }}"
-                                                alt="{{ $wishlist->nama_usaha }}" class="h-16 w-16 object-cover rounded">
+                                            <img src="{{ $wishlist->media_url }}"
+                                                alt="{{ $wishlist->nama_layanan }}" class="h-16 w-16 object-cover rounded">
                                         </div>
 
                                         <!-- Service Info -->

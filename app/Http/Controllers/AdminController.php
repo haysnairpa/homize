@@ -59,11 +59,9 @@ class AdminController extends Controller
         // Get regular users (users who are not merchants)
         $regularUserCount = $userCount - $merchantCount;
 
-        // Get total transactions count
-        $transactionCount = \App\Models\Pembayaran::count();
-
-        // Get total transaction amount
-        $totalAmount = \App\Models\Pembayaran::sum('amount');
+        // Get only confirmed transactions
+        $transactionCount = \App\Models\Pembayaran::where('status_pembayaran', 'Selesai')->count();
+        $totalAmount = \App\Models\Pembayaran::where('status_pembayaran', 'Selesai')->sum('amount');
 
         // Get pending merchants for verification
         $pendingMerchants = \App\Models\Merchant::with('user')
@@ -119,11 +117,22 @@ class AdminController extends Controller
         $minAmount = 0;
         $maxAmount = \App\Models\Pembayaran::max('amount');
 
+        // Hitung total transaksi pending dan selesai
+        $paymentPendingCount = \App\Models\Pembayaran::where('status_pembayaran', 'Pending')->count();
+        $paymentConfirmedCount = \App\Models\Pembayaran::where('status_pembayaran', 'Selesai')->count();
+
+        // Hitung total amount pending dan selesai
+        $paymentPendingAmount = \App\Models\Pembayaran::where('status_pembayaran', 'Pending')->sum('amount');
+        $paymentConfirmedAmount = \App\Models\Pembayaran::where('status_pembayaran', 'Selesai')->sum('amount');
+
         // Get range interval from request or use default
         $rangeInterval = $request->interval ? (int)$request->interval : 15000;
+        if ($rangeInterval <= 0) {
+            $rangeInterval = 1; // Prevent division by zero
+        }
 
         // Calculate number of ranges needed
-        $numberOfRanges = ceil(($maxAmount - $minAmount) / $rangeInterval);
+        $numberOfRanges = ($rangeInterval > 0) ? ceil(($maxAmount - $minAmount) / $rangeInterval) : 0;
 
         // Generate ranges dynamically
         $ranges = [];
@@ -165,7 +174,11 @@ class AdminController extends Controller
             'transactions',
             'rangeInterval',
             'minAmount',
-            'maxAmount'
+            'maxAmount',
+            'paymentPendingCount',
+            'paymentConfirmedCount',
+            'paymentPendingAmount',
+            'paymentConfirmedAmount'
         ));
     }
 

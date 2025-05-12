@@ -9,8 +9,8 @@
                     $tarif = App\Models\TarifLayanan::where('id_layanan', $service->id)->first();
                 @endphp
 
-                <img src="{{ $aset ? asset('storage/' . $aset->media_url) : asset('images/default-service.jpg') }}"
-                    alt="{{ $service->nama_layanan }}" class="w-full h-48 object-scale-down">
+                <img src="{{ $aset ? $aset->media_url : asset('images/default-service.jpg') }}"
+                    alt="{{ $service->nama_layanan }}" class="w-full h-48 object-contain">
 
                 <div class="absolute top-3 left-3">
                     <span

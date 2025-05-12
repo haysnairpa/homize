@@ -12,7 +12,7 @@ class Booking extends Model
         "id_user",
         "id_merchant",
         "id_layanan",
-        "id_status",
+        "status_proses",
         "id_booking_schedule",
         "contact_email",
         "contact_phone",
@@ -58,11 +58,6 @@ class Booking extends Model
         return $this->belongsTo(Layanan::class, "id_layanan", "id");
     }
 
-    // many to one from booking to status
-    public function status()
-    {
-        return $this->belongsTo(Status::class, "id_status", "id");
-    }
 
     // many to one from booking to booking_schedule
     public function booking_schedule()
@@ -75,25 +70,18 @@ class Booking extends Model
      */
     public function canTransitionTo($targetStatusName)
     {
-        $currentStatus = $this->status->nama_status;
-        
-        // valid transitions
+        $currentStatus = $this->status_proses;
+        // valid transitions dalam Bahasa Indonesia
         $validTransitions = [
-            'Payment Pending' => ['Payment Completed', 'Payment Failed'],
-            'Payment Completed' => ['Pending'],
-            'Pending' => ['Confirmed', 'Cancelled'],
-            'Confirmed' => ['In Progress'],
-            'In Progress' => ['Completed'],
-            'Payment Failed' => [], // final status
-            'Cancelled' => [], // final status
-            'Completed' => [] // final status
+            'Pending' => ['Dikonfirmasi', 'Dibatalkan'],
+            'Dikonfirmasi' => ['Sedang diproses', 'Dibatalkan'],
+            'Sedang diproses' => ['Selesai', 'Dibatalkan'],
+            'Selesai' => [],
+            'Dibatalkan' => []
         ];
-        
-        // check valid transitions
         if (isset($validTransitions[$currentStatus]) && in_array($targetStatusName, $validTransitions[$currentStatus])) {
             return true;
         }
-        
         return false;
     }
 }

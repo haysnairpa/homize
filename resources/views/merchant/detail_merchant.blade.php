@@ -34,8 +34,8 @@
             <div class="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
                 <!-- Merchant Image -->
                 <div class="flex-shrink-0">
-                    <img src="{{ asset('storage/' . $merchant->profile_url) }}" alt="{{ $merchant->nama_usaha }}"
-                        class="w-24 h-24 md:w-32 md:h-32 rounded-full object-scale-down border-4 border-homize-blue">
+                    <img src="{{ $merchant->profile_url }}" alt="{{ $merchant->nama_usaha }}"
+                        class="w-24 h-24 md:w-32 md:h-32 rounded-full object-contain border-4 border-homize-blue">
                 </div>
 
                 <!-- Merchant Details -->

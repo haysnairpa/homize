@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Pembayaran;
-use App\Models\Status;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -67,19 +67,15 @@ class MidtransCallbackController extends Controller
     
     private function updatePaymentSuccess($pembayaran, $paymentType)
     {
-        $statusCompleted = Status::where('nama_status', 'Payment Completed')->first();
         $pembayaran->update([
-            'id_status' => $statusCompleted->id,
+            'status_pembayaran' => 'Selesai',
             'method' => $paymentType,
             'payment_date' => now(),
             'otp_attempts' => 0, // Reset percobaan OTP
         ]);
-        
-        $statusPending = Status::where('nama_status', 'Pending')->first();
         $pembayaran->booking->update([
-            'id_status' => $statusPending->id,
+            'status_proses' => 'Pending',
         ]);
-        
         Log::info('Payment completed for order_id: ' . $pembayaran->order_id);
     }
     
@@ -95,30 +91,26 @@ class MidtransCallbackController extends Controller
             Log::info('Payment failed after ' . $attempts . ' OTP attempts for order_id: ' . $pembayaran->order_id);
         } else {
             // Masih ada kesempatan, tetap di status pending
-            $statusPending = Status::where('nama_status', 'Payment Pending')->first();
             $pembayaran->update([
+                'status_pembayaran' => 'Pending',
                 'method' => $paymentType,
                 'otp_attempts' => $attempts,
             ]);
-            
             Log::info('3DS verification failed, attempt ' . $attempts . ' of ' . $maxAttempts . ' for order_id: ' . $pembayaran->order_id);
         }
     }
     
     private function updatePaymentFailed($pembayaran, $paymentType)
     {
-        $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
         $pembayaran->update([
-            'id_status' => $statusFailed->id,
+            'status_pembayaran' => 'Gagal',
             'method' => $paymentType,
             'payment_date' => now(),
             'otp_attempts' => 0, // Reset percobaan OTP
         ]);
-        
         $pembayaran->booking->update([
-            'id_status' => $statusFailed->id,
+            'status_proses' => 'Dibatalkan',
         ]);
-        
         Log::info('Payment failed for order_id: ' . $pembayaran->order_id);
     }
     

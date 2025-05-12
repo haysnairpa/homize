@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Pembayaran;
-use App\Models\Status;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +31,7 @@ class PembayaranController extends Controller
     {
         try {
         // Find booking or fail with 404
-            $booking = Booking::with(['user', 'merchant', 'layanan', 'status', 'pembayaran', 'pembayaran.status'])
+            $booking = Booking::with(['user', 'merchant', 'layanan', 'pembayaran'])
                 ->findOrFail($id);
 
         // Check if booking belongs to logged in user
@@ -40,7 +40,7 @@ class PembayaranController extends Controller
         }
 
         // Cek apakah booking milik user yang login
-        if ($booking->pembayaran->status->nama_status == 'Payment Completed') {
+        if ($booking->pembayaran->status_pembayaran == 'Selesai') {
             return redirect()->route('dashboard')->with('success', 'Pembayaran sudah selesai');
         }
 
@@ -49,10 +49,10 @@ class PembayaranController extends Controller
             $this->checkPaymentStatus($booking->pembayaran);
 
             // Refresh data booking setelah pengecekan status
-            $booking = $booking->fresh(['pembayaran', 'pembayaran.status']);
+            $booking = $booking->fresh(['pembayaran']);
 
             // Cek lagi setelah refresh, jika sudah selesai redirect ke dashboard
-            if ($booking->pembayaran->status->nama_status == 'Payment Completed') {
+            if ($booking->pembayaran->status_pembayaran == 'Selesai') {
                 return redirect()->route('dashboard')->with('success', 'Pembayaran sudah selesai');
             }
         }
@@ -91,7 +91,7 @@ class PembayaranController extends Controller
         $pembayaran = $booking->pembayaran;
 
         // Cek apakah pembayaran sudah selesai
-        if ($pembayaran->status->nama_status == 'Payment Completed') {
+        if ($pembayaran->status_pembayaran == 'Selesai') {
             return redirect()->route('dashboard')->with('info', 'Pembayaran sudah selesai');
         }
 
@@ -266,6 +266,7 @@ class PembayaranController extends Controller
 
             // Kode lainnya tetap sama
             $callbackToken = config('xendit.callback_token');
+            $serverKey = config('xendit.api_key');
             $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
 
             if ($hashed == $request->signature_key) {
@@ -283,22 +284,20 @@ class PembayaranController extends Controller
                 // Update payment status based on transaction status
                 if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
                     // Payment success - OTOMATIS update ke Payment Completed
-                    $statusCompleted = Status::where('nama_status', 'Payment Completed')->first();
                     $pembayaran->update([
-                        'id_status' => $statusCompleted->id,
+                        'status_pembayaran' => 'Selesai',
                         'method' => $request->payment_type,
                         'payment_date' => now(),
                         'otp_attempts' => 0, // Reset percobaan OTP
                     ]);
 
                     // OTOMATIS update booking status to Pending (menunggu konfirmasi seller)
-                    $statusPending = Status::where('nama_status', 'Pending')->first();
-                    $pembayaran->booking->update([
-                        'id_status' => $statusPending->id,
+                    $booking = $pembayaran->booking;
+                    $booking->update([
+                        'status_proses' => 'Pending',
                     ]);
 
                     // Load relasi yang dibutuhkan
-                    $booking = $pembayaran->booking;
                     $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
 
                     // Tambahkan pengecekan merchant lebih detail
@@ -363,9 +362,8 @@ class PembayaranController extends Controller
 
                         if ($attempts >= $maxAttempts) {
                             // Jika sudah melebihi batas percobaan, anggap gagal
-                            $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
                             $pembayaran->update([
-                                'id_status' => $statusFailed->id,
+                                'status_pembayaran' => 'Dibatalkan',
                                 'method' => $request->payment_type,
                                 'payment_date' => now(),
                                 'otp_attempts' => $attempts,
@@ -373,7 +371,7 @@ class PembayaranController extends Controller
 
                             // Update booking status to Payment Failed juga
                             $pembayaran->booking->update([
-                                'id_status' => $statusFailed->id,
+                                'status_proses' => 'Dibatalkan',
                             ]);
 
                             Log::info('Payment failed after ' . $attempts . ' OTP attempts for order_id: ' . $order_id);
@@ -388,9 +386,8 @@ class PembayaranController extends Controller
                         }
                     } else {
                         // Kegagalan normal, update ke failed
-                        $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
                         $pembayaran->update([
-                            'id_status' => $statusFailed->id,
+                            'status_pembayaran' => 'Dibatalkan',
                             'method' => $request->payment_type,
                             'payment_date' => now(),
                             'otp_attempts' => 0, // Reset percobaan OTP
@@ -398,7 +395,7 @@ class PembayaranController extends Controller
 
                         // Update booking status to Payment Failed juga
                         $pembayaran->booking->update([
-                            'id_status' => $statusFailed->id,
+                            'status_proses' => 'Dibatalkan',
                         ]);
 
                         Log::info('Payment failed for order_id: ' . $order_id);
@@ -433,8 +430,13 @@ class PembayaranController extends Controller
         $pembayaran = $booking->pembayaran;
 
         // Cek apakah pembayaran sudah selesai
-        if ($pembayaran->status->nama_status == 'Payment Completed') {
+        if ($pembayaran->status_pembayaran == 'Selesai') {
             return response()->json(['error' => 'Pembayaran sudah selesai']);
+        }
+
+        // CEK: Jika sudah ada snap_token dan pembayaran belum selesai, gunakan token lama
+        if ($pembayaran->snap_token && $pembayaran->status_pembayaran != 'Selesai') {
+            return response()->json(['token' => $pembayaran->snap_token]);
         }
 
         // Buat transaksi di Xendit
@@ -541,31 +543,17 @@ class PembayaranController extends Controller
 
                 if ($status == 'PAID') {
                     // Payment success
-                    $statusCompleted = Status::where('nama_status', 'Payment Completed')->first();
-
-                    if (!$statusCompleted) {
-                        Log::error('Status Payment Completed tidak ditemukan di database');
-                        return false;
-                    }
-
                     $pembayaran->update([
-                        'id_status' => $statusCompleted->id,
+                        'status_pembayaran' => 'Selesai',
                         'method' => $status->payment_type ?? $pembayaran->method,
                         'payment_date' => now(),
                         'otp_attempts' => 0, // Reset percobaan OTP
                     ]);
 
                     // Update booking status to Pending (menunggu konfirmasi seller)
-                    $statusPending = Status::where('nama_status', 'Pending')->first();
-
-                    if (!$statusPending) {
-                        Log::error('Status Pending tidak ditemukan di database');
-                        return false;
-                    }
-
                     $booking = $pembayaran->booking;
                     $booking->update([
-                        'id_status' => $statusPending->id,
+                        'status_proses' => 'Pending',
                     ]);
 
                     // Load relasi yang dibutuhkan
@@ -579,31 +567,30 @@ class PembayaranController extends Controller
                         'merchant_email' => $booking->merchant->user->email ?? 'tidak ada'
                     ]);
 
-                    // Kirim email langsung tanpa event
-                    // try {
-                    //     if ($booking->merchant && $booking->merchant->user && $booking->merchant->user->email) {
-                    //         Mail::to($booking->merchant->user->email)
-                    //             ->send(new NewOrderNotification($booking));
+                    try {
+                        if ($booking->merchant && $booking->merchant->user && $booking->merchant->user->email) {
+                            Mail::to($booking->merchant->user->email)
+                                ->send(new NewOrderNotification($booking));
 
-                    //         Log::info('Email notifikasi pesanan baru berhasil dikirim langsung', [
-                    //             'booking_id' => $booking->id,
-                    //             'merchant_email' => $booking->merchant->user->email
-                    //         ]);
-                    //     } else {
-                    //         Log::warning('Tidak dapat mengirim email: data merchant atau user tidak lengkap', [
-                    //             'booking_id' => $booking->id,
-                    //             'merchant' => $booking->merchant ? 'ada' : 'tidak ada',
-                    //             'merchant_user' => ($booking->merchant && $booking->merchant->user) ? 'ada' : 'tidak ada',
-                    //             'merchant_email' => ($booking->merchant && $booking->merchant->user) ? $booking->merchant->user->email : 'tidak ada'
-                    //         ]);
-                    //     }
-                    // } catch (\Exception $e) {
-                    //     Log::error('Gagal mengirim email notifikasi pesanan baru langsung', [
-                    //         'booking_id' => $booking->id,
-                    //         'error' => $e->getMessage(),
-                    //         'trace' => $e->getTraceAsString()
-                    //     ]);
-                    // }
+                            Log::info('Email notifikasi pesanan baru berhasil dikirim langsung', [
+                                'booking_id' => $booking->id,
+                                'merchant_email' => $booking->merchant->user->email
+                            ]);
+                        } else {
+                            Log::warning('Tidak dapat mengirim email: data merchant atau user tidak lengkap', [
+                                'booking_id' => $booking->id,
+                                'merchant' => $booking->merchant ? 'ada' : 'tidak ada',
+                                'merchant_user' => ($booking->merchant && $booking->merchant->user) ? 'ada' : 'tidak ada',
+                                'merchant_email' => ($booking->merchant && $booking->merchant->user) ? $booking->merchant->user->email : 'tidak ada'
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Gagal mengirim email notifikasi pesanan baru langsung', [
+                            'booking_id' => $booking->id,
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                    }
 
                     // Setelah itu, coba trigger event
                     try {
@@ -633,9 +620,8 @@ class PembayaranController extends Controller
 
                         if ($attempts >= $maxAttempts) {
                             // Jika sudah melebihi batas percobaan, anggap gagal
-                            $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
                             $pembayaran->update([
-                                'id_status' => $statusFailed->id,
+                                'status_pembayaran' => 'Dibatalkan',
                                 'method' => $status->payment_type ?? $pembayaran->method,
                                 'payment_date' => now(),
                                 'otp_attempts' => $attempts,
@@ -643,7 +629,7 @@ class PembayaranController extends Controller
 
                             // Update booking status to Payment Failed juga
                             $pembayaran->booking->update([
-                                'id_status' => $statusFailed->id,
+                                'status_proses' => 'Dibatalkan',
                             ]);
 
                             Log::info('Payment failed after ' . $attempts . ' OTP attempts for order_id: ' . $pembayaran->order_id);
@@ -660,15 +646,8 @@ class PembayaranController extends Controller
                         }
                     } else {
                         // Payment failed - bukan kegagalan 3DS
-                        $statusFailed = Status::where('nama_status', 'Payment Failed')->first();
-
-                        if (!$statusFailed) {
-                            Log::error('Status Payment Failed tidak ditemukan di database');
-                            return false;
-                        }
-
                         $pembayaran->update([
-                            'id_status' => $statusFailed->id,
+                            'status_pembayaran' => 'Dibatalkan',
                             'method' => $status->payment_type ?? $pembayaran->method,
                             'payment_date' => now(),
                             'otp_attempts' => 0, // Reset percobaan OTP
@@ -676,7 +655,7 @@ class PembayaranController extends Controller
 
                         // Update booking status to Payment Failed juga
                         $pembayaran->booking->update([
-                            'id_status' => $statusFailed->id,
+                            'status_proses' => 'Dibatalkan',
                         ]);
 
                         Log::info('Payment failed for order_id: ' . $pembayaran->order_id);
@@ -700,7 +679,7 @@ class PembayaranController extends Controller
     public function checkStatus($id)
     {
         // Ambil data booking
-        $booking = Booking::with(['pembayaran', 'pembayaran.status'])
+        $booking = Booking::with(['pembayaran'])
             ->findOrFail($id);
 
         // Cek apakah booking milik user yang login
@@ -715,17 +694,17 @@ class PembayaranController extends Controller
             Log::info('Payment status check result: ' . ($paymentResult === true ? 'completed' : ($paymentResult === false ? 'failed' : 'pending')));
 
             // Refresh data booking setelah pengecekan status
-            $booking = $booking->fresh(['pembayaran', 'pembayaran.status']);
+            $booking = $booking->fresh(['pembayaran']);
         }
 
         // Logging status saat ini untuk debugging
-        Log::info('Current payment status: ' . $booking->pembayaran->status->nama_status);
-        Log::info('Current booking status: ' . $booking->status->nama_status);
+        Log::info('Current payment status: ' . $booking->pembayaran->status_pembayaran);
+        Log::info('Current booking status: ' . $booking->status_proses);
 
         // Return status pembayaran
-        if ($booking->pembayaran->status->nama_status == 'Payment Completed') {
+        if ($booking->pembayaran->status_pembayaran == 'Selesai') {
             return response()->json(['status' => 'completed']);
-        } elseif ($booking->pembayaran->status->nama_status == 'Payment Failed') {
+        } elseif ($booking->pembayaran->status_pembayaran == 'Dibatalkan') {
             return response()->json(['status' => 'failed']);
         } else {
             return response()->json(['status' => 'pending']);
@@ -756,18 +735,16 @@ class PembayaranController extends Controller
             // Proses status
             if ($status->transaction_status == 'capture' || $status->transaction_status == 'settlement') {
                 // Update ke Payment Completed
-                $statusCompleted = Status::where('nama_status', 'Payment Completed')->first();
                 $booking->pembayaran->update([
-                    'id_status' => $statusCompleted->id,
+                    'status_pembayaran' => 'Selesai',
                     'method' => $status->payment_type ?? $booking->pembayaran->method,
                     'payment_date' => now(),
                     'otp_attempts' => 0, // Reset percobaan OTP
                 ]);
 
                 // Update booking status to Pending
-                $statusPending = Status::where('nama_status', 'Pending')->first();
                 $booking->update([
-                    'id_status' => $statusPending->id,
+                    'status_proses' => 'Pending',
                 ]);
 
                 return redirect()->back()->with('success', 'Status pembayaran berhasil diperbarui. Pembayaran telah selesai.');
@@ -891,7 +868,7 @@ class PembayaranController extends Controller
         $pembayaran = $booking->pembayaran;
 
         // Cek apakah pembayaran sudah selesai
-        if ($pembayaran->status->nama_status == 'Payment Completed') {
+        if ($pembayaran->status_pembayaran == 'Selesai') {
             return redirect()->route('dashboard')->with('info', 'Pembayaran sudah selesai');
         }
 

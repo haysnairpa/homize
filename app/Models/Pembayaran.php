@@ -13,7 +13,7 @@ class Pembayaran extends Model
         "order_id",
         "amount",
         "method",
-        "id_status",
+        "status_pembayaran",
         "snap_token",
         "payment_date",
         "otp_attempts",
@@ -25,26 +25,21 @@ class Pembayaran extends Model
         return $this->belongsTo(Booking::class, "id_booking", "id");
     }
 
-    // one to one from pembayaran to status
-    public function status()
-    {
-        return $this->belongsTo(Status::class, "id_status", "id");
-    }
 
     // Helper method untuk cek status pembayaran
     public function isPending()
     {
-        return $this->status->nama_status === 'Payment Pending' || $this->status->nama_status === 'Pending';
+        return $this->status_pembayaran === 'Pending';
     }
 
     public function isCompleted()
     {
-        return $this->status->nama_status === 'Payment Completed';
+        return $this->status_pembayaran === 'Selesai';
     }
 
-    public function isFailed()
+    public function isCancelled()
     {
-        return $this->status->nama_status === 'Payment Failed';
+        return $this->status_pembayaran === 'Dibatalkan';
     }
 
     // Format amount to rupiah

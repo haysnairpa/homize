@@ -11,11 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('status', function (Blueprint $table) {
-            $table->id();
-            $table->string('nama_status');
-            $table->timestamps();
-        });
+        // Dihapus: Tidak perlu tabel status lagi.
     }
 
     /**

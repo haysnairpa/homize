@@ -20,10 +20,27 @@
                     <x-nav-link href="{{ route('transactions') }}" :active="request()->routeIs('transactions')">
                         {{ __('Transaksi Saya') }}
                     </x-nav-link>
-
-                    <x-nav-link href="{{ route('merchant') }}" :active="request()->routeIs('merchant')">
-                        {{ __('Merchant Saya') }}
-                    </x-nav-link>
+                </div>
+                
+                <!-- Merchant Button (Desktop) -->
+                <div class="hidden sm:flex items-center ml-4">
+                    <a href="{{ route('merchant') }}" class="ml-4 px-4 py-2 bg-homize-blue text-white rounded-md hover:bg-blue-600 transition-colors duration-200 text-sm font-medium">
+                        @if(Auth::user()->merchant)
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                {{ __('Cek Merchant') }}
+                            </div>
+                        @else
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                {{ __('Daftar Merchant') }}
+                            </div>
+                        @endif
+                    </a>
                 </div>
             </div>
 
@@ -155,10 +172,23 @@
             <x-responsive-nav-link href="{{ route('transactions') }}" :active="request()->routeIs('transactions')">
                 {{ __('Transaksi Saya') }}
             </x-responsive-nav-link>
-
-            <x-responsive-nav-link href="{{ route('merchant') }}" :active="request()->routeIs('merchant')">
-                {{ __('Merchant Saya') }}
-            </x-responsive-nav-link>
+            
+            <!-- Merchant Button (Mobile) -->
+            <div class="px-4 py-2">
+                <a href="{{ route('merchant') }}" class="flex items-center justify-center w-full px-4 py-2 bg-homize-blue text-white rounded-md hover:bg-blue-600 transition-colors duration-200 text-sm font-medium">
+                    @if(Auth::user()->merchant)
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        {{ __('Cek Merchant') }}
+                    @else
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        {{ __('Daftar Merchant') }}
+                    @endif
+                </a>
+            </div>
         </div>
 
         <!-- Responsive Settings Options -->

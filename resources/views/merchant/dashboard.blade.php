@@ -1,8 +1,16 @@
 <x-merchant-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-homize-blue leading-tight">
-            {{ __('Dashboard Merchant') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-homize-blue leading-tight">
+                {{ __('Dashboard Merchant') }}
+            </h2>
+            <a href="{{ route('home') }}" class="inline-flex items-center px-4 py-2 bg-homize-blue border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-700 focus:ring focus:ring-blue-200 transition ease-in-out duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Kembali ke Beranda
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12 bg-homize-gray">
@@ -137,16 +145,18 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->nama_layanan }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @php
-                                            $statusClass = match ($order->nama_status) {
-                                                'Payment Completed' => 'bg-green-100 text-green-800',
+                                            $status = $order->status_proses ?? $order->status_pembayaran;
+                                            $statusClass = match ($status) {
+                                                'Selesai' => 'bg-green-100 text-green-800',
                                                 'Pending' => 'bg-yellow-100 text-yellow-800',
-                                                'In Progress' => 'bg-blue-100 text-blue-800',
-                                                'Completed' => 'bg-green-100 text-green-800',
-                                                default => 'bg-red-100 text-red-800',
+                                                'Dikonfirmasi' => 'bg-blue-100 text-blue-800',
+                                                'Sedang diproses' => 'bg-orange-100 text-orange-800',
+                                                'Dibatalkan' => 'bg-red-100 text-red-800',
+                                                default => 'bg-gray-100 text-gray-800',
                                             };
                                         @endphp
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                            {{ $order->nama_status }}
+                                            {{ $status }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

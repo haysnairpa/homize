@@ -22,9 +22,9 @@ class BookingSeeder extends Seeder
         $merchants = Merchant::all();
         $layanans = Layanan::all();
         $schedules = BookingSchedule::all();
-        $statuses = Status::whereIn('nama_status', ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'])->get();
+        $statuses = ['Pending', 'Dikonfirmasi', 'Sedang diproses', 'Selesai', 'Dibatalkan'];
 
-        if ($users->isEmpty() || $merchants->isEmpty() || $layanans->isEmpty() || $schedules->isEmpty() || $statuses->isEmpty()) {
+        if ($users->isEmpty() || $merchants->isEmpty() || $layanans->isEmpty() || $schedules->isEmpty()) {
             throw new \Exception('Required data not found. Please run previous seeders first.');
         }
 
@@ -39,7 +39,7 @@ class BookingSeeder extends Seeder
                 $user = $users->random();
                 $merchant = $merchants->random();
                 $schedule = $schedules->random();
-                $status = $statuses->random();
+                $status = $statuses[array_rand($statuses)];
 
                 // Generate random coordinates within Indonesia
                 $latitude = rand(-6, 6) . '.' . rand(100000, 999999);
@@ -49,7 +49,7 @@ class BookingSeeder extends Seeder
                     'id_user' => $user->id,
                     'id_merchant' => $merchant->id,
                     'id_layanan' => $layanan->id,
-                    'id_status' => $status->id,
+                    'status_proses' => $status,
                     'id_booking_schedule' => $schedule->id,
                     'tanggal_booking' => $schedule->waktu_mulai,
                     'catatan' => 'Catatan untuk booking #' . ($bookingCount + 1),

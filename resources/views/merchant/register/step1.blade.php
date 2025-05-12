@@ -32,7 +32,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-4">Foto Profil Usaha <span class="text-red-500">*</span></label>
                                 <div id="imagePreviewContainer" class="mb-4 {{ isset($oldData['profile_url']) ? '' : 'hidden' }}">
                                     @if(isset($oldData['profile_url']))
-                                    <img src="{{ asset('storage/' . $oldData['profile_url']) }}" alt="Preview" class="w-40 h-40 object-cover rounded-lg border-2 border-homize-blue">
+                                    <img src="{{ $oldData['profile_url'] }}" alt="Preview" class="w-40 h-40 object-cover rounded-lg border-2 border-homize-blue">
                                     @else
                                     <img id="imagePreview" src="#" alt="Preview" class="w-40 h-40 object-cover rounded-lg border-2 border-homize-blue">
                                     @endif

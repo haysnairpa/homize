@@ -1,30 +1,32 @@
 <x-guest-layout>
     <div class="flex flex-col md:flex-row min-h-screen">
         <!-- Left side with background -->
-        <div class="w-full md:w-1/2 bg-[#38BDF8] p-6 md:p-12 relative">
+        <div class="w-full md:w-1/2 bg-homize-blue p-6 md:p-12 relative">
             <div class="absolute top-6 md:top-12 left-6 md:left-12">
                 <img src="{{ asset('images/homizelogo.png') }}" alt="Homize Logo" class="h-6 md:h-8">
             </div>
-            <div class="flex items-center justify-center h-full">
+            <div class="flex items-center justify-center h-48 md:h-full">
                 <div class="text-white text-center md:text-left">
-                    <img src="{{ asset('images/homizelogo.png') }}" alt="Homize Icon"
-                        class="h-24 md:h-32 mb-4 md:mb-6 mx-auto md:mx-0">
-                    <h2 class="text-2xl md:text-3xl font-medium mb-2">Solve your problem,</h2>
-                    <h2 class="text-2xl md:text-3xl font-medium">From your <span class="text-[#FFA726]">home</span></h2>
+                    <div class="hidden md:block">
+                        <img src="{{ asset('images/homizelogo.png') }}" alt="Homize Icon"
+                            class="h-24 md:h-32 mb-4 md:mb-6 mx-auto md:mx-0">
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-medium mb-1 md:mb-2">Solve your problem,</h2>
+                    <h2 class="text-2xl md:text-3xl font-medium">From your <span class="text-homize-orange">home</span></h2>
                 </div>
             </div>
         </div>
 
         <!-- Right side with form -->
-        <div class="w-full md:w-1/2 p-6 md:p-12 flex items-center justify-center">
+        <div class="w-full md:w-1/2 p-6 md:p-12 flex items-center justify-center bg-white">
             <div class="w-full max-w-md">
-                <div class="flex justify-end mb-6 md:mb-12">
-                    <a href="#" class="text-gray-600">Butuh bantuan nih?</a>
+                <div class="flex justify-end mb-4 md:mb-8">
+                    <a href="#" class="text-gray-600 hover:text-gray-800 text-sm transition-colors duration-200">Butuh bantuan?</a>
                 </div>
 
-                <h1 class="text-xl md:text-2xl font-semibold mb-6 md:mb-8">Daftar Akun Homize</h1>
+                <h1 class="text-xl md:text-2xl font-bold mb-6 md:mb-8 text-gray-800">Daftar Akun Homize</h1>
 
-                <form method="POST" action="{{ route('register') }}" class="space-y-4 md:space-y-6">
+                <form method="POST" action="{{ route('register') }}" class="space-y-5 md:space-y-6">
                     @csrf
 
                     @if ($errors->any())
@@ -52,28 +54,34 @@
                         </div>
                     @endif
 
-                    <div>
+                    <div class="mb-1">
+                        <label for="nama" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
                         <x-input id="nama"
-                            class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md"
-                            placeholder="Nama" type="text" name="nama" :value="old('nama')" required autofocus
+                            class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md shadow-sm"
+                            placeholder="Masukkan nama lengkap anda" type="text" name="nama" :value="old('nama')" required autofocus
                             autocomplete="nama" />
                         @error('nama')
                             <p class="mt-1 text-sm text-homize-error">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div>
-                        <x-input id="email" type="email" name="email" placeholder="Email"
-                            class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md" required />
+                    <div class="mb-1">
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <x-input id="email" type="email" name="email" placeholder="Masukkan email anda"
+                            class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md shadow-sm" required />
+                        @error('email')
+                            <p class="mt-1 text-sm text-homize-error">{{ $message }}</p>
+                        @enderror
                     </div>
 
                    
-                    <div>
-                        <div class="mt-1 relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center px-3 text-gray-500 text-sm border-r-[1px]">+62</span>
+                    <div class="mb-1">
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center px-3 text-gray-500 text-sm border-r-[1px] border-gray-300">+62</span>
                             <x-input id="phone" name="phone" type="text" inputmode="numeric" pattern="[0-9]*" 
                                 placeholder="8123456789"
-                                class="w-full pl-14 pr-3 py-2 md:py-3 border border-gray-300 rounded-md focus:ring-[#38BDF8] focus:border-[#38BDF8]"
+                                class="w-full pl-14 pr-3 py-2 md:py-3 border border-gray-300 rounded-md focus:ring-homize-blue focus:border-homize-blue shadow-sm"
                                 required />
                         </div>
                         @error('phone')
@@ -82,10 +90,11 @@
                     </div>
                     
 
-                    <div class="relative">
-                        <x-input id="password" type="password" name="password" placeholder="Password"
-                            class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md" required />
-                        <button type="button" data-password-toggle class="absolute right-3 top-1/2 -translate-y-1/2">
+                    <div class="relative mb-1">
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <x-input id="password" type="password" name="password" placeholder="Masukkan password anda"
+                            class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md shadow-sm" required />
+                        <button type="button" data-password-toggle class="absolute right-3 top-[60%] -translate-y-1/2">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-500">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -96,11 +105,12 @@
                         </button>
                     </div>
 
-                    <div class="relative">
+                    <div class="relative mb-1">
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
                         <x-input id="password_confirmation" type="password" name="password_confirmation"
-                            placeholder="Konfirmasi Password"
-                            class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md" required />
-                        <button type="button" data-password-toggle class="absolute right-3 top-1/2 -translate-y-1/2">
+                            placeholder="Masukkan ulang password anda"
+                            class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md shadow-sm" required />
+                        <button type="button" data-password-toggle class="absolute right-3 top-[60%] -translate-y-1/2">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-500">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -111,27 +121,27 @@
                         </button>
                     </div>
 
-                    <x-button class="w-full bg-[#38BDF8] hover:bg-[#0EA5E9] text-white py-2 md:py-3 rounded-md">
+                    <x-button class="w-full bg-homize-blue hover:bg-[#0EA5E9] text-white py-3 md:py-4 rounded-md font-medium shadow-sm transition-colors duration-200 mt-4">
                         DAFTAR
                     </x-button>
 
-                    <div class="text-center text-gray-500">ATAU</div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                        <button type="button"
-                            class="flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2 border border-gray-300 rounded-md">
-                            <img src="https://cdn.cdnlogo.com/logos/g/35/google-icon.svg" alt="Google"
-                                class="w-4 h-4 md:w-5 md:h-5">
-                            Google
-                        </button>
+                    <div class="relative flex items-center my-6">
+                        <div class="flex-grow border-t border-gray-300"></div>
+                        <span class="flex-shrink mx-4 text-gray-500 text-sm">ATAU</span>
+                        <div class="flex-grow border-t border-gray-300"></div>
                     </div>
 
-                    <div class="text-center text-sm">
+                    <a href="{{ route('login.google') }}" class="flex items-center justify-center gap-2 px-3 py-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200 w-full">
+                        <img src="https://cdn.cdnlogo.com/logos/g/35/google-icon.svg" alt="Google" class="w-5 h-5">
+                        <span class="font-medium">Daftar dengan Google</span>
+                    </a>
+
+                    <div class="text-center text-sm mt-6">
                         Sudah punya akun?
-                        <a href="{{ route('login') }}" class="text-[#38BDF8]">Masuk</a>
+                        <a href="{{ route('login') }}" class="text-homize-blue font-medium hover:underline">Masuk</a>
                     </div>
 
-                    <div class="text-center text-xs text-gray-500 mt-2">
+                    <div class="text-center text-xs text-gray-500 mt-4">
                         ©Homize 2025. Hak Cipta Dilindungi
                     </div>
                 </form>

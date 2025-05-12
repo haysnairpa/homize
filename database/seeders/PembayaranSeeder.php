@@ -17,7 +17,7 @@ class PembayaranSeeder extends Seeder
     public function run(): void
     {
         $bookings = Booking::all();
-        $statuses = Status::whereIn('nama_status', ['Pending', 'Payment Completed', 'Payment Failed'])->get();
+        $statuses = ['Pending', 'Selesai', 'Dibatalkan'];
         $paymentMethods = ['Bank Transfer', 'Credit Card', 'E-Wallet', 'Cash'];
 
         if ($bookings->isEmpty() || $statuses->isEmpty()) {
@@ -33,11 +33,11 @@ class PembayaranSeeder extends Seeder
             }
 
             // Determine payment status based on booking status
-            $paymentStatus = match ($booking->status->nama_status) {
-                'Completed' => $statuses->where('nama_status', 'Payment Completed')->first(),
-                'Cancelled' => $statuses->where('nama_status', 'Payment Failed')->first(),
-                default => $statuses->where('nama_status', 'Pending')->first(),
-            };
+            $paymentStatus = match ($booking->status_proses) {
+    'Selesai' => 'Selesai',
+    'Dibatalkan' => 'Dibatalkan',
+    default => 'Pending',
+};
 
             // Generate payment date based on booking date
             $paymentDate = Carbon::parse($booking->tanggal_booking);
@@ -59,7 +59,7 @@ class PembayaranSeeder extends Seeder
                 'id_booking' => $booking->id,
                 'amount' => $tarifLayanan->harga,
                 'method' => $method,
-                'id_status' => $paymentStatus->id,
+                'status_pembayaran' => $paymentStatus,
                 'payment_date' => $paymentDate
             ]);
         }

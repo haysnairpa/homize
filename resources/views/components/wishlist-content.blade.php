@@ -11,8 +11,8 @@
                         
                         <!-- Service Image -->
                         <div class="flex-shrink-0">
-                            <img src="{{ $wishlist->profile_url ?? asset('images/default-merchant.png') }}" 
-                                alt="{{ $wishlist->nama_usaha }}" 
+                            <img src="{{ $wishlist->media_url }}" 
+                                alt="{{ $wishlist->nama_layanan }}" 
                                 class="h-16 w-16 object-cover rounded">
                         </div>
                         

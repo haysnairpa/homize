@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('id_user')->index('fk_booking_to_user');
             $table->foreignId('id_merchant')->index('fk_booking_to_merchant');
             $table->foreignId('id_layanan')->index('fk_booking_to_layanan');
-            $table->foreignId('id_status')->index('fk_booking_to_status');
+            $table->enum('status_proses', ['Pending', 'Dikonfirmasi', 'Sedang diproses', 'Selesai', 'Dibatalkan'])->default('Pending');
             $table->foreignId("id_booking_schedule")->index("fk_booking_to_booking_schedule");
             $table->time('tanggal_booking');
             $table->string('catatan');

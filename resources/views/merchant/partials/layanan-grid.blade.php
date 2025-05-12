@@ -3,8 +3,8 @@
         class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
         <div class="relative">
 
-            <img src="{{ asset('storage/' . $service->url_layanan) }}" alt="{{ $service->nama_layanan }}""
-                class="w-full h-48 object-scale-down">
+            <img src="{{ $service->url_layanan }}" alt="{{ $service->nama_layanan }}"
+                class="w-full h-48 object-contain">
             <div class="absolute top-3 left-3">
                 <span class="px-3 py-1 bg-white/80 backdrop-blur-sm text-homize-blue text-sm font-medium rounded-full">
                     {{ $service->nama_sub_kategori }}

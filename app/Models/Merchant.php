@@ -9,6 +9,7 @@ class Merchant extends Model
     protected $table = 'merchant';
     protected $primaryKey = 'id';
     protected $fillable = [
+        'saldo',
         'id_user',
         'nama_usaha',
         'id_kategori',
@@ -59,5 +60,10 @@ class Merchant extends Model
     public function toko_favorit()
     {
         return $this->hasMany(TokoFavorit::class, 'id_merchant');
+    }
+
+    public function rekening_merchant()
+    {
+        return $this->hasMany(RekeningMerchant::class, 'id_merchant');
     }
 }

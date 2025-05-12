@@ -7,7 +7,12 @@ use App\Http\Controllers\JasaController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\LayananController;
-use App\Http\Controllers\MerchantController;
+use App\Http\Controllers\Merchant\RegisterController;
+use App\Http\Controllers\Merchant\DashboardController as MerchantDashboardController;
+use App\Http\Controllers\Merchant\OrderController;
+use App\Http\Controllers\Merchant\LayananController as MerchantLayananController;
+use App\Http\Controllers\Merchant\DetailController;
+use App\Http\Controllers\Merchant\AnalyticController as MerchantAnalyticController;
 use App\Http\Controllers\TokoFavoritController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\BookingController;
@@ -17,11 +22,25 @@ use App\Http\Controllers\MidtransCallbackController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\XenditCallbackController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\merchant\PenarikanController;
+use App\Http\Controllers\Admin\PenarikanController as AdminPenarikanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('home');
 });
+
+// Xendit webhook at root URL - completely bypass web middleware
+Route::post('/', [XenditCallbackController::class, 'handleWebhook'])
+    ->middleware([])
+    ->withoutMiddleware('web')
+    ->name('webhook.root');
+
+// Xendit webhook at /webhooks/xendit - also bypass web middleware
+Route::post('/webhooks/xendit', [XenditCallbackController::class, 'handleWebhook'])
+    ->middleware([])
+    ->withoutMiddleware('web')
+    ->name('webhook.xendit');
 
 Route::get('/home', [HomeController::class, 'navigation_data'])->name('home');
 
@@ -32,6 +51,9 @@ Route::middleware([
 ])->group(function () {
     // User Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])->name('dashboard');
+    
+    // User Profile Photo Upload
+    Route::post('/user/profile-photo', [\App\Http\Controllers\UserProfilePhotoController::class, 'update'])->name('user-profile-photo.update');
 
     Route::get('/transactions', [DashboardController::class, 'transactions'])->name('transactions');
     Route::get('/transactions/filter', [DashboardController::class, 'filterTransactions'])->name('transactions.filter');
@@ -87,7 +109,6 @@ Route::middleware([
     Route::get('/pembayaran/{id}/check-status', [PembayaranController::class, 'checkStatus'])->name('pembayaran.check-status');
 
     Route::get('/pembayaran/{id}/va-number', [PembayaranController::class, 'getVaNumber'])->name('pembayaran.va-number');
-    Route::get('/pembayaran/{id}/qris', [PembayaranController::class, 'showQris'])->name('pembayaran.qris');
 });
 
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
@@ -97,36 +118,45 @@ Route::get('/layanan/{id}', [LayananController::class, 'show'])->name('layanan.d
 
 Route::middleware(['auth', \App\Http\Middleware\PreventMerchantReregistration::class])->group(function () {
     // Merchant Registration Routes
-    Route::get('/merchant', [MerchantController::class, 'index'])->name('merchant');
-    Route::get('/merchant/register/step1', [MerchantController::class, 'step1'])->name('merchant.register.step1');
-    Route::post('/merchant/register/step1', [MerchantController::class, 'storeStep1'])->name('merchant.register.step1.store');
-    Route::get('/merchant/register/step2', [MerchantController::class, 'step2'])->name('merchant.register.step2');
-    Route::post('/merchant/register/step2', [MerchantController::class, 'storeStep2'])->name('merchant.register.step2.store');
+    Route::get('/merchant', [RegisterController::class, 'index'])->name('merchant');
+    Route::get('/merchant/register/step1', [RegisterController::class, 'step1'])->name('merchant.register.step1');
+    Route::post('/merchant/register/step1', [RegisterController::class, 'storeStep1'])->name('merchant.register.storeStep1');
+    Route::post('/merchant/register/step1', [RegisterController::class, 'storeStep1'])->name('merchant.register.step1.store');
+    Route::get('/merchant/register/step2', [RegisterController::class, 'step2'])->name('merchant.register.step2');
+    Route::post('/merchant/register/step2', [RegisterController::class, 'storeStep2'])->name('merchant.register.storeStep2');
+    Route::post('/merchant/register/step2', [RegisterController::class, 'storeStep2'])->name('merchant.register.step2.store');
+    Route::post('/merchant/register/back-to-step1', [RegisterController::class, 'backToStep1'])->name('merchant.register.backToStep1');
+    Route::get('/merchant/verification-status', [MerchantDashboardController::class, 'verificationStatus'])->name('merchant.verification-status');
+    Route::post('/merchant/retry-verification', [MerchantDashboardController::class, 'retryVerification'])->name('merchant.retryVerification');
 });
 
 // Merchant verification status routes
 Route::middleware(['auth'])->group(function () {
-    Route::get('/merchant/verification-status', [MerchantController::class, 'verificationStatus'])->name('merchant.verification-status');
-    Route::post('/merchant/verification-retry', [MerchantController::class, 'retryVerification'])->name('merchant.verification.retry');
+    Route::get('/merchant/verification-status', [MerchantDashboardController::class, 'verificationStatus'])->name('merchant.verification-status');
+    Route::post('/merchant/verification-retry', [MerchantDashboardController::class, 'retryVerification'])->name('merchant.verification.retry');
 });
 
 // Merchant Dashboard Routes (pastikan tidak menggunakan middleware prevent-merchant-reregistration)
 Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->prefix('merchant')->name('merchant.')->group(function () {
-    Route::get('/dashboard', [MerchantController::class, 'dashboard'])->name('dashboard');
-    Route::get('/profile', [MerchantController::class, 'profile'])->name('profile');
-    Route::post('/profile/update', [MerchantController::class, 'updateProfile'])->name('profile.update');
-    Route::get('/services', [MerchantController::class, 'services'])->name('services');
-    Route::get('/orders', [MerchantController::class, 'orders'])->name('orders');
-    Route::post('/orders/{id}/update-status', [MerchantController::class, 'updateOrderStatus'])->name('orders.update-status');
-    Route::get('/analytics', [MerchantController::class, 'analytics'])->name('analytics');
-    Route::post('/layanan', [MerchantController::class, 'storeLayanan'])->name('layanan.store');
-    Route::get('/layanan/{id}/edit', [MerchantController::class, 'editLayanan'])->name('layanan.edit');
-    Route::put('/layanan/{id}', [MerchantController::class, 'updateLayanan'])->name('layanan.update');
-    Route::delete('/layanan/{id}', [MerchantController::class, 'deleteLayanan'])->name('layanan.delete');
-    Route::get('/orders/{id}/detail', [MerchantController::class, 'orderDetail'])->name('merchant.orders.detail');
-    Route::get('/merchant/analytics/data', [MerchantController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
+    // Penarikan merchant
+    Route::get('/penarikan', [PenarikanController::class, 'index'])->name('penarikan');
+    Route::get('/penarikan/riwayat', [PenarikanController::class, 'riwayat'])->name('penarikan.riwayat');
+    Route::post('/penarikan/ajukan', [PenarikanController::class, 'ajukan'])->name('penarikan.ajukan');
+    Route::post('/penarikan/tambah-rekening', [PenarikanController::class, 'tambahRekening'])->name('penarikan.tambahRekening');
+    Route::get('/dashboard', [MerchantDashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [MerchantDashboardController::class, 'profile'])->name('profile');
+    Route::post('/profile/update', [MerchantDashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/services', [MerchantLayananController::class, 'services'])->name('services');
+    Route::get('/orders', [OrderController::class, 'orders'])->name('orders');
+    Route::post('/orders/{id}/update-status', [OrderController::class, 'updateOrderStatus'])->name('orders.update-status');
+    Route::get('/analytics', [MerchantAnalyticController::class, 'analytics'])->name('analytics');
+    Route::post('/layanan', [MerchantLayananController::class, 'storeLayanan'])->name('layanan.store');
+    Route::get('/layanan/{id}/edit', [MerchantLayananController::class, 'editLayanan'])->name('layanan.edit');
+    Route::put('/layanan/{id}', [MerchantLayananController::class, 'updateLayanan'])->name('layanan.update');
+    Route::delete('/layanan/{id}', [MerchantLayananController::class, 'deleteLayanan'])->name('layanan.delete');
+    Route::get('/orders/{id}/detail', [OrderController::class, 'orderDetail'])->name('merchant.orders.detail');
+    Route::get('/merchant/analytics/data', [MerchantAnalyticController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
 });
-
 
 Route::get('/search', [SearchController::class, 'search'])->name('search');
 Route::get('/api/search', [SearchController::class, 'apiSearch'])->name('api.search');
@@ -135,9 +165,8 @@ Route::post('/toko-favorit/toggle', [TokoFavoritController::class, 'toggle'])->n
 Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 Route::get('/wishlist/content', [WishlistController::class, 'getContent'])->name('wishlist.content');
 
-Route::get('/merchant/{id}', [MerchantController::class, 'getMerchantDetail'])->name('merchant.detail');
-
-Route::get('/merchant/{id}/sort', [MerchantController::class, 'sortLayanan'])->name('merchant.sort');
+Route::get('/merchant/{id}', [DetailController::class, 'getMerchantDetail'])->name('merchant.detail');
+Route::get('/merchant/{id}/sort', [MerchantLayananController::class, 'sortLayanan'])->name('merchant.sort');
 
 // Route::post('/merchant/orders/{id}/update-status', [App\Http\Controllers\MerchantController::class, 'updateOrderStatus'])->name('merchant.orders.update-status')->middleware(['auth', 'merchant']);
 
@@ -153,6 +182,9 @@ Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filter
 // Offline fallback route
 Route::get('/offline', [App\Http\Controllers\HomeController::class, 'offline'])->name('offline');
 
+// Tambah rekening merchant (POST)
+
+
 // Contact us routes
 Route::get('/contact', [App\Http\Controllers\ContactController::class, 'index'])->name('contact.index');
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit');
@@ -163,6 +195,9 @@ Route::get('auth/google/callback', [App\Http\Controllers\SocialiteController::cl
 
 
 Route::prefix('admin')->name('admin.')->group(function () {
+    // Penarikan admin
+    Route::get('/penarikan', [AdminPenarikanController::class, 'index'])->name('penarikan');
+    Route::put('/penarikan/{id}', [AdminPenarikanController::class, 'update'])->name('penarikan.update');
 
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminController::class, 'login'])->name('login.post');

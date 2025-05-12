@@ -8,8 +8,8 @@
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status
-                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Proses</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu
                         Mulai
                     </th>
@@ -29,23 +29,40 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ $transaction->nama_usaha }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $statusClass = match ($transaction->nama_status) {
-                                    'Payment Completed' => 'bg-green-100 text-green-800',
-                                    'Pending' => 'bg-yellow-100 text-yellow-800',
-                                    default => 'bg-red-100 text-red-800',
-                                };
-                            @endphp
-                            <span
-                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ $transaction->nama_status }}
-                            </span>
-                        </td>
+    @php
+        $statusProses = $transaction->status_proses;
+        $classProses = match ($statusProses) {
+            'Selesai' => 'bg-green-100 text-green-800',
+            'Pending' => 'bg-yellow-100 text-yellow-800',
+            'Dikonfirmasi' => 'bg-blue-100 text-blue-800',
+            'Sedang diproses' => 'bg-orange-100 text-orange-800',
+            'Dibatalkan' => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    @endphp
+    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $classProses }}">
+        {{ $statusProses ?? '-' }}
+    </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+    @php
+        $statusPembayaran = $transaction->status_pembayaran;
+        $classPembayaran = match ($statusPembayaran) {
+            'Selesai' => 'bg-green-100 text-green-800',
+            'Pending' => 'bg-yellow-100 text-yellow-800',
+            'Dibatalkan' => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    @endphp
+    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $classPembayaran }}">
+        {{ $statusPembayaran ?? '-' }}
+    </span>
+</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ \Carbon\Carbon::parse($transaction->tanggal_booking)->format('d M Y') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-left">
-                            @if ($transaction->id_status == 2)
+                            @if (($transaction->status_proses ?? null) === 'Selesai' && !empty($transaction->tanggal_selesai))
                                 {{ \Carbon\Carbon::parse($transaction->tanggal_selesai)->format('d M Y') }}
                             @else
                                 <p class="py-4 whitespace-nowrap text-sm text-gray-500 text-left">Layanan anda

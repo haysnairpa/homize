@@ -1,20 +1,59 @@
+@if (count($layanan) === 0)
+    <div class="col-span-full flex flex-col items-center justify-center py-16">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 018 0v2m-4-4a4 4 0 100-8 4 4 0 000 8zm6 4v2a2 2 0 01-2 2H7a2 2 0 01-2-2v-2a6 6 0 0112 0z" />
+        </svg>
+        <p class="text-gray-500 text-lg mb-2">Tidak ada layanan ditemukan</p>
+        <p class="text-gray-400">Coba ubah filter atau kata kunci pencarian Anda.</p>
+    </div>
+@endif
 @foreach ($layanan as $item)
     <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
         <div class="relative">
-            <img src="{{ asset('storage/' . $item->media_url) }}" alt="{{ $item->nama_layanan }}"
+            <img src="{{ $item->media_url }}" alt="{{ $item->nama_layanan }}"
                 class="w-full h-48 object-cover">
-            <button class="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-            </button>
-            @if (isset($item->is_premium) && $item->is_premium)
-                <span class="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-md">
-                    Premium
-                </span>
-            @endif
+            @php
+    $isWishlisted = false;
+    if (isset($wishlists)) {
+        foreach ($wishlists as $w) {
+            if ($w->id_layanan == $item->id) {
+                $isWishlisted = true;
+                break;
+            }
+        }
+    }
+@endphp
+<button
+    x-data="{ isWishlist: {{ $isWishlisted ? 'true' : 'false' }}, loading: false }"
+    x-bind:class="isWishlist ? 'text-homize-orange' : 'text-gray-400'"
+    :aria-pressed="isWishlist"
+    class="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-full focus:outline-none"
+    :title="isWishlist ? 'Hapus dari Favorit' : 'Tambah ke Favorit'"
+    @click.prevent="
+        if (loading) return;
+        loading = true;
+        fetch('{{ route('wishlist.toggle') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ layanan_id: {{ $item->id }} })
+        })
+        .then(response => response.json())
+        .then(data => {
+            isWishlist = data.status === 'added';
+        })
+        .catch(e => alert('Gagal memperbarui wishlist'))
+        .finally(() => loading = false);
+    "
+>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-colors duration-200" :fill="isWishlist ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+</button>
         </div>
         <div class="p-4">
             <h3 class="font-medium line-clamp-2 mb-1">{{ $item->nama_layanan }}</h3>
