@@ -22,7 +22,7 @@ use App\Http\Controllers\MidtransCallbackController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\XenditCallbackController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\merchant\PenarikanController;
+use App\Http\Controllers\Merchant\PenarikanController;
 use App\Http\Controllers\Admin\PenarikanController as AdminPenarikanController;
 use Illuminate\Support\Facades\Route;
 
