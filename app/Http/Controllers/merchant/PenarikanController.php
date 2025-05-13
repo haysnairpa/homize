@@ -2,7 +2,7 @@
 
 // All database operations in this controller use Eloquent ORM or Laravel Query Builder,
 // which are protected against SQL injection by design.
-namespace App\Http\Controllers\merchant;
+namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Penarikan;
