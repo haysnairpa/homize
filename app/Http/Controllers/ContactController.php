@@ -90,6 +90,28 @@ class ContactController extends Controller
         ]);
 
         try {
+            // Get mail configuration from config
+            $mailConfig = config('mail');
+            Log::info('Mail configuration:', ['mailer' => $mailConfig['default']]);
+            
+            // Check if we're in production and mail settings are properly configured
+            if (app()->environment('production') && $mailConfig['default'] === 'log') {
+                // In production with default 'log' mailer, we need to use a fallback method
+                // Store the contact message in the database for admin to review
+                DB::table('contact_messages')->insert([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'subject' => $validated['subject'],
+                    'message' => $validated['message'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                
+                Log::warning('Contact form submitted but mail not configured in production. Message saved to database.');
+                
+                return redirect()->route('contact.index')->with('success', 'Pesan Anda telah berhasil dikirim. Kami akan menghubungi Anda segera.');
+            }
+            
             // Send email to service.homize@gmail.com
             Mail::to('service.homize@gmail.com')
                 ->send(new ContactFormMail(
@@ -101,8 +123,28 @@ class ContactController extends Controller
             
             return redirect()->route('contact.index')->with('success', 'Pesan Anda telah berhasil dikirim. Kami akan menghubungi Anda segera.');
         } catch (\Exception $e) {
-            // Log the error
-            Log::error('Error sending contact email: ' . $e->getMessage());
+            // Log the detailed error
+            Log::error('Error sending contact email: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Try to save the message to database as a fallback
+            try {
+                DB::table('contact_messages')->insert([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'subject' => $validated['subject'],
+                    'message' => $validated['message'],
+                    'error' => $e->getMessage(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                Log::info('Contact message saved to database as fallback');
+            } catch (\Exception $dbException) {
+                Log::error('Failed to save contact message to database: ' . $dbException->getMessage());
+            }
             
             return redirect()->route('contact.index')->with('error', 'Maaf, terjadi kesalahan saat mengirim pesan Anda. Silakan coba lagi nanti.');
         }

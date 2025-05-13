@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\Booking;
 use App\Http\Controllers\PembayaranController;
 
@@ -68,6 +69,9 @@ class DashboardController extends Controller
         $userId = Auth::id();
         $status = $request->query('status', 'all');
 
+        // Log for debugging
+        \Log::info('Filtering transactions', ['user_id' => $userId, 'status' => $status]);
+
         $query = "SELECT 
                     b.id, 
                     sk.seri_sub_kategori, 
@@ -81,12 +85,15 @@ class DashboardController extends Controller
                     b.tanggal_booking, 
                     b.updated_at, 
                     p.amount, 
+                    p.status_pembayaran,
                     bs.waktu_mulai, 
                     bs.waktu_selesai, 
                     b.alamat_pembeli, 
                     b.catatan, 
                     b.latitude, 
-                    b.longitude
+                    b.longitude,
+                    b.created_at,
+                    b.updated_at AS tanggal_selesai
                 FROM booking b
                 JOIN layanan l ON l.id = b.id_layanan
                 JOIN sub_kategori sk ON sk.id = l.id_sub_kategori
@@ -97,21 +104,45 @@ class DashboardController extends Controller
 
         $params = [$userId];
 
+        // Map the status parameter to the actual status value in the database
         if ($status !== 'all') {
-            $query .= " AND b.status_proses = ?";
-            $params[] = $status;
+            // Map numeric status codes to text values
+            $statusMap = [
+                '1' => 'Pending',
+                '2' => 'Dikonfirmasi',
+                '3' => 'Sedang diproses',
+                '4' => 'Selesai',
+                '5' => 'Dibatalkan'
+            ];
+            
+            if (isset($statusMap[$status])) {
+                $query .= " AND b.status_proses = ?";
+                $params[] = $statusMap[$status];
+                \Log::info('Mapped status', ['from' => $status, 'to' => $statusMap[$status]]);
+            }
         }
 
         $query .= " ORDER BY b.created_at DESC";
 
-        $transactions = DB::select($query, $params);
-
-        if ($request->ajax()) {
-            $html = view('partials.transaction-list-dashboard', compact('transactions'))->render();
-            return response()->json(['success' => true, 'html' => $html]);
+        try {
+            $transactions = DB::select($query, $params);
+            \Log::info('Transactions found', ['count' => count($transactions)]);
+            
+            if ($request->ajax()) {
+                $html = view('partials.transaction-list-dashboard', compact('transactions'))->render();
+                return response()->json(['success' => true, 'html' => $html]);
+            }
+            
+            return view('user.transactions', compact('transactions'));
+        } catch (\Exception $e) {
+            \Log::error('Error filtering transactions', ['error' => $e->getMessage()]);
+            
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Error loading transactions: ' . $e->getMessage()]);
+            }
+            
+            return view('user.transactions', ['transactions' => []]);
         }
-
-        return view('user.transactions', compact('transactions'));
     }
 
     public function filterTransactionsByDate(Request $request)
@@ -119,6 +150,8 @@ class DashboardController extends Controller
         $userId = Auth::id();
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
+
+        Log::info('Filtering transactions by date', ['user_id' => $userId, 'start_date' => $startDate, 'end_date' => $endDate]);
 
         $query = "SELECT 
                     b.id, 
@@ -133,12 +166,15 @@ class DashboardController extends Controller
                     b.tanggal_booking, 
                     b.updated_at, 
                     p.amount, 
+                    p.status_pembayaran,
                     bs.waktu_mulai, 
                     bs.waktu_selesai, 
                     b.alamat_pembeli, 
                     b.catatan, 
                     b.latitude, 
-                    b.longitude
+                    b.longitude,
+                    b.created_at,
+                    b.updated_at AS tanggal_selesai
                 FROM booking b
                 JOIN layanan l ON l.id = b.id_layanan
                 JOIN sub_kategori sk ON sk.id = l.id_sub_kategori
@@ -148,14 +184,25 @@ class DashboardController extends Controller
                 WHERE b.id_user = ? AND b.tanggal_booking BETWEEN ? AND ?
                 ORDER BY b.created_at DESC";
 
-        $transactions = DB::select($query, [$userId, $startDate, $endDate]);
+        try {
+            $transactions = DB::select($query, [$userId, $startDate, $endDate]);
+            Log::info('Date filtered transactions found', ['count' => count($transactions)]);
 
-        if ($request->ajax()) {
-            $html = view('partials.transaction-list-dashboard', compact('transactions'))->render();
-            return response()->json(['success' => true, 'html' => $html]);
+            if ($request->ajax()) {
+                $html = view('partials.transaction-list-dashboard', compact('transactions'))->render();
+                return response()->json(['success' => true, 'html' => $html]);
+            }
+
+            return view('user.transactions', compact('transactions'));
+        } catch (\Exception $e) {
+            Log::error('Error filtering transactions by date', ['error' => $e->getMessage()]);
+            
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Error loading transactions: ' . $e->getMessage()]);
+            }
+            
+            return view('user.transactions', ['transactions' => []]);
         }
-
-        return view('user.transactions', compact('transactions'));
     }
 
     public function transactionDetail($id)
