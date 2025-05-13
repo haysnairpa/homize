@@ -375,7 +375,7 @@
 
                                         <!-- Service Image -->
                                         <div class="flex-shrink-0">
-                                            <img src="{{ $wishlist->media_url }}"
+                                            <img src="{{ $wishlist->media_url ?? asset('images/placeholder.jpg') }}"
                                                 alt="{{ $wishlist->nama_layanan }}" class="h-16 w-16 object-cover rounded">
                                         </div>
 
