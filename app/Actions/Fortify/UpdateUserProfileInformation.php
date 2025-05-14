@@ -17,12 +17,22 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      */
     public function update(User $user, array $input): void
     {
+        // Basic validation for required fields
         Validator::make($input, [
             'nama' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'phone' => ['required', 'string', 'max:15', 'regex:/^[0-9]+$/', Rule::unique('users')->ignore($user->id)],
-            'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'photo' => ['nullable', 'mimes:jpg,jpeg,png,webp,gif,bmp,svg', 'max:2048'],
         ])->validateWithBag('updateProfileInformation');
+        
+        // Process phone number separately without validation
+        if (isset($input['phone'])) {
+            // Remove any non-numeric characters
+            $phone = preg_replace('/[^0-9]/', '', $input['phone']);
+            // Remove leading zeros
+            $phone = ltrim($phone, '0');
+            // Store the cleaned phone number
+            $input['phone'] = $phone;
+        }
 
         if (isset($input['photo'])) {
             $user->updateProfilePhoto($input['photo']);
@@ -32,10 +42,13 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user instanceof MustVerifyEmail) {
             $this->updateVerifiedUser($user, $input);
         } else {
+            // Format the phone number with +62 prefix
+            $phoneWithPrefix = isset($input['phone']) ? '+62' . $input['phone'] : $user->phone;
+            
             $user->forceFill([
                 'nama' => $input['nama'],
                 'email' => $input['email'],
-                'phone' => '+62' . ltrim($input['phone'], '0'),
+                'phone' => $phoneWithPrefix,
             ])->save();
         }
     }
@@ -47,10 +60,20 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      */
     protected function updateVerifiedUser(User $user, array $input): void
     {
+        // Process phone number if it exists
+        if (isset($input['phone'])) {
+            // Remove any non-numeric characters
+            $phone = preg_replace('/[^0-9]/', '', $input['phone']);
+            // Remove leading zeros
+            $phone = ltrim($phone, '0');
+            // Update the input array
+            $input['phone'] = $phone;
+        }
+        
         $user->forceFill([
             'nama' => $input['nama'],
             'email' => $input['email'],
-            'phone' => '+62' . ltrim($input['phone'], '0'),
+            'phone' => '+62' . $input['phone'],
             'email_verified_at' => null,
         ])->save();
 

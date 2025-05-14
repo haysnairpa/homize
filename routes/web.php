@@ -193,6 +193,10 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'
 Route::get('auth/google', [App\Http\Controllers\SocialiteController::class, 'redirectToGoogle'])->name('login.google');
 Route::get('auth/google/callback', [App\Http\Controllers\SocialiteController::class, 'handleGoogleCallback']);
 
+// Complete phone after Google login
+Route::get('auth/complete-phone', [App\Http\Controllers\SocialiteController::class, 'showCompletePhoneForm'])->name('complete.phone');
+Route::post('auth/complete-phone', [App\Http\Controllers\SocialiteController::class, 'submitCompletePhone'])->name('complete.phone.submit');
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
     // Penarikan admin

@@ -38,16 +38,26 @@
             window.filterTransactions = function(status) {
                 console.log('Filtering transactions for status:', status); // Debug log
 
+                // Store the clicked button to ensure we're updating the correct element
+                const clickedButton = event.target;
+
                 // Update active button
                 document.querySelectorAll('.filter-btn').forEach(btn => {
                     btn.classList.remove('bg-homize-blue', 'text-white');
                     btn.classList.add('border', 'border-gray-300', 'text-gray-700');
                 });
-                event.target.classList.remove('border', 'border-gray-300', 'text-gray-700');
-                event.target.classList.add('bg-homize-blue', 'text-white');
+                clickedButton.classList.remove('border', 'border-gray-300', 'text-gray-700');
+                clickedButton.classList.add('bg-homize-blue', 'text-white');
 
                 // Show loading state
                 document.getElementById('transaction-list').innerHTML = '<div class="text-center py-4">Loading...</div>';
+
+                // Add a timeout to prevent infinite loading
+                const loadingTimeout = setTimeout(() => {
+                    // If this timeout executes, it means the request took too long
+                    document.getElementById('transaction-list').innerHTML = 
+                        '<div class="text-center py-4 text-red-500">Request timed out. Please try again.</div>';
+                }, 10000); // 10 seconds timeout
 
                 // Make AJAX request
                 fetch(`/user/transactions/filter?status=${status}`, {
@@ -56,26 +66,36 @@
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        }
+                        },
+                        // Add cache busting parameter
+                        cache: 'no-store'
                     })
                     .then(response => {
                         console.log('Response received:', response); // Debug log
+                        clearTimeout(loadingTimeout); // Clear the timeout since we got a response
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
                         return response.json();
                     })
                     .then(data => {
                         console.log('Data received:', data); // Debug log
                         if (data.success) {
                             document.getElementById('transaction-list').innerHTML = data.html;
+                        } else {
+                            throw new Error(data.message || 'Unknown error occurred');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
                         document.getElementById('transaction-list').innerHTML =
-                            '<div class="text-center py-4 text-red-500">Error loading transactions</div>';
+                            `<div class="text-center py-4 text-red-500">Error loading transactions: ${error.message}</div>`;
                     });
             };
 
             window.resetDateFilter = function() {
+                console.log('Reset date filter called'); // Debug log
+                
                 // Clear the date picker
                 if (datePicker) {
                     datePicker.clear();
@@ -86,34 +106,49 @@
                     btn.classList.remove('bg-homize-blue', 'text-white');
                     btn.classList.add('border', 'border-gray-300', 'text-gray-700');
                 });
-                document.querySelector('.filter-btn[onclick="filterTransactions(\'all\')"]').classList.remove('border',
-                    'border-gray-300', 'text-gray-700');
-                document.querySelector('.filter-btn[onclick="filterTransactions(\'all\')"]').classList.add('bg-homize-blue',
-                    'text-white');
+                
+                // Find the 'all' button and set it as active
+                const allButton = document.querySelector('.filter-btn[onclick="filterTransactions(\'all\')"]');
+                if (allButton) {
+                    allButton.classList.remove('border', 'border-gray-300', 'text-gray-700');
+                    allButton.classList.add('bg-homize-blue', 'text-white');
+                } else {
+                    console.error("All transactions button not found");
+                }
 
                 // Show loading state
                 document.getElementById('transaction-list').innerHTML = '<div class="text-center py-4">Loading...</div>';
 
-                // Fetch all transactions
-                fetch('/user/transactions/filter?status=all', {
-                        method: 'GET',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            document.getElementById('transaction-list').innerHTML = data.html;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        document.getElementById('transaction-list').innerHTML =
-                            '<div class="text-center py-4 text-red-500">Error loading transactions</div>';
-                    });
+                // Fetch all transactions with a timeout to prevent race conditions
+                setTimeout(() => {
+                    fetch('/user/transactions/filter?status=all', {
+                            method: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            // Add cache busting parameter
+                            cache: 'no-store'
+                        })
+                        .then(response => {
+                            console.log('Reset filter response status:', response.status);
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Reset filter data received:', data);
+                            if (data.success) {
+                                document.getElementById('transaction-list').innerHTML = data.html;
+                            } else {
+                                throw new Error('Server returned success: false');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error in reset filter:', error);
+                            document.getElementById('transaction-list').innerHTML =
+                                '<div class="text-center py-4 text-red-500">Error loading transactions. Please refresh the page.</div>';
+                        });
+                }, 300); // Small delay to ensure DOM is ready
             };
 
             window.filterByDateRange = function(startDate, endDate) {
@@ -172,6 +207,18 @@
                         <button type="button" onclick="filterTransactions('5')"
                             class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-homize-gray transition-colors filter-btn">Dibatalkan</button>
                     </div>
+                </div>
+                
+                <!-- Debug info - hidden in production -->
+                <div class="hidden mb-4 p-3 bg-gray-100 rounded text-xs">
+                    <p>Status mapping:</p>
+                    <ul class="list-disc pl-4">
+                        <li>1 = Pending</li>
+                        <li>2 = Dikonfirmasi</li>
+                        <li>3 = Sedang diproses</li>
+                        <li>4 = Selesai</li>
+                        <li>5 = Dibatalkan</li>
+                    </ul>
                 </div>
 
                 <!-- Search and Date Filter -->

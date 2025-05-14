@@ -89,21 +89,7 @@
                 </div>
             @endif
 
-            @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
-                <div class="bg-white shadow-xl sm:rounded-lg mb-6">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-medium text-homize-blue">
-                            {{ __('Autentikasi Dua Faktor') }}
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600">
-                            {{ __('Tambahkan keamanan tambahan ke akun Anda menggunakan autentikasi dua faktor.') }}
-                        </p>
-                    </div>
-                    <div class="p-6">
-                        @livewire('profile.two-factor-authentication-form')
-                    </div>
-                </div>
-            @endif
+            {{-- Two-Factor Authentication section removed --}}
 
             <div class="bg-white shadow-xl sm:rounded-lg mb-6">
                 <div class="p-6 border-b border-gray-200">
