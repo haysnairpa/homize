@@ -8,7 +8,7 @@
     <title>Form Pemesanan - Homize</title>
     <link rel="icon" href="{{ asset('homizeiconblue.ico') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ asset('homizeiconblue.ico') }}" type="image/x-icon">
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 
@@ -16,6 +16,7 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 
     <style>
         :root {
@@ -323,7 +324,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('booking.store') }}" method="POST" id="bookingForm">
+            <form action="{{ route('booking.store') }}" method="POST" id="bookingForm" x-data="{ loading: false }" x-on:submit="loading = true">
                 @csrf
                 <input type="hidden" name="id_layanan" value="{{ $layanan->id }}">
                 <input type="hidden" name="id_merchant" value="{{ $layanan->id_merchant }}">
@@ -349,14 +350,22 @@
                         @include('booking.components.additional-notes')
 
                         <button type="submit"
-                            class="w-full btn-primary py-4 px-6 rounded-xl font-medium text-lg flex items-center justify-center gap-2 shadow-lg">
-                            Lanjutkan ke Pembayaran
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                                    clip-rule="evenodd" />
-                            </svg>
+                            class="w-full btn-primary py-4 px-6 rounded-xl font-medium text-lg flex items-center justify-center gap-2 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                            x-bind:disabled="loading">
+                            <template x-if="!loading">
+                                <span class="flex items-center gap-2">
+                                    Lanjutkan ke Pembayaran
+                                </span>
+                            </template>
+                            <template x-if="loading">
+                                <span class="flex items-center gap-2">
+                                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                    </svg>
+                                    Loading...
+                                </span>
+                            </template>
                         </button>
                     </div>
                 </div>
