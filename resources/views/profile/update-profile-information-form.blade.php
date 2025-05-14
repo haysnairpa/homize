@@ -10,19 +10,32 @@
     <x-slot name="form">
         <!-- Profile Photo -->
         @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-            <div x-data="{photoName: null, photoPreview: null}" class="col-span-6 sm:col-span-4">
+            <div x-data="{photoName: null, photoPreview: null, isUploading: false}" class="col-span-6 sm:col-span-4">
                 <!-- Profile Photo File Input -->
                 <input type="file" id="photo" class="hidden"
                             wire:model.live="photo"
                             x-ref="photo"
                             x-on:change="
+                                    isUploading = true;
                                     photoName = $refs.photo.files[0].name;
                                     const reader = new FileReader();
                                     reader.onload = (e) => {
                                         photoPreview = e.target.result;
                                     };
                                     reader.readAsDataURL($refs.photo.files[0]);
-                            " />
+                            "
+                            wire:loading.attr="disabled" />
+
+                <!-- Loading Indicator for Photo Upload -->
+                <div wire:loading wire:target="photo" class="mt-2">
+                    <div class="flex items-center space-x-2">
+                        <svg class="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-sm text-indigo-600 font-medium">Memproses foto...</span>
+                    </div>
+                </div>
 
                 <x-label for="photo" value="{{ __('Photo') }}" />
 
@@ -38,12 +51,12 @@
                     </span>
                 </div>
 
-                <x-secondary-button class="mt-2 me-2" type="button" x-on:click.prevent="$refs.photo.click()">
+                <x-secondary-button class="mt-2 me-2" type="button" x-on:click.prevent="$refs.photo.click()" wire:loading.attr="disabled" wire:target="photo">
                     {{ __('Select A New Photo') }}
                 </x-secondary-button>
 
                 @if ($this->user->profile_photo_path)
-                    <x-secondary-button type="button" class="mt-2" wire:click="deleteProfilePhoto">
+                    <x-secondary-button type="button" class="mt-2" wire:click="deleteProfilePhoto" wire:loading.attr="disabled" wire:target="photo,deleteProfilePhoto">
                         {{ __('Remove Photo') }}
                     </x-secondary-button>
                 @endif
@@ -70,15 +83,24 @@
         <!-- Phone -->
         <div class="col-span-6 sm:col-span-4 mt-4">
             <x-label for="phone" value="{{ __('Phone') }}" class="text-lg font-semibold text-gray-700" />
-            <x-input 
-                id="phone" 
-                type="text" 
-                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200" 
-                wire:model="state.phone" 
-                required 
-                autocomplete="tel" 
-                placeholder="Enter your phone number"
-            />
+            <div class="relative mt-1 flex">
+                <div class="flex-shrink-0 inline-flex items-center px-3 py-3 bg-gray-100 border border-r-0 border-gray-300 rounded-l-xl text-gray-700">
+                    +62
+                </div>
+                <input 
+                    id="phone" 
+                    type="text" 
+                    class="flex-1 block w-full px-4 py-3 border border-gray-300 rounded-r-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200" 
+                    wire:model.defer="state.phone"
+                    pattern="[0-9]*"
+                    inputmode="numeric"
+                    required 
+                    autocomplete="tel" 
+                    placeholder="8123456789"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^0+/, '');"
+                />
+            </div>
+            <div class="mt-1 text-xs text-gray-500">Format: +62 diikuti nomor tanpa awalan 0 (8-12 digit)</div>
             <x-input-error for="phone" class="mt-2" />
         </div>
 
@@ -121,8 +143,15 @@
             {{ __('Saved.') }}
         </x-action-message>
 
-        <x-button wire:loading.attr="disabled" wire:target="photo">
-            {{ __('Save') }}
+        <x-button wire:loading.attr="disabled" wire:target="photo,updateProfileInformation">
+            <span wire:loading.remove wire:target="updateProfileInformation">{{ __('Save') }}</span>
+            <span wire:loading wire:target="updateProfileInformation" class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Menyimpan...
+            </span>
         </x-button>
     </x-slot>
 </x-form-section>

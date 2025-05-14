@@ -25,6 +25,11 @@
 
                 <h1 class="text-xl md:text-2xl font-bold mb-6 md:mb-8 text-gray-800">Log In Akun Homize</h1>
 
+                @if (session('error'))
+                    <div class="p-3 mb-4 rounded-lg bg-red-50 border border-red-200 text-red-700">
+                        {{ session('error') }}
+                    </div>
+                @endif
                 <form method="POST" action="{{ route('login') }}" class="space-y-5 md:space-y-6">
                     @csrf
                     
