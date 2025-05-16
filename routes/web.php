@@ -148,6 +148,7 @@ Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->pre
     Route::post('/profile/update', [MerchantDashboardController::class, 'updateProfile'])->name('profile.update');
     Route::get('/services', [MerchantLayananController::class, 'services'])->name('services');
     Route::get('/orders', [OrderController::class, 'orders'])->name('orders');
+    Route::get('/orders/filter-by-date', [OrderController::class, 'filterByDate'])->name('orders.filterByDate');
     Route::post('/orders/{id}/update-status', [OrderController::class, 'updateOrderStatus'])->name('orders.update-status');
     Route::get('/analytics', [MerchantAnalyticController::class, 'analytics'])->name('analytics');
     Route::post('/layanan', [MerchantLayananController::class, 'storeLayanan'])->name('layanan.store');

@@ -14,10 +14,42 @@ use App\Events\OrderCompleted;
 
 class OrderController extends Controller
 {
-    public function orders()
+    // AJAX filterByDate handler removed (now using full page reload with GET params)
+
+    public function orders(Request $request)
     {
         $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
-        $orders = DB::select("SELECT b.id, u.nama as nama_user, l.nama_layanan, b.status_proses, p.status_pembayaran, b.tanggal_booking, p.amount, bs.waktu_mulai, bs.waktu_selesai, b.alamat_pembeli, b.catatan FROM booking b JOIN users u ON u.id = b.id_user JOIN layanan l ON l.id = b.id_layanan JOIN booking_schedule bs ON bs.id = b.id_booking_schedule JOIN pembayaran p ON p.id_booking = b.id WHERE b.id_merchant = ? ORDER BY b.created_at DESC", [$merchant->id]);
+        $status = $request->query('status', 'all');
+        $start = $request->query('start_date');
+        $end = $request->query('end_date');
+        $search = $request->query('search', '');
+
+        // Store filters in session for persistence
+        session([
+            'merchant_orders_status' => $status,
+            'merchant_orders_start' => $start,
+            'merchant_orders_end' => $end,
+            'merchant_orders_search' => $search,
+        ]);
+
+        $query = "SELECT b.id, u.nama as nama_user, l.nama_layanan, b.status_proses, p.status_pembayaran, bs.waktu_mulai as booking_date, bs.waktu_mulai, bs.waktu_selesai, p.amount, b.alamat_pembeli, b.catatan FROM booking b JOIN users u ON u.id = b.id_user JOIN layanan l ON l.id = b.id_layanan JOIN booking_schedule bs ON bs.id = b.id_booking_schedule JOIN pembayaran p ON p.id_booking = b.id WHERE b.id_merchant = ?";
+        $params = [$merchant->id];
+        if ($status && $status !== 'all') {
+            $query .= " AND b.status_proses = ?";
+            $params[] = $status;
+        }
+        if ($start && $end) {
+            $query .= " AND DATE(bs.waktu_mulai) BETWEEN ? AND ?";
+            $params[] = $start;
+            $params[] = $end;
+        }
+        if ($search) {
+            $query .= " AND (u.nama LIKE ? OR l.nama_layanan LIKE ?)";
+            $params[] = '%' . $search . '%';
+            $params[] = '%' . $search . '%';
+        }
+        $query .= " ORDER BY b.created_at DESC";
+        $orders = DB::select($query, $params);
         $statuses = collect([
             ['value' => 'Pending', 'label' => 'Pending'],
             ['value' => 'Dikonfirmasi', 'label' => 'Dikonfirmasi'],
@@ -25,7 +57,7 @@ class OrderController extends Controller
             ['value' => 'Selesai', 'label' => 'Selesai'],
             ['value' => 'Dibatalkan', 'label' => 'Dibatalkan'],
         ]);
-        return view('merchant.orders', compact('merchant', 'orders', 'statuses'));
+        return view('merchant.orders', compact('merchant', 'orders', 'statuses', 'status', 'start', 'end', 'search'));
     }
 
     public function updateOrderStatus(Request $request, $id)
