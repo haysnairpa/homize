@@ -47,6 +47,10 @@
                         <div class="flex-1">
                             <label for="dateRange" class="block text-xs font-medium text-gray-700 mb-1">Filter
                                 Tanggal</label>
+                            @php
+                                $start = $start ?? null;
+                                $end = $end ?? null;
+                            @endphp
                             <input type="text" id="dateRange" name="dateRange" autocomplete="off"
                                 class="px-3 py-2 border border-gray-300 rounded-md focus:ring-homize-blue focus:border-homize-blue bg-white text-gray-700 w-full"
                                 value="{{ $start && $end ? $start . ' sampai ' . $end : '' }}">
