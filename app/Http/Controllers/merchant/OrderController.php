@@ -32,7 +32,13 @@ class OrderController extends Controller
             'merchant_orders_search' => $search,
         ]);
 
-        $query = "SELECT b.id, u.nama as nama_user, l.nama_layanan, b.status_proses, p.status_pembayaran, bs.waktu_mulai as booking_date, bs.waktu_mulai, bs.waktu_selesai, p.amount, b.alamat_pembeli, b.catatan FROM booking b JOIN users u ON u.id = b.id_user JOIN layanan l ON l.id = b.id_layanan JOIN booking_schedule bs ON bs.id = b.id_booking_schedule JOIN pembayaran p ON p.id_booking = b.id WHERE b.id_merchant = ?";
+        $query = "SELECT b.id, u.nama AS nama_user, l.nama_layanan, b.status_proses, p.status_pembayaran, b.created_at AS booking_date, b.created_at, bs.updated_at, p.amount, b.alamat_pembeli, b.catatan
+                    FROM booking b
+                    JOIN users u ON u.id = b.id_user
+                    JOIN layanan l ON l.id = b.id_layanan
+                    JOIN booking_schedule bs ON bs.id = b.id_booking_schedule
+                    JOIN pembayaran p ON p.id_booking = b.id 
+                    WHERE b.id_merchant = ?";
         $params = [$merchant->id];
         if ($status && $status !== 'all') {
             $query .= " AND b.status_proses = ?";
@@ -133,7 +139,8 @@ class OrderController extends Controller
             ],
             'catatan' => $order->catatan,
             'total' => $order->amount,
-            'status_proses' => $order->status_proses, 'status_pembayaran' => $order->status_pembayaran
+            'status_proses' => $order->status_proses,
+            'status_pembayaran' => $order->status_pembayaran
         ];
         return response()->json([
             'success' => true,
@@ -141,4 +148,3 @@ class OrderController extends Controller
         ]);
     }
 }
-
