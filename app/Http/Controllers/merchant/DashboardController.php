@@ -42,11 +42,12 @@ class DashboardController extends Controller
         $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
         $validated = $request->validate([
             'nama_usaha' => 'required|string|max:255',
-            'id_kategori' => 'required|exists:kategori,id',
+            'id_sub_kategori' => 'required|exists:sub_kategori,id',
             'alamat' => 'required|string',
             'instagram' => 'nullable|string',
             'facebook' => 'nullable|string',
-            'whatsapp' => 'required|string',
+            'whatsapp' => 'nullable|regex:/^[0-9]{8,15}$/',
+            'website' => 'nullable|string',
             'profile_url' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
@@ -63,12 +64,13 @@ class DashboardController extends Controller
         }
 
         $merchant->nama_usaha = $validated['nama_usaha'];
-        $merchant->id_kategori = $validated['id_kategori'];
+        $merchant->id_kategori = $validated['id_sub_kategori'];
         $merchant->alamat = $validated['alamat'];
         $merchant->media_sosial = json_encode([
             'instagram' => $validated['instagram'] ?? '',
             'facebook' => $validated['facebook'] ?? '',
-            'whatsapp' => $validated['whatsapp']
+            'whatsapp' => $validated['whatsapp'] ?? '',
+            'website' => $validated['website'] ?? ''
         ]);
 
         $merchant->save();

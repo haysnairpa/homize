@@ -51,7 +51,7 @@
                                             <label for="id_sub_kategori" class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                                             <select name="id_sub_kategori" id="id_sub_kategori" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
                                                 @foreach($subKategori as $kategori)
-                                                    <option value="{{ $kategori->id }}" {{ $merchant->id_sub_kategori == $kategori->id ? 'selected' : '' }}>
+                                                    <option value="{{ $kategori->id }}" {{ $merchant->id_kategori == $kategori->id ? 'selected' : '' }}>
                                                         {{ $kategori->nama }}
                                                     </option>
                                                 @endforeach
@@ -85,10 +85,20 @@
                                             <input type="text" name="facebook" id="facebook" value="{{ $mediaSosial['facebook'] ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
                                         </div>
                                         <div>
-                                            <label for="twitter" class="block text-sm font-medium text-gray-700 mb-1">Whatsapp</label>
-                                            <div class="flex">
-                                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">+62</span>
-                                                <input type="text" name="whatsapp" id="whatsapp" value="{{ $mediaSosial['whatsapp'] ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue">
+                                            <label for="whatsapp" class="block text-sm font-medium text-gray-700 mb-1">Whatsapp</label>
+                                            <div class="flex flex-col">
+                                                <div class="flex">
+                                                    <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">+62</span>
+                                                    <input type="text" name="whatsapp" id="whatsapp" value="{{ $mediaSosial['whatsapp'] ?? '' }}" 
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-homize-blue focus:border-homize-blue"
+                                                        pattern="[0-9]{8,15}" 
+                                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+                                                        title="Masukkan nomor WhatsApp yang valid (8-15 digit angka)">
+                                                </div>
+                                                <p class="text-xs text-gray-500 mt-1">Hanya masukkan angka, contoh: 81234567890</p>
+                                                @error('whatsapp')
+                                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div>
