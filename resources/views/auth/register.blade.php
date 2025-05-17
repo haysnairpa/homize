@@ -26,7 +26,7 @@
 
                 <h1 class="text-xl md:text-2xl font-bold mb-6 md:mb-8 text-gray-800">Daftar Akun Homize</h1>
 
-                <form method="POST" action="{{ route('register') }}" class="space-y-5 md:space-y-6">
+                <form method="POST" action="{{ route('register') }}" class="space-y-5 md:space-y-6" id="registerForm">
                     @csrf
 
                     @if ($errors->any())
@@ -57,9 +57,9 @@
                     <div class="mb-1">
                         <label for="nama" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
                         <x-input id="nama"
-                            class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md shadow-sm"
-                            placeholder="Masukkan nama lengkap anda" type="text" name="nama" :value="old('nama')" required autofocus
-                            autocomplete="nama" />
+                        class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md shadow-sm"
+                        placeholder="Masukkan nama lengkap anda" type="text" name="nama" :value="old('nama')" autofocus
+                        autocomplete="nama" />
                         @error('nama')
                             <p class="mt-1 text-sm text-homize-error">{{ $message }}</p>
                         @enderror
@@ -68,21 +68,20 @@
                     <div class="mb-1">
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                         <x-input id="email" type="email" name="email" placeholder="Masukkan email anda"
-                            class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md shadow-sm" required />
+                        class="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-md shadow-sm" required />
                         @error('email')
                             <p class="mt-1 text-sm text-homize-error">{{ $message }}</p>
                         @enderror
                     </div>
 
-                   
                     <div class="mb-1">
                         <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center px-3 text-gray-500 text-sm border-r-[1px] border-gray-300">+62</span>
                             <x-input id="phone" name="phone" type="text" inputmode="numeric" pattern="[0-9]*" 
-                                placeholder="8123456789"
-                                class="w-full pl-14 pr-3 py-2 md:py-3 border border-gray-300 rounded-md focus:ring-homize-blue focus:border-homize-blue shadow-sm"
-                                required />
+                            placeholder="8123456789"
+                            class="w-full pl-14 pr-3 py-2 md:py-3 border border-gray-300 rounded-md focus:ring-homize-blue focus:border-homize-blue shadow-sm"
+                            required />
                         </div>
                         @error('phone')
                             <p class="mt-1 text-sm text-homize-error">{{ $message }}</p>
@@ -121,9 +120,7 @@
                         </button>
                     </div>
 
-                    <x-button class="w-full bg-homize-blue hover:bg-[#0EA5E9] text-white py-3 md:py-4 rounded-md font-medium shadow-sm transition-colors duration-200 mt-4">
-                        DAFTAR
-                    </x-button>
+                    <button type="submit" id="registerBtn" class="w-full bg-homize-blue hover:bg-[#0EA5E9] text-white py-3 md:py-4 rounded-md font-medium shadow-sm transition-colors duration-200 mt-4">DAFTAR</button>
 
                     <div class="relative flex items-center my-6">
                         <div class="flex-grow border-t border-gray-300"></div>
@@ -170,5 +167,18 @@
                 this.querySelector('svg').innerHTML = type === 'password' ? eyeOpen : eyeClosed;
             });
         });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registerForm');
+        const btn = document.getElementById('registerBtn');
+        if (form && btn) {
+            form.addEventListener('submit', function() {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+        }
     });
 </script>

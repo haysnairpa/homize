@@ -10,7 +10,7 @@
 
         <x-validation-errors class="mb-4" />
 
-        <form method="POST" action="{{ route('password.confirm') }}">
+        <form method="POST" action="{{ route('password.confirm') }}" id="confirmForm">
             @csrf
 
             <div>
@@ -19,10 +19,22 @@
             </div>
 
             <div class="flex justify-end mt-4">
-                <x-button class="ms-4">
+                <x-button id="confirmBtn" class="ms-4">
                     {{ __('Confirm') }}
                 </x-button>
             </div>
         </form>
     </x-authentication-card>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('confirmForm');
+            const btn = document.getElementById('confirmBtn');
+            if (form && btn) {
+                form.addEventListener('submit', function() {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                });
+            }
+        });
+    </script>
 </x-guest-layout>
