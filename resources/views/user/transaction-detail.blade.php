@@ -96,17 +96,63 @@
                 <div class="mt-8 border-t pt-6">
                     <h3 class="text-lg font-semibold mb-4">Informasi Pembayaran</h3>
                     <div class="bg-gray-50 p-4 rounded-lg">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Total Pembayaran:</span>
-                            <span class="text-xl font-bold text-homize-blue">Rp
-                                {{ number_format($transaction->amount, 0, ',', '.') }}</span>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Harga Layanan:</span>
+                                <span class="font-medium">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</span>
+                            </div>
+                            
+                            @if($transaction->unique_code)
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Kode Unik:</span>
+                                <span class="font-medium">Rp {{ number_format($transaction->unique_code, 0, ',', '.') }}</span>
+                            </div>
+                            @endif
+                            
+                            <div class="flex justify-between items-center pt-2 border-t">
+                                <span class="text-gray-700 font-medium">Total Pembayaran:</span>
+                                <span class="text-xl font-bold text-homize-blue">
+                                    @if($transaction->unique_code)
+                                        Rp {{ number_format($transaction->amount + $transaction->unique_code, 0, ',', '.') }}
+                                    @else
+                                        Rp {{ number_format($transaction->amount, 0, ',', '.') }}
+                                    @endif
+                                </span>
+                            </div>
+                            
+                            <div class="pt-3 border-t">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Status Pembayaran:</span>
+                                    @php
+                                        $statusClass = match ($transaction->status_pembayaran ?? '') {
+                                            'Selesai' => 'bg-green-100 text-green-800',
+                                            'Pending' => 'bg-yellow-100 text-yellow-800',
+                                            'Dibatalkan' => 'bg-red-100 text-red-800',
+                                            default => 'bg-gray-100 text-gray-800',
+                                        };
+                                    @endphp
+                                    <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ $statusClass }}">
+                                        {{ $transaction->status_pembayaran ?? 'Belum ada status' }}
+                                    </span>
+                                </div>
+                                
+                                @if($transaction->rejection_reason)
+                                <div class="mt-2 p-3 bg-red-50 rounded-lg">
+                                    <p class="text-sm text-red-700"><span class="font-medium">Alasan Penolakan:</span> {{ $transaction->rejection_reason }}</p>
+                                </div>
+                                @endif
+                            </div>
                         </div>
-                        <hr>
+                        
                         @if (($transaction->status_pembayaran ?? null) === 'Pending')
-                            <div class="flex justify-between align-center mt-4">
+                            <div class="flex justify-between items-center mt-4 pt-3 border-t">
+                                <p class="text-md font-medium text-yellow-700">Pembayaran anda sedang diverifikasi oleh admin!</p>
+                            </div>
+                        @elseif (($transaction->status_pembayaran ?? null) === null)
+                            <div class="flex justify-between items-center mt-4 pt-3 border-t">
                                 <p class="text-md font-light text-gray-500">Pembayaran anda belum selesai!</p>
-                                <a href="{{ route('pembayaran.show', $transaction->id) }}">
-                                    <p class="text-lg font-semibold text-homize-blue-second">Lanjutkan Pembayaran</p>
+                                <a href="{{ route('pembayaran.show', $transaction->id) }}" class="px-4 py-2 bg-homize-blue text-white rounded-lg hover:bg-homize-blue-second transition duration-200">
+                                    Lanjutkan Pembayaran
                                 </a>
                             </div>
                         @endif

@@ -8,6 +8,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\LayananController;
 use App\Http\Controllers\Merchant\RegisterController;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Merchant\DashboardController as MerchantDashboardController;
 use App\Http\Controllers\Merchant\OrderController;
 use App\Http\Controllers\Merchant\LayananController as MerchantLayananController;
@@ -58,6 +59,75 @@ Route::middleware([
     // Admin User Deletion Route
     Route::delete('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
     
+    // Admin Payment Approval Routes
+    Route::get('/admin/transactions', [AdminController::class, 'transactions'])->name('admin.transactions');
+    Route::post('/admin/payment/{id}/approve', [PembayaranController::class, 'approvePayment'])->name('admin.payment.approve');
+    Route::get('/admin/payment/direct-approve/{id}', [PembayaranController::class, 'directApprovePayment'])->name('admin.payment.direct.approve');
+    Route::post('/admin/payment/{id}/reject', [PembayaranController::class, 'rejectPayment'])->name('admin.payment.reject');
+    
+    // Simple direct route for payment approval
+    Route::get('/simple-approve/{id}', function($id) {
+        // Direct database update without any Laravel models
+        try {
+            $pdo = DB::connection()->getPdo();
+            
+            // Get booking ID first
+            $stmt = $pdo->prepare("SELECT id_booking FROM pembayaran WHERE id = ?");
+            $stmt->execute([$id]);
+            $payment = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$payment) {
+                return redirect('/admin/transactions')->with('error', 'Payment not found');
+            }
+            
+            // Update payment status
+            $stmt = $pdo->prepare("UPDATE pembayaran SET status_pembayaran = 'Selesai', payment_date = NOW() WHERE id = ?");
+            $stmt->execute([$id]);
+            
+            // Update booking status
+            $stmt = $pdo->prepare("UPDATE booking SET status_proses = 'Pending' WHERE id = ?");
+            $stmt->execute([$payment['id_booking']]);
+            
+            return redirect('/admin/transactions')->with('success', 'Payment approved successfully');
+        } catch (\Exception $e) {
+            return redirect('/admin/transactions')->with('error', 'Error: ' . $e->getMessage());
+        }
+    });
+    
+    // Simple direct route for payment rejection
+    Route::post('/simple-reject/{id}', function(\Illuminate\Http\Request $request, $id) {
+        // Direct database update without any Laravel models
+        try {
+            // Validate request
+            $request->validate([
+                'rejection_reason' => 'required|string|max:255'
+            ]);
+            
+            $pdo = DB::connection()->getPdo();
+            
+            // Get booking ID first
+            $stmt = $pdo->prepare("SELECT id_booking FROM pembayaran WHERE id = ?");
+            $stmt->execute([$id]);
+            $payment = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$payment) {
+                return redirect('/admin/transactions')->with('error', 'Payment not found');
+            }
+            
+            // Update payment status
+            $stmt = $pdo->prepare("UPDATE pembayaran SET status_pembayaran = 'Dibatalkan', rejection_reason = ?, payment_date = NOW() WHERE id = ?");
+            $stmt->execute([$request->rejection_reason, $id]);
+            
+            // Update booking status
+            $stmt = $pdo->prepare("UPDATE booking SET status_proses = 'Dibatalkan' WHERE id = ?");
+            $stmt->execute([$payment['id_booking']]);
+            
+            return redirect('/admin/transactions')->with('success', 'Payment rejected successfully');
+        } catch (\Exception $e) {
+            return redirect('/admin/transactions')->with('error', 'Error: ' . $e->getMessage());
+        }
+    });
+    
     // User Profile Photo Upload
     Route::post('/user/profile-photo', [\App\Http\Controllers\UserProfilePhotoController::class, 'update'])->name('user-profile-photo.update');
 
@@ -84,6 +154,8 @@ Route::middleware([
     // Pembayaran routes
     Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
+    Route::get('/pembayaran/{id}/qris-static', [PembayaranController::class, 'showStaticQris'])->name('pembayaran.qris-static');
+    Route::post('/pembayaran/{id}/save-order', [PembayaranController::class, 'saveOrder'])->name('pembayaran.save-order');
 
     // Xendit callback - without middleware required
     Route::post('pembayaran/callback', [XenditCallbackController::class, 'handle'])

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -109,7 +111,15 @@ class AdminController extends Controller
 
     public function transactions(Request $request)
     {
-        // Get total transaction amount
+        // Filter by status if provided
+        $statusFilter = $request->query('status');
+        $transactionsQuery = \App\Models\Pembayaran::query();
+        
+        if ($statusFilter) {
+            $transactionsQuery->where('status_pembayaran', $statusFilter);
+        }
+        
+        // Get total transaction amount (including unique codes)
         $totalAmount = \App\Models\Pembayaran::sum('amount');
         $transactionCount = \App\Models\Pembayaran::count();
 
@@ -120,10 +130,13 @@ class AdminController extends Controller
         // Hitung total transaksi pending dan selesai
         $paymentPendingCount = \App\Models\Pembayaran::where('status_pembayaran', 'Pending')->count();
         $paymentConfirmedCount = \App\Models\Pembayaran::where('status_pembayaran', 'Selesai')->count();
+        $paymentRejectedCount = \App\Models\Pembayaran::where('status_pembayaran', 'Dibatalkan')->count();
 
         // Hitung total amount pending dan selesai
-        $paymentPendingAmount = \App\Models\Pembayaran::where('status_pembayaran', 'Pending')->sum('amount');
-        $paymentConfirmedAmount = \App\Models\Pembayaran::where('status_pembayaran', 'Selesai')->sum('amount');
+        $paymentPendingAmount = \App\Models\Pembayaran::where('status_pembayaran', 'Pending')
+            ->sum('amount');
+        $paymentConfirmedAmount = \App\Models\Pembayaran::where('status_pembayaran', 'Selesai')
+            ->sum('amount');
 
         // Get range interval from request or use default
         $rangeInterval = $request->interval ? (int)$request->interval : 15000;
@@ -162,8 +175,8 @@ class AdminController extends Controller
             ];
         });
 
-        // Get recent transactions
-        $transactions = \App\Models\Pembayaran::with(['booking.user', 'booking.merchant'])
+        // Get transactions with related data
+        $transactions = $transactionsQuery->with(['booking.user', 'booking.merchant', 'booking.layanan'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -178,7 +191,9 @@ class AdminController extends Controller
             'paymentPendingCount',
             'paymentConfirmedCount',
             'paymentPendingAmount',
-            'paymentConfirmedAmount'
+            'paymentConfirmedAmount',
+            'paymentRejectedCount',
+            'statusFilter'
         ));
     }
 

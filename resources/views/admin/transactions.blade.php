@@ -83,6 +83,17 @@
             <!-- Transactions Table -->
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
+                    <div class="mb-4 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-700">Daftar Transaksi</h3>
+                        <div>
+                            <select id="status-filter" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" onchange="filterTransactions(this.value)">
+                                <option value="all">Semua Status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Selesai">Selesai</option>
+                                <option value="Dibatalkan">Dibatalkan</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -90,31 +101,79 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Layanan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Unik</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach($transactions as $transaction)
-                                <tr>
+                                <tr class="transaction-row" data-status="{{ $transaction->status_pembayaran }}">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         #{{ $transaction->id }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $transaction->booking->user->nama }}
+                                        {{ $transaction->booking->user->nama ?? $transaction->booking->user->name ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $transaction->booking->merchant->nama_usaha }}
+                                        {{ $transaction->booking->merchant->nama_usaha ?? 'N/A' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $transaction->booking->layanan->nama_layanan ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         Rp {{ number_format($transaction->amount, 0, ',', '.') }}
                                     </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $transaction->unique_code ? 'Rp ' . number_format($transaction->unique_code, 0, ',', '.') : '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        @if($transaction->unique_code)
+                                            Rp {{ number_format($transaction->amount + $transaction->unique_code, 0, ',', '.') }}
+                                        @else
+                                            Rp {{ number_format($transaction->amount, 0, ',', '.') }}
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $transaction->created_at->format('d M Y H:i') }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $transaction->status_pembayaran ?? '-' }}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        @if($transaction->status_pembayaran == 'Pending')
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                Pending
+                                            </span>
+                                        @elseif($transaction->status_pembayaran == 'Selesai')
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Selesai
+                                            </span>
+                                        @elseif($transaction->status_pembayaran == 'Dibatalkan')
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                Dibatalkan
+                                            </span>
+                                            @if($transaction->rejection_reason)
+                                                <p class="text-xs text-red-600 mt-1">Alasan: {{ $transaction->rejection_reason }}</p>
+                                            @endif
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                {{ $transaction->status_pembayaran ?? '-' }}
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        @if($transaction->status_pembayaran == 'Pending')
+                                            <div class="flex space-x-2">
+                                                <a href="{{ url('/simple-approve/' . $transaction->id) }}" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs" onclick="return confirm('Apakah Anda yakin ingin menyetujui pembayaran ini?')">
+                                                    Setujui
+                                                </a>
+                                                <button onclick="showRejectModal({{ $transaction->id }})" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs">
+                                                    Tolak
+                                                </button>
+                                            </div>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach
@@ -123,6 +182,37 @@
                     </div>
                     <div class="mt-4">
                         {{ $transactions->links() }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reject Payment Modal -->
+            <div id="reject-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full" style="z-index: 50;">
+                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div class="mt-3">
+                        <div class="flex justify-between items-center pb-3">
+                            <h3 class="text-lg font-medium text-gray-900">Tolak Pembayaran</h3>
+                            <button onclick="closeRejectModal()" class="text-gray-400 hover:text-gray-500">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <form id="reject-form" method="POST" action="">
+                            @csrf
+                            <div class="mt-2">
+                                <label for="rejection_reason" class="block text-sm font-medium text-gray-700">Alasan Penolakan</label>
+                                <textarea id="rejection_reason" name="rejection_reason" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required></textarea>
+                            </div>
+                            <div class="mt-4 flex justify-end space-x-3">
+                                <button type="button" onclick="closeRejectModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+                                    Batal
+                                </button>
+                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                                    Tolak Pembayaran
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -167,6 +257,61 @@
                     }
                 }
             });
+            
+            // Initialize status filter
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusFilter = urlParams.get('status');
+            if (statusFilter) {
+                document.getElementById('status-filter').value = statusFilter;
+                filterTransactions(statusFilter);
+            }
         });
+        
+        // Filter transactions by status
+        function filterTransactions(status) {
+            const rows = document.querySelectorAll('.transaction-row');
+            
+            rows.forEach(row => {
+                if (status === 'all' || row.dataset.status === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // Payment approval function
+        function approvePayment(id) {
+            if (confirm('Apakah Anda yakin ingin menyetujui pembayaran ini?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `{{ url('/admin/payment/') }}/${id}/approve`;
+                form.style.display = 'none';
+                
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                
+                form.appendChild(csrfToken);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+        
+        // Show reject modal
+        function showRejectModal(id) {
+            const modal = document.getElementById('reject-modal');
+            const form = document.getElementById('reject-form');
+            
+            form.action = `{{ url('/simple-reject/') }}/${id}`;
+            modal.classList.remove('hidden');
+        }
+        
+        // Close reject modal
+        function closeRejectModal() {
+            const modal = document.getElementById('reject-modal');
+            modal.classList.add('hidden');
+        }
     </script>
 </x-admin-layout> 

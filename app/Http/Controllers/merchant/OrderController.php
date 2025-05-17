@@ -9,6 +9,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Events\OrderCompleted;
 
@@ -32,13 +33,30 @@ class OrderController extends Controller
             'merchant_orders_search' => $search,
         ]);
 
-        $query = "SELECT b.id, u.nama AS nama_user, l.nama_layanan, b.status_proses, p.status_pembayaran, b.created_at AS booking_date, b.created_at, bs.updated_at, p.amount, b.alamat_pembeli, b.catatan
+        // Log the merchant order request for debugging
+        Log::info('Merchant viewing orders', [
+            'merchant_id' => $merchant->id,
+            'merchant_name' => $merchant->nama_usaha,
+            'filters' => [
+                'status' => $status,
+                'start_date' => $start,
+                'end_date' => $end,
+                'search' => $search
+            ]
+        ]);
+
+        // Only show orders where payment has been completed (status_pembayaran = 'Selesai')
+        // This ensures merchants only see orders that have been approved by admin
+        $query = "SELECT b.id, u.nama AS nama_user, l.nama_layanan, b.status_proses, p.status_pembayaran, 
+                    b.created_at AS booking_date, b.created_at, bs.updated_at, p.amount, 
+                    b.alamat_pembeli, b.catatan, p.id as payment_id
                     FROM booking b
                     JOIN users u ON u.id = b.id_user
                     JOIN layanan l ON l.id = b.id_layanan
                     JOIN booking_schedule bs ON bs.id = b.id_booking_schedule
                     JOIN pembayaran p ON p.id_booking = b.id 
-                    WHERE b.id_merchant = ?";
+                    WHERE b.id_merchant = ? 
+                    AND p.status_pembayaran = 'Selesai'";
         $params = [$merchant->id];
         if ($status && $status !== 'all') {
             $query .= " AND b.status_proses = ?";
