@@ -68,12 +68,12 @@ class LayananController extends Controller
                 'id_layanan' => $layanan->id,
                 'nama_sertifikasi' => $request->nama_sertifikasi,
                 'media_url' => $request->file_sertifikasi ? (new Cloudinary(config('cloudinary.cloud_url')))
-                ->uploadApi()->upload(
-                    $request->file_sertifikasi->getRealPath(),
-                    [
-                        'upload_preset' => config('cloudinary.upload_preset'),
-                    ]
-                )['secure_url'] : null,
+                    ->uploadApi()->upload(
+                        $request->file_sertifikasi->getRealPath(),
+                        [
+                            'upload_preset' => config('cloudinary.upload_preset'),
+                        ]
+                    )['secure_url'] : null,
             ]);
 
             // Handle revisi if enabled
@@ -88,13 +88,19 @@ class LayananController extends Controller
                 $revisiId = $revisi->id;
             }
 
+            // Validate satuan as integer (1,2,3,4)
+            $request->validate([
+                'satuan' => 'required|in:1,2,3,4',
+            ]);
+            $satuanInt = (int) $request->satuan;
+
             // Create tarif_layanan record with id_revisi
             TarifLayanan::create([
                 'id_layanan' => $layanan->id,
                 'harga' => $request->harga,
                 'durasi' => $request->durasi,
                 'tipe_durasi' => $request->tipe_durasi,
-                'satuan' => $request->satuan,
+                'satuan' => $satuanInt,
                 'id_revisi' => $revisiId
             ]);
 
@@ -137,10 +143,10 @@ class LayananController extends Controller
             return redirect()->back()->with('success', 'Layanan berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
         }
     }
-    
+
     public function editLayanan($id)
     {
         try {
@@ -149,10 +155,10 @@ class LayananController extends Controller
                 ->where('id', $id)
                 ->where('id_merchant', $merchant->id)
                 ->firstOrFail();
-            
+
             $subKategori = SubKategori::where('id_kategori', $merchant->id_kategori)->get();
             $hari = Hari::all();
-            
+
             return response()->json([
                 'success' => true,
                 'layanan' => $layanan,
@@ -167,20 +173,20 @@ class LayananController extends Controller
             ], 404);
         }
     }
-    
+
     public function updateLayanan(Request $request, $id)
     {
 
         try {
             DB::beginTransaction();
-            
+
             // Get the merchant and validate ownership
             $merchant = Auth::user()->merchant;
             $layanan = Layanan::with(['jam_operasional', 'jam_operasional.hari', 'aset', 'sertifikasi'])
                 ->where('id', $id)
                 ->where('id_merchant', $merchant->id)
                 ->firstOrFail();
-            
+
             // Validate sub-kategori belongs to merchant's kategori
             $subKategori = SubKategori::findOrFail($request->id_sub_kategori);
             if ($subKategori->id_kategori !== $merchant->id_kategori) {
@@ -207,6 +213,12 @@ class LayananController extends Controller
                 'pengalaman' => $request->pengalaman ?? 0
             ]);
 
+            // Validate satuan as integer (1,2,3,4)
+            $request->validate([
+                'satuan' => 'required|in:1,2,3,4',
+            ]);
+            $satuanInt = (int) $request->satuan;
+
             // Update tarif layanan
             $tarifLayanan = $layanan->tarif_layanan;
             if ($tarifLayanan) {
@@ -214,7 +226,7 @@ class LayananController extends Controller
                     'harga' => $request->harga,
                     'durasi' => $request->durasi,
                     'tipe_durasi' => $request->tipe_durasi,
-                    'satuan' => $request->satuan
+                    'satuan' => $satuanInt
                 ]);
             }
 
@@ -222,7 +234,7 @@ class LayananController extends Controller
             if ($request->hasFile('aset_layanan')) {
                 // Delete existing assets
                 Aset::where('id_layanan', $layanan->id)->delete();
-                
+
                 foreach ($request->file('aset_layanan') as $file) {
                     $cloudinary = new Cloudinary(config('cloudinary.cloud_url'));
                     $result = $cloudinary->uploadApi()->upload(
@@ -263,7 +275,7 @@ class LayananController extends Controller
                     Sertifikasi::create([
                         'id_layanan' => $layanan->id,
                         'nama_sertifikasi' => $request->nama_sertifikasi,
-                        'media_url' => $request->hasFile('file_sertifikasi') ? (function() use ($request) {
+                        'media_url' => $request->hasFile('file_sertifikasi') ? (function () use ($request) {
                             $cloudinary = new Cloudinary(config('cloudinary.cloud_url'));
                             $result = $cloudinary->uploadApi()->upload(
                                 $request->file('file_sertifikasi')->getRealPath(),
@@ -276,9 +288,9 @@ class LayananController extends Controller
                     ]);
                 }
             }
-            
+
             DB::commit();
-        
+
             return redirect()->route('merchant.services')->with('success', 'Layanan berhasil diperbarui');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -462,5 +474,4 @@ class LayananController extends Controller
         $subKategori = SubKategori::where('id_kategori', $merchant->id_kategori)->get();
         return view('merchant.components.add-layanan', compact('subKategori', 'merchant'));
     }
-    
 }
