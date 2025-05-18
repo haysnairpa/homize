@@ -72,7 +72,7 @@
                         <label for="nama_layanan" class="block text-sm font-medium text-gray-700">Nama Layanan <span
                                 class="text-red-500">*</span></label>
                         <input type="text" id="nama_layanan" name="nama_layanan" placeholder="Masukkan nama layanan"
-                            required
+                            required value="{{ old('nama_layanan') }}"
                             class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                         <p class="text-xs text-gray-500 mt-1">Contoh: Jasa Desain Logo, Konsultasi Bisnis, dll.</p>
                     </div>
@@ -82,9 +82,12 @@
                                 class="text-red-500">*</span></label>
                         <select id="id_sub_kategori" name="id_sub_kategori" required
                             class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
-                            <option value="" disabled selected>Pilih Sub Kategori</option>
+                            <option value="" disabled {{ old('id_sub_kategori') ? '' : 'selected' }}>Pilih Sub
+                                Kategori</option>
                             @foreach ($subKategori as $subKat)
-                                <option value="{{ $subKat->id }}">{{ $subKat->nama }}</option>
+                                <option value="{{ $subKat->id }}"
+                                    {{ old('id_sub_kategori') == $subKat->id ? 'selected' : '' }}>{{ $subKat->nama }}
+                                </option>
                             @endforeach
                         </select>
                         <p class="text-xs text-gray-500 mt-1">Pilih sub kategori yang sesuai dengan layanan Anda</p>
@@ -95,7 +98,7 @@
                                 class="text-red-500">*</span></label>
                         <textarea id="deskripsi_layanan" name="deskripsi_layanan" rows="4"
                             placeholder="Jelaskan detail layanan yang Anda tawarkan" required
-                            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"></textarea>
+                            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">{{ old('deskripsi_layanan') }}</textarea>
                         <p class="text-xs text-gray-500 mt-1">Deskripsikan layanan Anda secara detail agar pelanggan
                             memahami apa yang Anda tawarkan.</p>
                     </div>
@@ -105,7 +108,7 @@
                             (tahun)</label>
                         <div class="relative">
                             <input type="number" id="pengalaman" name="pengalaman" min="0"
-                                placeholder="Berapa tahun pengalaman Anda"
+                                placeholder="Berapa tahun pengalaman Anda" value="{{ old('pengalaman') }}"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                 <span class="text-gray-500">tahun</span>
@@ -144,6 +147,7 @@
                                 </div>
                                 <input type="number" id="satuan_input" name="harga" min="0"
                                     id="harga_satuan_input" placeholder="Masukkan harga layanan" required
+                                    value="{{ old('harga') }}"
                                     class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                             </div>
                         </div>
@@ -152,18 +156,57 @@
                             <label for="satuan" class="block text-sm font-medium text-gray-700">Satuan <span
                                     class="text-red-500">*</span></label>
                             <select name="satuan" id="satuan_input_kgs"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-homize-blue focus:ring-homize-blue">
-                                <option value="kg">Kilogram (kg)</option>
-                                <option value="unit">Unit</option>
-                                <option value="pcs">Pieces (pcs)</option>
+                                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
+                                <option value="1" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '1' ? 'selected' : '' }}>Per Kilogram (kg)</option>
+<option value="2" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '2' ? 'selected' : '' }}>Per Unit</option>
+<option value="3" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '3' ? 'selected' : '' }}>Per Pieces (pcs)</option>
+<option id="selected_jam" value="4" style="display:none;" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '4' ? 'selected' : '' }}>Per Jam</option>
                             </select>
+                            <style>
+                                .readonly-satuan {
+                                    background-color: #f3f4f6;
+                                    color: #6b7280;
+                                    cursor: not-allowed;
+                                }
+                            </style>
+
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const tipeDurasi = document.getElementById('tipe_durasi');
+                                    const satuan = document.getElementById('satuan_input_kgs');
+
+                                    function handleTipeDurasiChange() {
+                                        const jamOption = document.getElementById('selected_jam');
+                                        if (tipeDurasi.value === 'Pertemuan') {
+    satuan.value = '4'; // integer for 'jam'
+    satuan.classList.add('readonly-satuan');
+    satuan.setAttribute('readonly', true);
+    satuan.style.pointerEvents = 'none'; // Prevent interaction
+    if (jamOption) jamOption.style.display = '';
+} else {
+    if (satuan.value === '4') {
+        satuan.value = '1'; // Default to 'kg' if leaving pertemuan
+    }
+    satuan.classList.remove('readonly-satuan');
+    satuan.removeAttribute('readonly');
+    satuan.style.pointerEvents = '';
+    if (jamOption) jamOption.style.display = 'none';
+                                        }
+                                    }
+
+                                    // Initial run (in case of old() value after validation error)
+                                    handleTipeDurasiChange();
+
+                                    tipeDurasi.addEventListener('change', handleTipeDurasiChange);
+                                });
+                            </script>
                         </div>
 
                         <div class="space-y-2">
                             <label for="durasi" class="block text-sm font-medium text-gray-700">Durasi <span
                                     class="text-red-500">*</span></label>
                             <input type="number" id="durasi" name="durasi" min="0"
-                                placeholder="Masukkan durasi layanan" required
+                                placeholder="Masukkan durasi layanan" required value="{{ old('durasi') }}"
                                 class="w-full  px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                         </div>
 
@@ -173,10 +216,14 @@
                             <div class="relative">
                                 <select onchange="checkPertemuan()" id="tipe_durasi" name="tipe_durasi" required
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
-                                    <option value="" disabled selected>Pilih tipe durasi</option>
-                                    <option value="Jam">Jam</option>
-                                    <option value="Hari">Hari</option>
-                                    <option value="Pertemuan">Pertemuan</option>
+                                    <option value="" disabled {{ old('tipe_durasi') ? '' : 'selected' }}>Pilih
+                                        tipe lama durasi</option>
+                                    <option value="Jam" {{ old('tipe_durasi') == 'Jam' ? 'selected' : '' }}>Jam
+                                    </option>
+                                    <option value="Hari" {{ old('tipe_durasi') == 'Hari' ? 'selected' : '' }}>Hari
+                                    </option>
+                                    <option value="Pertemuan"
+                                        {{ old('tipe_durasi') == 'Pertemuan' ? 'selected' : '' }}>Pertemuan</option>
                                 </select>
                                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
@@ -214,7 +261,8 @@
                     <div class="mb-4">
                         <div class="flex items-center mb-4">
                             <input id="enable_revisi" type="checkbox"
-                                class="w-4 h-4 text-homize-blue bg-gray-100 border-gray-300 rounded focus:ring-homize-blue">
+                                class="w-4 h-4 text-homize-blue bg-gray-100 border-gray-300 rounded focus:ring-homize-blue"
+                                {{ old('enable_revisi') ? 'checked' : '' }}>
                             <label for="enable_revisi" class="ml-2 text-sm font-medium text-gray-700">Aktifkan opsi
                                 revisi untuk layanan ini</label>
                         </div>
@@ -229,16 +277,35 @@
                                     <span class="text-gray-500">Rp</span>
                                 </div>
                                 <input type="number" id="revisi_harga" name="revisi_harga" min="0"
-                                    placeholder="Masukkan harga revisi"
+                                    placeholder="Masukkan harga revisi" value="{{ old('revisi_harga') }}"
                                     class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                             </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="revisi_satuan" class="block text-sm font-medium text-gray-700">Satuan Revisi</label>
+                            <select name="revisi_satuan" id="revisi_satuan_input"
+                                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
+                                <option value="kg"
+                                    {{ old('revisi_satuan') == 'kg' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '1')) ? 'selected' : '' }}>
+                                    Per Kilogram (kg)</option>
+                                <option value="unit"
+                                    {{ old('revisi_satuan') == 'unit' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '2')) ? 'selected' : '' }}>
+                                    Per Unit</option>
+                                <option value="pcs"
+                                    {{ old('revisi_satuan') == 'pcs' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '3')) ? 'selected' : '' }}>
+                                    Per Pieces (pcs)</option>
+                                <option value="jam"
+                                    {{ old('revisi_satuan') == 'jam' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '4')) ? 'selected' : '' }}>
+                                    Per Jam</option>
+                            </select>
                         </div>
 
                         <div class="space-y-2">
                             <label for="revisi_durasi" class="block text-sm font-medium text-gray-700">Durasi
                                 Revisi</label>
                             <input type="number" id="revisi_durasi" name="revisi_durasi" min="0"
-                                placeholder="Masukkan durasi revisi"
+                                placeholder="Masukkan durasi revisi" value="{{ old('revisi_durasi') }}"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                         </div>
 
@@ -248,10 +315,15 @@
                             <div class="relative">
                                 <select id="revisi_tipe_durasi" name="revisi_tipe_durasi"
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
-                                    <option value="" disabled selected>Pilih tipe durasi</option>
-                                    <option value="Jam">Jam</option>
-                                    <option value="Hari">Hari</option>
-                                    <option value="Pertemuan">Pertemuan</option>
+                                    <option value="" disabled {{ old('revisi_tipe_durasi') ? '' : 'selected' }}>
+                                        Pilih tipe durasi</option>
+                                    <option value="Jam" {{ old('revisi_tipe_durasi') == 'Jam' ? 'selected' : '' }}>
+                                        Jam</option>
+                                    <option value="Hari"
+                                        {{ old('revisi_tipe_durasi') == 'Hari' ? 'selected' : '' }}>Hari</option>
+                                    <option value="Pertemuan"
+                                        {{ old('revisi_tipe_durasi') == 'Pertemuan' ? 'selected' : '' }}>Pertemuan
+                                    </option>
                                 </select>
                                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
@@ -291,6 +363,7 @@
                             <label for="jam_buka" class="block text-sm font-medium text-gray-700">Jam Buka <span
                                     class="text-red-500">*</span></label>
                             <input type="time" id="jam_buka" name="jam_operasional[jam_buka]" required
+                                value="{{ old('jam_operasional.jam_buka') }}"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                         </div>
 
@@ -298,6 +371,7 @@
                             <label for="jam_tutup" class="block text-sm font-medium text-gray-700">Jam Tutup <span
                                     class="text-red-500">*</span></label>
                             <input type="time" id="jam_tutup" name="jam_operasional[jam_tutup]" required
+                                value="{{ old('jam_operasional.jam_tutup') }}"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                         </div>
                     </div>
@@ -306,13 +380,27 @@
                                 class="text-red-500">*</span></label>
                         <select id="hari" name="jam_operasional[hari][]" required multiple
                             class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
-                            <option value="1">Senin</option>
-                            <option value="2">Selasa</option>
-                            <option value="3">Rabu</option>
-                            <option value="4">Kamis</option>
-                            <option value="5">Jumat</option>
-                            <option value="6">Sabtu</option>
-                            <option value="7">Minggu</option>
+                            <option value="1"
+                                {{ collect(old('jam_operasional.hari'))->contains('1') ? 'selected' : '' }}>Senin
+                            </option>
+                            <option value="2"
+                                {{ collect(old('jam_operasional.hari'))->contains('2') ? 'selected' : '' }}>Selasa
+                            </option>
+                            <option value="3"
+                                {{ collect(old('jam_operasional.hari'))->contains('3') ? 'selected' : '' }}>Rabu
+                            </option>
+                            <option value="4"
+                                {{ collect(old('jam_operasional.hari'))->contains('4') ? 'selected' : '' }}>Kamis
+                            </option>
+                            <option value="5"
+                                {{ collect(old('jam_operasional.hari'))->contains('5') ? 'selected' : '' }}>Jumat
+                            </option>
+                            <option value="6"
+                                {{ collect(old('jam_operasional.hari'))->contains('6') ? 'selected' : '' }}>Sabtu
+                            </option>
+                            <option value="7"
+                                {{ collect(old('jam_operasional.hari'))->contains('7') ? 'selected' : '' }}>Minggu
+                            </option>
                         </select>
                         <p class="text-xs text-gray-500 mt-1">Tekan Ctrl/Cmd untuk memilih beberapa hari</p>
                     </div>
@@ -603,8 +691,8 @@
 
         // Validasi satuan
         const satuan = document.querySelector('select[name="satuan"]').value;
-        if (!['kg', 'unit', 'pcs'].includes(satuan)) {
-            errorList.innerHTML += '<li>Satuan harus berupa kg, unit, atau pcs</li>';
+        if (!['kg', 'unit', 'pcs', 'jam'].includes(satuan)) {
+            errorList.innerHTML += '<li>Satuan harus berupa kg, unit, pcs, atau jam</li>';
             hasError = true;
         }
 
@@ -638,9 +726,13 @@
 
     checkPertemuan = () => {
         if (document.getElementById("tipe_durasi").value === "Pertemuan") {
-            document.getElementById("satuan_input_kgs").value = null;
-            document.getElementById("satuan").classList.add("hidden");
+            document.getElementById("satuan_input_kgs").value = "jam";
+            document.getElementById("selected_jam").classList.remove = "hidden";
+            // document.getElementById("satuan").classList.add("hidden");
             console.log("Tipe durasi is now hidden");
+        } else {
+            document.getElementById("satuan").classList.remove("hidden");
+            console.log("Tipe durasi is now not hidden");
         }
     }
 </script>

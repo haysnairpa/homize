@@ -16,7 +16,7 @@
 
         <x-validation-errors class="mb-4" />
 
-        <form method="POST" action="{{ route('password.email') }}">
+        <form method="POST" action="{{ route('password.email') }}" id="forgotForm">
             @csrf
 
             <div class="block">
@@ -25,10 +25,22 @@
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <x-button>
+                <x-button id="forgotBtn">
                     {{ __('Email Password Reset Link') }}
                 </x-button>
             </div>
         </form>
     </x-authentication-card>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('forgotForm');
+        const btn = document.getElementById('forgotBtn');
+        if (form && btn) {
+            form.addEventListener('submit', function() {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+        }
+    });
+</script>
 </x-guest-layout>
