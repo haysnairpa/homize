@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Cloudinary\Cloudinary;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class LayananController extends Controller
 {
@@ -473,5 +474,31 @@ class LayananController extends Controller
         $merchant = Auth::user()->merchant;
         $subKategori = SubKategori::where('id_kategori', $merchant->id_kategori)->get();
         return view('merchant.components.add-layanan', compact('subKategori', 'merchant'));
+    }
+
+    /**
+     * Remove the specified layanan from storage (AJAX/JSON).
+     */
+    public function destroy($id)
+    {
+        try {
+            $merchant = Merchant::where('id_user', Auth::id())->firstOrFail();
+            $layanan = Layanan::where('id', $id)->where('id_merchant', $merchant->id)->firstOrFail();
+
+            // Optionally, check for related bookings or constraints here
+            if (Booking::where('id_layanan', $layanan->id)->exists()) {
+                return response()->json(['success' => false, 'message' => 'Layanan masih memiliki booking aktif.'], 400);
+            }
+
+            $layanan->delete();
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Delete Layanan Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus layanan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
