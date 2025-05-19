@@ -7,7 +7,7 @@
     
     <link rel="icon" href="{{ asset('homizeiconblue.ico') }}" type="image/x-icon">
 
-    <title>Homze - Admin Panel</title>
+    <title>Homize - Admin Panel</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

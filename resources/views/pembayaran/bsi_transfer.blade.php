@@ -31,7 +31,7 @@
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">Pembayaran Transfer Bank</h2>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- QRIS Code -->
+                        <!-- Bank Transfer Info -->
                         <div class="space-y-6">
                             <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
                                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Rekening Bank</h3>

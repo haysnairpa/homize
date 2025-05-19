@@ -193,11 +193,11 @@
                                     
                                     @if($booking->pembayaran->status_pembayaran == 'Pending')
                                     <div class="mt-4 space-y-3">
-                                        <a href="{{ route('pembayaran.qris-static', $booking->id) }}" class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                                        <a href="{{ route('pembayaran.bsi-transfer', $booking->id) }}" class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
                                             </svg>
-                                            Bayar Sekarang dengan QRIS
+                                            Bayar Sekarang
                                         </a>
                                         
                                         <form action="{{ route('pembayaran.process', $booking->id) }}" method="GET" id="payment-form">

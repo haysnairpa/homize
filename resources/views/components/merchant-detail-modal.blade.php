@@ -66,8 +66,7 @@
                         </button>
                         <button @click="setActiveTab('services')" 
                                 :class="{'border-b-2 border-gray-800 text-gray-800 font-medium': activeTab === 'services', 'text-gray-500 hover:text-gray-700': activeTab !== 'services'}"
-                                class="py-3 px-4 text-sm transition-colors"
-                                x-show="merchant.layanan && merchant.layanan.length > 0">
+                                class="py-3 px-4 text-sm transition-colors">
                             Layanan
                         </button>
                     </nav>
@@ -119,7 +118,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-gray-50 rounded-lg p-4">
                                 <div class="text-sm text-gray-500 mb-1">Saldo</div>
-                                <div class="text-2xl font-bold text-gray-900" x-text="'Rp ' + (merchant.saldo ? merchant.saldo.toLocaleString('id-ID') : '0')"></div>
+                                <div class="text-2xl font-bold text-gray-900" x-text="'Rp ' + (merchant.saldo ? Number(merchant.saldo).toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0}) : '0')"></div>
                             </div>
                         </div>
                         
@@ -159,6 +158,12 @@
                                         merchant.saldo = data.new_balance;
                                         amount = '';
                                         description = '';
+                                        
+                                        // Refresh transaction history after successful balance adjustment
+                                        const transactionComponent = document.querySelector('#transaction-history-component');
+                                        if (transactionComponent && typeof transactionComponent.__x !== 'undefined') {
+                                            transactionComponent.__x.$data.loadTransactions();
+                                        }
                                     } else {
                                         errorMessage = data.message || 'Terjadi kesalahan';
                                     }
@@ -220,24 +225,103 @@
                         
                         <!-- Transaction History -->
                         <div class="mt-6 border rounded-lg p-4">
-                            <h4 class="font-medium text-gray-800 mb-4">Riwayat Transaksi</h4>
-                            <div class="text-center text-gray-500 py-4">
-                                <a :href="'/admin/merchants/' + merchant.id + '/transactions'" class="text-blue-600 hover:underline">
-                                    Lihat Semua Riwayat Transaksi
-                                </a>
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-medium text-gray-800">Riwayat Transaksi</h4>
+                                <button @click="loadTransactions()" class="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Refresh
+                                </button>
+                            </div>
+                            
+                            <div id="transaction-history-component" x-data="{ 
+                                transactions: [], 
+                                isLoading: true,
+                                loadTransactions() {
+                                    this.isLoading = true;
+                                    fetch('/admin/merchants/' + merchant.id + '/transactions?limit=5')
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                this.transactions = data.transactions || [];
+                                            } else {
+                                                console.error('Error loading transactions:', data.message || 'Unknown error');
+                                            }
+                                            this.isLoading = false;
+                                        })
+                                        .catch(error => {
+                                            console.error('Error loading transactions:', error);
+                                            this.isLoading = false;
+                                        });
+                                }
+                            }" x-init="loadTransactions()">
+                                <!-- Loading state -->
+                                <div x-show="isLoading" class="py-8 flex justify-center">
+                                    <svg class="animate-spin h-6 w-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                                
+                                <!-- Transactions list -->
+                                <div x-show="!isLoading && transactions.length > 0" class="divide-y">
+                                    <template x-for="(transaction, index) in transactions" :key="transaction.id">
+                                        <div class="py-3">
+                                            <div class="flex justify-between items-start">
+                                                <div>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="font-medium text-gray-900" x-text="transaction.description || 'Transaksi Saldo'"></span>
+                                                        <span x-show="transaction.type === 'penambahan'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Penambahan</span>
+                                                        <span x-show="transaction.type === 'pengurangan'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Pengurangan</span>
+                                                    </div>
+                                                    <p class="text-xs text-gray-500 mt-1" x-text="transaction.formatted_date || new Date(transaction.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'})"></p>
+                                                </div>
+                                                <div class="text-right">
+                                                    <span class="font-medium" :class="{'text-green-600': transaction.type === 'penambahan', 'text-red-600': transaction.type === 'pengurangan'}">
+                                                        <span x-text="transaction.type === 'penambahan' ? '+' : '-'"></span>
+                                                        <span x-text="'Rp ' + Number(transaction.amount).toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})"></span>
+                                                    </span>
+                                                    <p class="text-xs text-gray-500 mt-1" x-text="'Saldo: Rp ' + Number(transaction.balance_after).toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})"></p>
+                                                </div>
+                                            </div>
+                                            <p x-show="transaction.notes" class="mt-1 text-sm text-gray-600 bg-gray-50 p-2 rounded" x-text="transaction.notes"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                                
+                                <!-- Empty state -->
+                                <div x-show="!isLoading && transactions.length === 0" class="py-8 text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    <p class="text-gray-500">Belum ada riwayat transaksi</p>
+                                </div>
+                                
+                                <!-- View all link -->
+                                <div class="mt-4 text-center border-t pt-4">
+                                    <a :href="'/admin/merchants/' + merchant.id + '/transactions'" class="text-blue-600 hover:underline text-sm">
+                                        Lihat Semua Riwayat Transaksi
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Bank Account Tab -->
                     <div x-show="tabs.bank" class="space-y-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-medium text-gray-800">Rekening Bank</h4>
+                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded" x-text="'Total: ' + (merchant.rekening_merchant ? merchant.rekening_merchant.length : 0)"></span>
+                        </div>
+                        
                         <template x-if="merchant.rekening_merchant && merchant.rekening_merchant.length > 0">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <template x-for="(rekening, index) in merchant.rekening_merchant" :key="index">
                                     <div class="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                                         <div class="flex items-center justify-between mb-3">
                                             <span class="font-medium text-gray-900" x-text="rekening.nama_bank"></span>
-                                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded" x-text="'Primary'"></span>
+                                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded" x-text="index === 0 ? 'Primary' : 'Secondary'"></span>
                                         </div>
                                         <div class="space-y-2">
                                             <div class="flex flex-col">
@@ -253,6 +337,14 @@
                                 </template>
                             </div>
                         </template>
+                        
+                        <div x-show="!merchant.rekening_merchant || merchant.rekening_merchant.length === 0" class="bg-gray-50 rounded-lg p-6 text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                            <p class="text-gray-600 font-medium">Tidak ada rekening bank</p>
+                            <p class="text-gray-500 text-sm mt-1">Merchant ini belum menambahkan rekening bank.</p>
+                        </div>
                     </div>
                     
                     <!-- Services Tab -->
@@ -262,27 +354,45 @@
                             <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded" x-text="'Total: ' + (merchant.layanan ? merchant.layanan.length : 0)"></span>
                         </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <template x-if="merchant.layanan && merchant.layanan.length > 0">
+                        <template x-if="merchant.layanan && merchant.layanan.length > 0">
+                            <div class="grid grid-cols-1 gap-4">
                                 <template x-for="(layanan, index) in merchant.layanan" :key="index">
                                     <div class="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                                        <div class="flex items-center justify-between">
-                                            <div>
-                                                <h5 class="font-medium text-gray-900" x-text="layanan.nama"></h5>
-                                                <p class="text-sm text-gray-500 mt-1" x-text="layanan.deskripsi || 'Tidak ada deskripsi'"></p>
+                                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                            <div class="flex-1">
+                                                <h5 class="font-medium text-gray-900" x-text="layanan.nama_layanan"></h5>
+                                                <p class="text-sm text-gray-500 mt-1" x-text="layanan.deskripsi_layanan || 'Tidak ada deskripsi'"></p>
+                                                <div class="flex items-center mt-2">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2" x-text="layanan.kategori ? layanan.kategori.nama : 'Umum'"></span>
+                                                    <span class="text-xs text-gray-500" x-text="layanan.created_at ? 'Dibuat: ' + new Date(layanan.created_at).toLocaleDateString('id-ID') : ''"></span>
+                                                </div>
                                             </div>
                                             <div class="text-right">
-                                                <div class="font-medium text-gray-900" x-text="'Rp ' + (layanan.harga ? layanan.harga.toLocaleString('id-ID') : '0')"></div>
-                                                <div class="text-xs text-gray-500" x-text="layanan.durasi ? layanan.durasi + ' menit' : '-'"></div>
+                                                <div class="font-bold text-homize-blue" x-text="'Rp ' + (layanan.harga ? layanan.harga.toLocaleString('id-ID') : '0')"></div>
+                                                <div class="flex items-center justify-end mt-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.95-.69l1.07-3.292z" />
+                                                    </svg>
+                                                    <span class="text-sm text-gray-600" x-text="layanan.rating_avg ? layanan.rating_avg.toFixed(1) : '0.0'"></span>
+                                                    <span class="text-xs text-gray-500 ml-1" x-text="'(' + (layanan.rating_count || 0) + ' ulasan)'"></span>
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-1" x-text="layanan.durasi ? layanan.durasi + ' ' + (layanan.tipe_durasi || 'menit') : '-'"></div>
                                             </div>
+                                        </div>
+                                        <div class="mt-3 pt-3 border-t border-gray-100 flex justify-end">
+                                            <a :href="'/admin/layanan/' + layanan.id" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 hover:underline">Lihat Detail</a>
                                         </div>
                                     </div>
                                 </template>
-                            </template>
-                            
-                            <div x-show="!merchant.layanan || merchant.layanan.length === 0" class="col-span-2 bg-gray-50 rounded-lg p-4 text-center">
-                                <p class="text-gray-500">Tidak ada layanan yang tersedia</p>
                             </div>
+                        </template>
+                        
+                        <div x-show="!merchant.layanan || merchant.layanan.length === 0" class="bg-gray-50 rounded-lg p-6 text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="text-gray-600 font-medium">Tidak ada layanan yang tersedia</p>
+                            <p class="text-gray-500 text-sm mt-1">Merchant ini belum menambahkan layanan apapun.</p>
                         </div>
                     </div>
                 </div>
