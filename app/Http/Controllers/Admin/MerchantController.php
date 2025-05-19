@@ -8,6 +8,7 @@ use App\Models\Merchant;
 use App\Models\RiwayatSaldoMerchant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class MerchantController extends Controller
 {
@@ -105,5 +106,38 @@ class MerchantController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
+    }
+    
+    /**
+     * Get merchant transaction history
+     */
+    public function getTransactionHistory($id, Request $request)
+    {
+        $limit = $request->query('limit', 10);
+        
+        $merchant = Merchant::findOrFail($id);
+        
+        $transactions = RiwayatSaldoMerchant::where('id_merchant', $merchant->id)
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get()
+            ->map(function ($transaction) {
+                return [
+                    'id' => $transaction->id,
+                    'amount' => abs($transaction->jumlah),
+                    'type' => $transaction->tipe,
+                    'description' => $transaction->keterangan,
+                    'notes' => $transaction->keterangan,
+                    'balance_before' => $transaction->saldo_sebelum,
+                    'balance_after' => $transaction->saldo_sesudah,
+                    'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),
+                    'formatted_date' => $transaction->created_at->format('d M Y H:i'),
+                ];
+            });
+        
+        return response()->json([
+            'success' => true,
+            'transactions' => $transactions
+        ]);
     }
 }

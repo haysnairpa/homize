@@ -217,7 +217,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/merchants', [AdminMerchantController::class, 'merchants'])->name('merchants');
         Route::get('/merchants/{id}/detail', [AdminMerchantController::class, 'getMerchantDetail'])->name('merchants.detail');
         Route::post('/merchants/{id}/adjust-balance', [AdminMerchantController::class, 'adjustBalance'])->name('merchants.adjust-balance');
-        Route::get('/merchants/{id}/transactions', [AdminMerchantController::class, 'getTransactions'])->name('merchants.transactions');
+        Route::get('/merchants/{id}/transactions', [AdminMerchantController::class, 'getTransactionHistory'])->name('merchants.transactions');
         Route::post('/merchant/{id}/approve', [AdminController::class, 'approveMerchant'])->name('merchant.approve');
         Route::post('/merchant/{id}/reject', [AdminController::class, 'rejectMerchant'])->name('merchant.reject');
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
