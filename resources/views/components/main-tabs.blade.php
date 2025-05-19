@@ -35,43 +35,44 @@
                 </div>
 
                 <div class="flex flex-1 flex-wrap gap-2">
-    <!-- Script Alpine.js untuk filter -->
-    <script>
-        function mainTabsComponent() {
-            return {
-                activeTab: 'services',
-                kategori_id: '',
-                min_price: '',
-                max_price: '',
-                sort_by: 'newest',
-                isLoading: false,
-                init() {
-                    // Optionally: auto-load if needed
-                },
-                applyFilter() {
-                    this.isLoading = true;
-                    fetch("{{ route('home.filter') }}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                        },
-                        body: JSON.stringify({
-                            kategori_id: this.kategori_id,
-                            min_price: this.min_price,
-                            max_price: this.max_price,
-                            sort_by: this.sort_by
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        document.getElementById('layanan-grid').innerHTML = data.html;
-                        this.isLoading = false;
-                    });
-                }
-            }
-        }
-    </script>
+                    <!-- Script Alpine.js untuk filter -->
+                    <script>
+                        function mainTabsComponent() {
+                            return {
+                                activeTab: 'services',
+                                kategori_id: '',
+                                min_price: '',
+                                max_price: '',
+                                sort_by: 'newest',
+                                isLoading: false,
+                                init() {
+                                    // Optionally: auto-load if needed
+                                },
+                                applyFilter() {
+                                    this.isLoading = true;
+                                    fetch("{{ route('home.filter') }}", {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                            },
+                                            body: JSON.stringify({
+                                                kategori_id: this.kategori_id,
+                                                min_price: this.min_price,
+                                                max_price: this.max_price,
+                                                sort_by: this.sort_by
+                                            })
+                                        })
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            document.getElementById('layanan-grid').innerHTML = data.html;
+                                            this.isLoading = false;
+                                        });
+                                }
+                            }
+                        }
+                    </script>
+                    <!-- Ensure filter controls are properly bound -->
                     <!-- Kategori Dropdown -->
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open"
@@ -89,13 +90,12 @@
                             style="display: none;">
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
                                 @click.prevent="$data.kategori_id = ''; applyFilter()"
-                                :class="{ 'bg-homize-blue text-white': $data.kategori_id === '' }"
-                            >Semua Kategori</a>
+                                :class="{ 'bg-homize-blue text-white': $data.kategori_id === '' }">Semua
+                                Kategori</a>
                             @foreach ($allKategori as $kat)
                                 <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
                                     @click.prevent="$data.kategori_id = '{{ $kat->id }}'; applyFilter()"
-                                    :class="{ 'bg-homize-blue text-white': $data.kategori_id === '{{ $kat->id }}' }"
-                                >{{ $kat->nama }}</a>
+                                    :class="{ 'bg-homize-blue text-white': $data.kategori_id === '{{ $kat->id }}' }">{{ $kat->nama }}</a>
                             @endforeach
                         </div>
                     </div>
@@ -149,20 +149,19 @@
                             style="display: none;">
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
                                 @click.prevent="$data.sort_by = 'newest'; applyFilter()"
-                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'newest' }"
-                            >Terbaru</a>
+                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'newest' }">Terbaru</a>
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
                                 @click.prevent="$data.sort_by = 'rating'; applyFilter()"
-                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'rating' }"
-                            >Rating Tertinggi</a>
+                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'rating' }">Rating
+                                Tertinggi</a>
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
                                 @click.prevent="$data.sort_by = 'price_asc'; applyFilter()"
-                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'price_asc' }"
-                            >Harga: Rendah ke Tinggi</a>
+                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'price_asc' }">Harga: Rendah
+                                ke Tinggi</a>
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
                                 @click.prevent="$data.sort_by = 'price_desc'; applyFilter()"
-                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'price_desc' }"
-                            >Harga: Tinggi ke Rendah</a>
+                                :class="{ 'bg-homize-blue text-white': $data.sort_by === 'price_desc' }">Harga: Tinggi
+                                ke Rendah</a>
                         </div>
                     </div>
                 </div>
