@@ -11,10 +11,11 @@
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="font-sans antialiased bg-homize-gray">
-    @include('components.navigation')
-
-    <!-- Hero Section -->
+<body class="font-sans antialiased bg-homize-gray min-h-screen relative overflow-x-hidden">
+    <div class="min-h-screen flex flex-col">
+        @include('components.navigation')
+        <div class="flex-1">
+            <!-- Hero Section -->
     <div class="relative bg-homize-blue pt-32 pb-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
@@ -127,6 +128,8 @@
         </div>
     </div>
 
-    @include('components.footer')
+        </div>
+        @include('components.footer')
+    </div>
 </body>
 </html>

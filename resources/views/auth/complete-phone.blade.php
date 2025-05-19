@@ -7,7 +7,7 @@
                     {{ session('error') }}
                 </div>
             @endif
-            <form method="POST" action="{{ route('complete.phone.submit') }}">
+            <form method="POST" action="{{ route('complete.phone.submit') }}" id="completePhoneForm">
                 @csrf
                 
                 <div class="mb-4">
@@ -20,8 +20,21 @@
                         <p class="mt-1 text-sm text-homize-error">{{ $message }}</p>
                     @enderror
                 </div>
-                <button type="submit" class="w-full bg-homize-blue hover:bg-[#0EA5E9] text-white py-3 rounded-md font-medium shadow-sm transition-colors duration-200">Simpan &amp; Lanjutkan</button>
+                <button type="submit" id="completePhoneBtn" class="w-full bg-homize-blue hover:bg-[#0EA5E9] text-white py-3 rounded-md font-medium shadow-sm transition-colors duration-200">Simpan &amp; Lanjutkan</button>
+
             </form>
         </div>
     </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('completePhoneForm');
+        const btn = document.getElementById('completePhoneBtn');
+        if (form && btn) {
+            form.addEventListener('submit', function() {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+        }
+    });
+</script>
 </x-guest-layout>

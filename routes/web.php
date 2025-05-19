@@ -18,7 +18,6 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\MidtransCallbackController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\XenditCallbackController;
 use App\Http\Controllers\AdminController;
@@ -51,6 +50,12 @@ Route::middleware([
 ])->group(function () {
     // User Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])->name('dashboard');
+
+    // Admin Merchant Deletion Route
+    Route::delete('/admin/merchants/{id}', [\App\Http\Controllers\Admin\MerchantController::class, 'destroy'])->name('admin.merchants.destroy');
+
+    // Admin User Deletion Route
+    Route::delete('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
     
     // User Profile Photo Upload
     Route::post('/user/profile-photo', [\App\Http\Controllers\UserProfilePhotoController::class, 'update'])->name('user-profile-photo.update');
@@ -154,7 +159,7 @@ Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->pre
     Route::post('/layanan', [MerchantLayananController::class, 'storeLayanan'])->name('layanan.store');
     Route::get('/layanan/{id}/edit', [MerchantLayananController::class, 'editLayanan'])->name('layanan.edit');
     Route::put('/layanan/{id}', [MerchantLayananController::class, 'updateLayanan'])->name('layanan.update');
-    Route::delete('/layanan/{id}', [MerchantLayananController::class, 'deleteLayanan'])->name('layanan.delete');
+    Route::delete('/layanan/{id}', [MerchantLayananController::class, 'destroy'])->name('layanan.delete');
     Route::get('/orders/{id}/detail', [OrderController::class, 'orderDetail'])->name('merchant.orders.detail');
     Route::get('/merchant/analytics/data', [MerchantAnalyticController::class, 'getAnalyticsData'])->name('merchant.analytics.data');
 });
