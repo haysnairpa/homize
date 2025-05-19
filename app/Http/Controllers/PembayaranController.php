@@ -1125,9 +1125,10 @@ class PembayaranController extends Controller
 
     public function approvePayment($id)
     {
+        
         try {
             // Get the payment and booking IDs
-            $pembayaran = Pembayaran::with('booking')->findOrFail($id);
+            $pembayaran = Pembayaran::with(['booking', 'booking.user', 'booking.merchant'])->findOrFail($id);
             $bookingId = $pembayaran->booking->id;
             
             // Use PDO directly for maximum reliability
@@ -1141,11 +1142,28 @@ class PembayaranController extends Controller
             $stmt = $pdo->prepare("UPDATE booking SET status_proses = 'Pending' WHERE id = ?");
             $stmt->execute([$bookingId]);
             
-            // Trigger order created event
+            // Refresh pembayaran data to get the latest status
+            $pembayaran = Pembayaran::with(['booking', 'booking.user', 'booking.merchant'])->findOrFail($id);
+            
+            // Trigger payment status changed event for customer notification
+            try {
+                event(new \App\Events\PaymentStatusChanged($pembayaran, 'confirmed'));
+                Log::info('PaymentStatusChanged event triggered for confirmed payment', [
+                    'pembayaran_id' => $pembayaran->id,
+                    'booking_id' => $bookingId
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Error triggering PaymentStatusChanged event: ' . $e->getMessage());
+            }
+            
+            // Trigger order created event for seller notification
             try {
                 event(new OrderCreated($pembayaran->booking));
+                Log::info('OrderCreated event triggered', [
+                    'pembayaran_id' => $pembayaran->id,
+                    'booking_id' => $bookingId
+                ]);
             } catch (\Exception $e) {
-                // Just log the error but continue
                 Log::error('Error triggering OrderCreated event: ' . $e->getMessage());
             }
             
@@ -1186,6 +1204,21 @@ class PembayaranController extends Controller
             // Update booking status
             $stmt = $pdo->prepare("UPDATE booking SET status_proses = 'Dibatalkan' WHERE id = ?");
             $stmt->execute([$bookingId]);
+            
+            // Refresh pembayaran data to get the latest status
+            $pembayaran = Pembayaran::with(['booking', 'booking.user', 'booking.merchant'])->findOrFail($id);
+            
+            // Trigger payment status changed event for customer notification
+            try {
+                event(new \App\Events\PaymentStatusChanged($pembayaran, 'rejected', $request->rejection_reason));
+                Log::info('PaymentStatusChanged event triggered for rejected payment', [
+                    'pembayaran_id' => $pembayaran->id,
+                    'booking_id' => $bookingId,
+                    'reason' => $request->rejection_reason
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Error triggering PaymentStatusChanged event: ' . $e->getMessage());
+            }
 
             // If AJAX/fetch/JSON request, return JSON
             if ($request->expectsJson() || $request->isJson() || $request->wantsJson()) {
