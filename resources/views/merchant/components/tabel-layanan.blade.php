@@ -2,23 +2,17 @@
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
-                <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Nama Layanan</th>
-                <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Harga</th>
-                <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Durasi</th>
-                <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Jam Operasional</th>
-                <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status</th>
-                <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aksi</th>
             </tr>
         </thead>
@@ -30,15 +24,12 @@
                             <div class="flex-shrink-0 h-10 w-10">
                                 @if ($item->aset)
                                     <img class="h-10 w-10 rounded-full object-contain"
-                                        src="{{ $item->aset->media_url }}"
-                                        alt="{{ $item->nama_layanan }}">
+                                        src="{{ $item->aset->media_url }}" alt="{{ $item->nama_layanan }}">
                                 @else
-                                    <div
-                                        class="h-10 w-10 rounded-full bg-homize-gray flex items-center justify-center">
-                                        <svg class="h-6 w-6 text-gray-400" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2"
+                                    <div class="h-10 w-10 rounded-full bg-homize-gray flex items-center justify-center">
+                                        <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                                             </path>
                                         </svg>
@@ -89,16 +80,14 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button type="button"
                             onclick="window.location.href='{{ route('layanan.detail', $item->id) }}'"
-                            class="text-homize-blue hover:text-homize-blue-second mr-3 focus:outline-none focus:ring-2 focus:ring-homize-blue focus:ring-offset-2">
+                            class="text-homize-blue hover:text-homize-blue-second mr-3">
                             Lihat
                         </button>
-                        <button type="button"
-                            class="text-indigo-600 hover:text-indigo-900 mr-3 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 edit-layanan"
+                        <button type="button" class="text-indigo-600 hover:text-indigo-900 mr-3 edit-layanan"
                             data-id="{{ $item->id }}">
                             Edit
                         </button>
-                        <button type="button"
-                            class="text-red-600 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 delete-layanan"
+                        <button type="button" class="text-red-600 hover:text-red-900 delete-layanan"
                             data-id="{{ $item->id }}">
                             Hapus
                         </button>
