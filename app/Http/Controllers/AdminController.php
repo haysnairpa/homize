@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -90,25 +88,6 @@ class AdminController extends Controller
 
         return view('admin.users', compact('users', 'sortField', 'sortDirection'));
     }
-
-    public function merchants(Request $request)
-    {
-        $sortField = $request->query('sort', 'id');
-        $sortDirection = $request->query('direction', 'asc');
-
-        $merchants = \App\Models\Merchant::with('user')
-            ->when($sortField === 'pemilik', function ($query) use ($sortDirection) {
-                return $query->join('users', 'merchant.id_user', '=', 'users.id')
-                    ->orderBy('users.nama', $sortDirection)
-                    ->select('merchant.*');
-            }, function ($query) use ($sortField, $sortDirection) {
-                return $query->orderBy($sortField, $sortDirection);
-            })
-            ->get();
-
-        return view('admin.merchants', compact('merchants', 'sortField', 'sortDirection'));
-    }
-
     public function transactions(Request $request)
     {
         // Filter by status if provided

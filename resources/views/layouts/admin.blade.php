@@ -39,13 +39,13 @@
                                 {{ __('Dashboard') }}
                             </x-nav-link>
                             <x-nav-link href="{{ route('admin.users') }}" :active="request()->routeIs('admin.users')">
-                                {{ __('Users') }}
+                                {{ __('User') }}
                             </x-nav-link>
                             <x-nav-link href="{{ route('admin.merchants') }}" :active="request()->routeIs('admin.merchants')">
-                                {{ __('Merchants') }}
+                                {{ __('Merchant') }}
                             </x-nav-link>
                             <x-nav-link href="{{ route('admin.transactions') }}" :active="request()->routeIs('admin.transactions')">
-                                {{ __('Transactions') }}
+                                {{ __('Transaksi') }}
                             </x-nav-link>
                             <x-nav-link href="{{ route('admin.penarikan') }}" :active="request()->routeIs('admin.penarikan')">
                                 {{ __('Penarikan') }}

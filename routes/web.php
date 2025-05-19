@@ -214,7 +214,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
-        Route::get('/merchants', [AdminController::class, 'merchants'])->name('merchants');
+        Route::get('/merchants', [AdminMerchantController::class, 'merchants'])->name('merchants');
+        Route::get('/merchants/{id}/detail', [AdminMerchantController::class, 'getMerchantDetail'])->name('merchants.detail');
+        Route::post('/merchants/{id}/adjust-balance', [AdminMerchantController::class, 'adjustBalance'])->name('merchants.adjust-balance');
+        Route::get('/merchants/{id}/transactions', [AdminMerchantController::class, 'getTransactions'])->name('merchants.transactions');
         Route::post('/merchant/{id}/approve', [AdminController::class, 'approveMerchant'])->name('merchant.approve');
         Route::post('/merchant/{id}/reject', [AdminController::class, 'rejectMerchant'])->name('merchant.reject');
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
