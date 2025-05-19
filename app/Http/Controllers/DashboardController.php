@@ -70,7 +70,7 @@ class DashboardController extends Controller
         $status = $request->query('status', 'all');
 
         // Log for debugging
-        \Log::info('Filtering transactions', ['user_id' => $userId, 'status' => $status]);
+        Log::info('Filtering transactions', ['user_id' => $userId, 'status' => $status]);
 
         $query = "SELECT 
                     b.id, 
@@ -118,7 +118,7 @@ class DashboardController extends Controller
             if (isset($statusMap[$status])) {
                 $query .= " AND b.status_proses = ?";
                 $params[] = $statusMap[$status];
-                \Log::info('Mapped status', ['from' => $status, 'to' => $statusMap[$status]]);
+                Log::info('Mapped status', ['from' => $status, 'to' => $statusMap[$status]]);
             }
         }
 
@@ -126,7 +126,7 @@ class DashboardController extends Controller
 
         try {
             $transactions = DB::select($query, $params);
-            \Log::info('Transactions found', ['count' => count($transactions)]);
+            Log::info('Transactions found', ['count' => count($transactions)]);
             
             if ($request->ajax()) {
                 $html = view('partials.transaction-list-dashboard', compact('transactions'))->render();
@@ -135,7 +135,7 @@ class DashboardController extends Controller
             
             return view('user.transactions', compact('transactions'));
         } catch (\Exception $e) {
-            \Log::error('Error filtering transactions', ['error' => $e->getMessage()]);
+            Log::error('Error filtering transactions', ['error' => $e->getMessage()]);
             
             if ($request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Error loading transactions: ' . $e->getMessage()]);
@@ -220,6 +220,9 @@ class DashboardController extends Controller
                                         b.status_proses,
                                         b.tanggal_booking, 
                                         p.amount, 
+                                        p.unique_code,
+                                        p.rejection_reason,
+                                        p.status_pembayaran,
                                         bs.waktu_mulai, 
                                         bs.waktu_selesai,
                                         b.alamat_pembeli, 

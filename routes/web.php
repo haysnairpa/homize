@@ -8,6 +8,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\LayananController;
 use App\Http\Controllers\Merchant\RegisterController;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Merchant\DashboardController as MerchantDashboardController;
 use App\Http\Controllers\Merchant\OrderController;
 use App\Http\Controllers\Merchant\LayananController as MerchantLayananController;
@@ -17,13 +18,14 @@ use App\Http\Controllers\TokoFavoritController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PembayaranController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\XenditCallbackController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Merchant\PenarikanController;
 use App\Http\Controllers\Admin\PenarikanController as AdminPenarikanController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\MerchantController as AdminMerchantController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 
 Route::get('/', function () {
     return redirect()->route('home');
@@ -50,12 +52,6 @@ Route::middleware([
 ])->group(function () {
     // User Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])->name('dashboard');
-
-    // Admin Merchant Deletion Route
-    Route::delete('/admin/merchants/{id}', [\App\Http\Controllers\Admin\MerchantController::class, 'destroy'])->name('admin.merchants.destroy');
-
-    // Admin User Deletion Route
-    Route::delete('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
     
     // User Profile Photo Upload
     Route::post('/user/profile-photo', [\App\Http\Controllers\UserProfilePhotoController::class, 'update'])->name('user-profile-photo.update');
@@ -83,6 +79,8 @@ Route::middleware([
     // Pembayaran routes
     Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
+    Route::get('/pembayaran/{id}/qris-static', [PembayaranController::class, 'showStaticQris'])->name('pembayaran.qris-static');
+    Route::post('/pembayaran/{id}/save-order', [PembayaranController::class, 'saveOrder'])->name('pembayaran.save-order');
 
     // Xendit callback - without middleware required
     Route::post('pembayaran/callback', [XenditCallbackController::class, 'handle'])
@@ -216,10 +214,22 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
-        Route::get('/merchants', [AdminController::class, 'merchants'])->name('merchants');
+        Route::get('/merchants', [AdminMerchantController::class, 'merchants'])->name('merchants');
+        Route::get('/merchants/{id}/detail', [AdminMerchantController::class, 'getMerchantDetail'])->name('merchants.detail');
+        Route::post('/merchants/{id}/adjust-balance', [AdminMerchantController::class, 'adjustBalance'])->name('merchants.adjust-balance');
+        Route::get('/merchants/{id}/transactions', [AdminMerchantController::class, 'getTransactions'])->name('merchants.transactions');
         Route::post('/merchant/{id}/approve', [AdminController::class, 'approveMerchant'])->name('merchant.approve');
         Route::post('/merchant/{id}/reject', [AdminController::class, 'rejectMerchant'])->name('merchant.reject');
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
         Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions');
+        // Admin Merchant Deletion Route
+        Route::delete('/merchants/{id}', [AdminMerchantController::class, 'destroy'])->name('merchants.destroy');
+
+        // Admin User Deletion Route
+        Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        
+        // Admin Payment Routes
+        Route::post('/payment/{id}/approve', [PembayaranController::class, 'approvePayment'])->name('payment.approve');
+        Route::put('/payment/{id}/reject', [PembayaranController::class, 'rejectPayment'])->name('payment.reject');
     });
 });

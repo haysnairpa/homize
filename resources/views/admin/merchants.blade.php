@@ -4,6 +4,8 @@
             {{ __('Daftar Merchant') }}
         </h2>
     </x-slot>
+    
+    @include('components.merchant-detail-modal')
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -72,6 +74,9 @@
                                         Tanggal Bergabung</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Detail</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Delete</th>
                                 </tr>
                             </thead>
@@ -99,6 +104,12 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {{ $merchant->created_at->format('d M Y') }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-500">
+                                            <button class="view-detail-btn hover:underline mr-3"
+                                                data-merchant-id="{{ $merchant->id }}">
+                                                View Detail
+                                            </button>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-red-500">
                                             <button class="delete-merchant-btn hover:underline"
@@ -184,4 +195,69 @@
         });
     </script>
 
+    <!-- JavaScript for Merchant Detail Modal -->
+    <script>
+        // Enhanced JavaScript for Merchant Detail Modal
+document.addEventListener("DOMContentLoaded", () => {
+  // View Detail Button Click Handler
+  document.querySelectorAll(".view-detail-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const merchantId = this.getAttribute("data-merchant-id")
+
+      // Show loading indicator
+      window.dispatchEvent(
+        new CustomEvent("open-merchant-modal", {
+          detail: { merchant: null },
+        }),
+      )
+
+      // Fetch merchant details from the API
+      fetch(`/admin/merchants/${merchantId}/detail`, {
+        headers: {
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok")
+          }
+          return response.json()
+        })
+        .then((merchant) => {
+          // Format data if needed
+          if (typeof merchant.media_sosial === "string" && merchant.media_sosial.includes("{")) {
+            try {
+              merchant.media_sosial = JSON.parse(merchant.media_sosial)
+            } catch (e) {
+              console.warn("Could not parse media_sosial JSON", e)
+            }
+          }
+
+          // Dispatch event to open modal with merchant data
+          window.dispatchEvent(
+            new CustomEvent("open-merchant-modal", {
+              detail: { merchant },
+            }),
+          )
+        })
+        .catch((error) => {
+          console.error("Error fetching merchant details:", error)
+          alert("Failed to load merchant details. Please try again.")
+
+          // Close modal on error
+          window.dispatchEvent(new CustomEvent("close-merchant-modal"))
+        })
+    })
+  })
+
+  // Close modal when clicking Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      window.dispatchEvent(new CustomEvent("close-merchant-modal"))
+    }
+  })
+})
+
+    </script>
 </x-admin-layout>
