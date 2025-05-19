@@ -1102,10 +1102,7 @@ class PembayaranController extends Controller
         
         return view('pembayaran.qris_static', compact('booking', 'pembayaran', 'whatsappUrl'));
     }
-    
-    /**
-     * Save order to database with pending status when WhatsApp button is clicked
-     */
+
     public function saveOrder($id)
     {
         // Ambil data booking
@@ -1125,17 +1122,9 @@ class PembayaranController extends Controller
         
         return response()->json(['success' => true, 'message' => 'Order saved with pending status']);
     }
-    
-    /**
-     * Admin approve payment
-     */
+
     public function approvePayment($id)
     {
-        // Check if user is admin
-        if (!Auth::user()->is_admin) {
-            return redirect()->back()->with('error', 'Unauthorized');
-        }
-        
         try {
             // Get the payment and booking IDs
             $pembayaran = Pembayaran::with('booking')->findOrFail($id);
@@ -1170,110 +1159,51 @@ class PembayaranController extends Controller
                 ->with('error', 'Terjadi kesalahan saat menyetujui pembayaran');
         }
     }
-    
-    /**
-     * Direct approval method using GET request - mimics the fix_payment.php script approach
-     */
-    public function directApprovePayment($id)
-    {
-        // Check if user is admin
-        if (!Auth::user()->is_admin) {
-            return redirect()->back()->with('error', 'Unauthorized');
-        }
-        
-        try {
-            // Connect directly to the database
-            $pdo = DB::connection()->getPdo();
-            
-            // First, check if the payment exists and get its current status
-            $stmt = $pdo->prepare("SELECT id, status_pembayaran, id_booking FROM pembayaran WHERE id = ?");
-            $stmt->execute([$id]);
-            $payment = $stmt->fetch(\PDO::FETCH_ASSOC);
-            
-            if (!$payment) {
-                return redirect()->route('admin.transactions')
-                    ->with('error', 'Pembayaran dengan ID ' . $id . ' tidak ditemukan');
-            }
-            
-            // Update the payment status directly in the database
-            $stmt = $pdo->prepare("UPDATE pembayaran SET status_pembayaran = 'Selesai', payment_date = NOW() WHERE id = ?");
-            $result = $stmt->execute([$id]);
-            
-            if (!$result) {
-                return redirect()->route('admin.transactions')
-                    ->with('error', 'Gagal mengubah status pembayaran');
-            }
-            
-            // Update the booking status
-            $stmt = $pdo->prepare("UPDATE booking SET status_proses = 'Pending' WHERE id = ?");
-            $result = $stmt->execute([$payment['id_booking']]);
-            
-            if (!$result) {
-                return redirect()->route('admin.transactions')
-                    ->with('error', 'Gagal mengubah status booking');
-            }
-            
-            // Verify the changes
-            $stmt = $pdo->prepare("SELECT id, status_pembayaran FROM pembayaran WHERE id = ?");
-            $stmt->execute([$id]);
-            $updatedPayment = $stmt->fetch(\PDO::FETCH_ASSOC);
-            
-            // Try to trigger the OrderCreated event
-            try {
-                $booking = Booking::findOrFail($payment['id_booking']);
-                event(new OrderCreated($booking));
-            } catch (\Exception $e) {
-                // Just log the error but continue
-                Log::error('Error triggering OrderCreated event: ' . $e->getMessage());
-            }
-            
-            return redirect()->route('admin.transactions')
-                ->with('success', 'Pembayaran #' . $id . ' berhasil disetujui. Status sekarang: ' . $updatedPayment['status_pembayaran']);
-            
-        } catch (\Exception $e) {
-            Log::error('Error in direct payment approval: ' . $e->getMessage());
-            return redirect()->route('admin.transactions')
-                ->with('error', 'Terjadi kesalahan saat menyetujui pembayaran: ' . $e->getMessage());
-        }
-    }
-    
-    /**
-     * Admin reject payment
-     */
+
     public function rejectPayment(Request $request, $id)
     {
-        // Check if user is admin
-        if (!Auth::user()->is_admin) {
-            return redirect()->back()->with('error', 'Unauthorized');
-        }
-        
         // Validate request
         $request->validate([
             'rejection_reason' => 'required|string|max:255'
+        ], [
+            'rejection_reason.required' => 'Alasan penolakan harus diisi',
+            'rejection_reason.string' => 'Alasan penolakan harus berupa string',
+            'rejection_reason.max' => 'Alasan penolakan tidak boleh lebih dari 255 karakter',
         ]);
         
         try {
             // Get the payment and booking IDs
             $pembayaran = Pembayaran::with('booking')->findOrFail($id);
             $bookingId = $pembayaran->booking->id;
-            
+
             // Use PDO directly for maximum reliability
             $pdo = DB::connection()->getPdo();
-            
+
             // Update payment status
             $stmt = $pdo->prepare("UPDATE pembayaran SET status_pembayaran = 'Dibatalkan', rejection_reason = ?, payment_date = NOW() WHERE id = ?");
             $stmt->execute([$request->rejection_reason, $id]);
-            
+
             // Update booking status
             $stmt = $pdo->prepare("UPDATE booking SET status_proses = 'Dibatalkan' WHERE id = ?");
             $stmt->execute([$bookingId]);
-            
-            // Redirect with success message
+
+            // If AJAX/fetch/JSON request, return JSON
+            if ($request->expectsJson() || $request->isJson() || $request->wantsJson()) {
+                return response()->json(['success' => true]);
+            }
+
+            // Otherwise, fallback to redirect
             return redirect()->route('admin.transactions')
                 ->with('success', 'Pembayaran #' . $id . ' berhasil ditolak');
-            
         } catch (\Exception $e) {
             Log::error('Error rejecting payment: ' . $e->getMessage());
+            if ($request->expectsJson() || $request->isJson() || $request->wantsJson()) {
+                // TEMP: Return real error for debugging
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
             return redirect()->route('admin.transactions')
                 ->with('error', 'Terjadi kesalahan saat menolak pembayaran');
         }

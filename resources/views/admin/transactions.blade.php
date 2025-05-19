@@ -166,9 +166,12 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         @if($transaction->status_pembayaran == 'Pending')
                                             <div class="flex space-x-2">
-                                                <a href="{{ url('/simple-approve/' . $transaction->id) }}" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs" onclick="return confirm('Apakah Anda yakin ingin menyetujui pembayaran ini?')">
-                                                    Setujui
-                                                </a>
+                                                <form method="POST" action="{{ route('admin.payment.approve', $transaction->id) }}" style="display:inline;">
+                                                    @csrf
+                                                    <button type="submit" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs" onclick="return confirm('Apakah Anda yakin ingin menyetujui pembayaran ini?')">
+                                                        Setujui
+                                                    </button>
+                                                </form>
                                                 <button onclick="showRejectModal({{ $transaction->id }})" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs">
                                                     Tolak
                                                 </button>
@@ -198,21 +201,21 @@
                                 </svg>
                             </button>
                         </div>
-                        <form id="reject-form" method="POST" action="">
-                            @csrf
-                            <div class="mt-2">
-                                <label for="rejection_reason" class="block text-sm font-medium text-gray-700">Alasan Penolakan</label>
-                                <textarea id="rejection_reason" name="rejection_reason" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required></textarea>
-                            </div>
-                            <div class="mt-4 flex justify-end space-x-3">
-                                <button type="button" onclick="closeRejectModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
-                                    Batal
-                                </button>
-                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                                    Tolak Pembayaran
-                                </button>
-                            </div>
-                        </form>
+                        <form id="reject-form">
+    <input type="hidden" id="reject-transaction-id" name="transaction_id" value="">
+    <div class="mt-2">
+        <label for="rejection_reason" class="block text-sm font-medium text-gray-700">Alasan Penolakan</label>
+        <textarea id="rejection_reason" name="rejection_reason" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required></textarea>
+    </div>
+    <div class="mt-4 flex justify-end space-x-3">
+        <button type="button" onclick="closeRejectModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+            Batal
+        </button>
+        <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+            Tolak Pembayaran
+        </button>
+    </div>
+</form>
                     </div>
                 </div>
             </div>
@@ -279,39 +282,63 @@
                 }
             });
         }
-        
-        // Payment approval function
-        function approvePayment(id) {
-            if (confirm('Apakah Anda yakin ingin menyetujui pembayaran ini?')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `{{ url('/admin/payment/') }}/${id}/approve`;
-                form.style.display = 'none';
-                
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token() }}';
-                
-                form.appendChild(csrfToken);
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-        
-        // Show reject modal
+
+        let currentRejectTransactionId = null;
+
         function showRejectModal(id) {
             const modal = document.getElementById('reject-modal');
-            const form = document.getElementById('reject-form');
-            
-            form.action = `{{ url('/simple-reject/') }}/${id}`;
             modal.classList.remove('hidden');
+            document.getElementById('reject-transaction-id').value = id;
+            currentRejectTransactionId = id;
         }
-        
-        // Close reject modal
+
+        const rejectForm = document.getElementById('reject-form');
+        if (rejectForm) {
+            rejectForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const id = document.getElementById('reject-transaction-id').value;
+                const reason = document.getElementById('rejection_reason').value;
+                fetch(`/admin/payment/${id}/reject`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ rejection_reason: reason })
+                    })
+                    .then(async response => {
+                        let data;
+                        try {
+                            data = await response.json();
+                        } catch (e) {
+                            // If response is not JSON
+                            console.error('Non-JSON response:', response);
+                            alert('Terjadi kesalahan tak terduga (bukan JSON). Lihat console untuk detail.');
+                            return;
+                        }
+                        if (response.ok && data.success) {
+                            alert('Pembayaran berhasil ditolak');
+                            location.reload();
+                        } else {
+                            // Show friendly alert, log details
+                            alert(data.message || 'Gagal menolak pembayaran');
+                            console.error('Reject Payment Error:', data);
+                        }
+                    })
+                    .catch(error => {
+                        // Network or unexpected error
+                        alert('Terjadi kesalahan jaringan/server. Lihat console untuk detail.');
+                        console.error('Fetch error:', error);
+                    });
+                });
+            }
+
         function closeRejectModal() {
             const modal = document.getElementById('reject-modal');
             modal.classList.add('hidden');
+            document.getElementById('reject-transaction-id').value = '';
+            document.getElementById('rejection_reason').value = '';
+            currentRejectTransactionId = null;
         }
     </script>
 </x-admin-layout> 
