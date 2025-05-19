@@ -217,16 +217,6 @@
                                 </div>
                             </form>
                         </div>
-                        
-                        <!-- Transaction History -->
-                        <div class="mt-6 border rounded-lg p-4">
-                            <h4 class="font-medium text-gray-800 mb-4">Riwayat Transaksi</h4>
-                            <div class="text-center text-gray-500 py-4">
-                                <a :href="'/admin/merchants/' + merchant.id + '/transactions'" class="text-blue-600 hover:underline">
-                                    Lihat Semua Riwayat Transaksi
-                                </a>
-                            </div>
-                        </div>
                     </div>
                     
                     <!-- Bank Account Tab -->

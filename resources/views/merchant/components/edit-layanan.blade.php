@@ -69,9 +69,9 @@
                         <option value="pcs"
                             {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->satuan == 'pcs' ? 'selected' : '' }}>
                             Per Pieces (pcs)</option>
-                        <option value="jam"
-                            {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->satuan == 'jam' ? 'selected' : '' }}>
-                            Per Jam</option>
+                        <option value="Pertemuan"
+                            {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->satuan == 'Pertemuan' ? 'selected' : '' }}>
+                            Per Pertemuan</option>
                     </select>
                     <div>
                         <label for="edit_durasi"
@@ -86,15 +86,15 @@
                         <select name="tipe_durasi" id="edit_tipe_durasi"
                             class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-homize-blue focus:border-homize-blue sm:text-sm"
                             required>
+                            <option value="Menit"
+                                {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->tipe_durasi == 'Menit' ? 'selected' : '' }}>
+                                Menit</option>
                             <option value="Jam"
                                 {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->tipe_durasi == 'Jam' ? 'selected' : '' }}>
                                 Jam</option>
                             <option value="Hari"
                                 {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->tipe_durasi == 'Hari' ? 'selected' : '' }}>
                                 Hari</option>
-                            <option value="Pertemuan"
-                                {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->tipe_durasi == 'Pertemuan' ? 'selected' : '' }}>
-                                Pertemuan</option>
                         </select>
                     </div>
                 </div>
