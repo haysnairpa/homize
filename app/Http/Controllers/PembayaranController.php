@@ -1054,9 +1054,9 @@ class PembayaranController extends Controller
     }
     
     /**
-     * Show static QRIS payment page with unique code
+     * Show BSI bank transfer payment page with unique code
      */
-    public function showStaticQris($id)
+    public function showBsiTransfer($id)
     {
         // Ambil data booking
         $booking = Booking::with(['user', 'merchant', 'layanan', 'pembayaran'])
@@ -1080,7 +1080,7 @@ class PembayaranController extends Controller
             $uniqueCode = Pembayaran::generateUniqueCode();
             $pembayaran->update([
                 'unique_code' => $uniqueCode,
-                'method' => 'qris_static'
+                'method' => 'bank_transfer_bsi'
             ]);
         }
         
@@ -1100,7 +1100,7 @@ class PembayaranController extends Controller
         $encodedMessage = urlencode($message);
         $whatsappUrl = "https://wa.me/{$whatsappNumber}?text={$encodedMessage}";
         
-        return view('pembayaran.qris_static', compact('booking', 'pembayaran', 'whatsappUrl'));
+        return view('pembayaran.bsi_transfer', compact('booking', 'pembayaran', 'whatsappUrl'));
     }
 
     public function saveOrder($id)

@@ -79,7 +79,7 @@ Route::middleware([
     // Pembayaran routes
     Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
-    Route::get('/pembayaran/{id}/qris-static', [PembayaranController::class, 'showStaticQris'])->name('pembayaran.qris-static');
+    Route::get('/pembayaran/{id}/bsi-transfer', [PembayaranController::class, 'showBsiTransfer'])->name('pembayaran.bsi-transfer');
     Route::post('/pembayaran/{id}/save-order', [PembayaranController::class, 'saveOrder'])->name('pembayaran.save-order');
 
     // Xendit callback - without middleware required
