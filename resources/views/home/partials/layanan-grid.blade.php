@@ -12,48 +12,7 @@
         <div class="relative">
             <img src="{{ $item->media_url }}" alt="{{ $item->nama_layanan }}"
                 class="w-full h-48 object-cover">
-            @php
-    $isWishlisted = false;
-    if (isset($wishlists)) {
-        foreach ($wishlists as $w) {
-            if ($w->id_layanan == $item->id) {
-                $isWishlisted = true;
-                break;
-            }
-        }
-    }
-@endphp
-<button
-    x-data="{ isWishlist: {{ $isWishlisted ? 'true' : 'false' }}, loading: false }"
-    x-bind:class="isWishlist ? 'text-homize-orange' : 'text-gray-400'"
-    :aria-pressed="isWishlist"
-    class="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-full focus:outline-none"
-    :title="isWishlist ? 'Hapus dari Favorit' : 'Tambah ke Favorit'"
-    @click.prevent="
-        if (loading) return;
-        loading = true;
-        fetch('{{ route('wishlist.toggle') }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ layanan_id: {{ $item->id }} })
-        })
-        .then(response => response.json())
-        .then(data => {
-            isWishlist = data.status === 'added';
-        })
-        .catch(e => alert('Gagal memperbarui wishlist'))
-        .finally(() => loading = false);
-    "
->
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-colors duration-200" :fill="isWishlist ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-    </svg>
-</button>
+
         </div>
         <div class="p-4">
             <h3 class="font-medium line-clamp-2 mb-1">{{ $item->nama_layanan }}</h3>
