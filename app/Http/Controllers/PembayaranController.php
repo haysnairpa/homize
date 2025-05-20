@@ -1088,7 +1088,7 @@ class PembayaranController extends Controller
         $pembayaran = $pembayaran->fresh();
         
         // Prepare WhatsApp message
-        $whatsappNumber = config('app.admin_whatsapp', '6281234567890');
+        $whatsappNumber = config('app.admin_whatsapp', '6281523740785');
         $message = "Halo Admin Homize, saya ingin konfirmasi pembayaran:\n\n";
         $message .= "ID Pesanan: #{$booking->id}\n";
         $message .= "Layanan: {$booking->layanan->nama_layanan}\n";
@@ -1100,7 +1100,7 @@ class PembayaranController extends Controller
         $encodedMessage = urlencode($message);
         $whatsappUrl = "https://wa.me/{$whatsappNumber}?text={$encodedMessage}";
         
-        return view('pembayaran.bsi_transfer', compact('booking', 'pembayaran', 'whatsappUrl'));
+        return view('pembayaran.qris_static', compact('booking', 'pembayaran', 'whatsappUrl'));
     }
 
     public function saveOrder($id)
