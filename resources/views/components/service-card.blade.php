@@ -9,8 +9,17 @@
                     $tarif = App\Models\TarifLayanan::where('id_layanan', $service->id)->first();
                 @endphp
 
-                <img src="{{ $aset ? $aset->media_url : asset('images/default-service.jpg') }}"
-                    alt="{{ $service->nama_layanan }}" class="w-full h-48 object-contain">
+                <div class="relative w-full h-48 bg-gray-100 overflow-hidden">
+                    <img 
+                        src="{{ asset('images/placeholder.jpg') }}" 
+                        data-src="{{ $aset ? $aset->media_url : asset('images/default-service.jpg') }}" 
+                        alt="{{ $service->nama_layanan }}" 
+                        class="w-full h-48 object-contain transition-opacity duration-300 lazy-image" 
+                        loading="lazy"
+                        onload="this.classList.add('opacity-100'); this.classList.remove('opacity-0');"
+                        onerror="this.src='{{ asset('images/default-service.jpg') }}'; this.classList.add('opacity-100');"
+                    >
+                </div>
 
                 <div class="absolute top-3 left-3">
                     <span
