@@ -8,7 +8,6 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\LayananController;
 use App\Http\Controllers\Merchant\RegisterController;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Merchant\DashboardController as MerchantDashboardController;
 use App\Http\Controllers\Merchant\OrderController;
 use App\Http\Controllers\Merchant\LayananController as MerchantLayananController;
@@ -141,7 +140,6 @@ Route::middleware(['auth'])->group(function () {
 
 // Merchant Dashboard Routes (pastikan tidak menggunakan middleware prevent-merchant-reregistration)
 Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->prefix('merchant')->name('merchant.')->group(function () {
-    // Penarikan merchant
     Route::get('/penarikan', [PenarikanController::class, 'index'])->name('penarikan');
     Route::get('/penarikan/riwayat', [PenarikanController::class, 'riwayat'])->name('penarikan.riwayat');
     Route::post('/penarikan/ajukan', [PenarikanController::class, 'ajukan'])->name('penarikan.ajukan');

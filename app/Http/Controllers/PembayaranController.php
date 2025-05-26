@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\NewOrderNotification;
+use App\Mail\PaymentConfirmationMail;
+use App\Mail\PaymentRejectionMail;
 use Carbon\Carbon;
 use Xendit\Configuration;
 use Xendit\Invoice\InvoiceApi;
@@ -1125,10 +1127,9 @@ class PembayaranController extends Controller
 
     public function approvePayment($id)
     {
-        
         try {
             // Get the payment and booking IDs
-            $pembayaran = Pembayaran::with(['booking', 'booking.user', 'booking.merchant'])->findOrFail($id);
+            $pembayaran = Pembayaran::with(['booking', 'booking.user', 'booking.merchant', 'booking.merchant.user', 'booking.layanan', 'booking.booking_schedule'])->findOrFail($id);
             $bookingId = $pembayaran->booking->id;
             
             // Use PDO directly for maximum reliability
@@ -1143,7 +1144,7 @@ class PembayaranController extends Controller
             $stmt->execute([$bookingId]);
             
             // Refresh pembayaran data to get the latest status
-            $pembayaran = Pembayaran::with(['booking', 'booking.user', 'booking.merchant'])->findOrFail($id);
+            $pembayaran = Pembayaran::with(['booking', 'booking.user', 'booking.merchant', 'booking.merchant.user', 'booking.layanan', 'booking.booking_schedule'])->findOrFail($id);
             
             // Trigger payment status changed event for customer notification
             try {
@@ -1156,7 +1157,28 @@ class PembayaranController extends Controller
                 Log::error('Error triggering PaymentStatusChanged event: ' . $e->getMessage());
             }
             
-            // Trigger order created event for seller notification
+            // Send direct email to seller about new order
+            try {
+                if ($pembayaran->booking->merchant && $pembayaran->booking->merchant->user && $pembayaran->booking->merchant->user->email) {
+                    Mail::to($pembayaran->booking->merchant->user->email)
+                        ->send(new NewOrderNotification($pembayaran->booking));
+                    
+                    Log::info('Email notifikasi pesanan baru berhasil dikirim langsung ke seller', [
+                        'pembayaran_id' => $pembayaran->id,
+                        'booking_id' => $bookingId,
+                        'merchant_email' => $pembayaran->booking->merchant->user->email
+                    ]);
+                } else {
+                    Log::warning('Tidak dapat mengirim email ke seller: data merchant atau user tidak lengkap', [
+                        'pembayaran_id' => $pembayaran->id,
+                        'booking_id' => $bookingId
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error sending direct email to seller: ' . $e->getMessage());
+            }
+            
+            // Also trigger order created event for seller notification as backup
             try {
                 event(new OrderCreated($pembayaran->booking));
                 Log::info('OrderCreated event triggered', [

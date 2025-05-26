@@ -10,8 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use App\Events\OrderCompleted;
+use App\Mail\OrderAcceptedNotification;
 
 class OrderController extends Controller
 {
@@ -121,10 +123,50 @@ class OrderController extends Controller
         }
         $booking->status_proses = $validated['status_proses'];
         $booking->save();
-        if ($requestedStatus == 'Selesai') {
-            $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
-            event(new OrderCompleted($booking));
+        
+        // Load all necessary relations for email notifications
+        $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
+        
+        // Send email notification based on the new status
+        if ($requestedStatus == 'Dikonfirmasi') {
+            try {
+                // Send email to user that their order has been accepted
+                if ($booking->user && $booking->user->email) {
+                    Mail::to($booking->user->email)
+                        ->send(new OrderAcceptedNotification($booking));
+                    
+                    Log::info('Email notifikasi pesanan dikonfirmasi berhasil dikirim', [
+                        'booking_id' => $booking->id,
+                        'user_email' => $booking->user->email
+                    ]);
+                } else {
+                    Log::warning('Tidak dapat mengirim email notifikasi: data user tidak lengkap', [
+                        'booking_id' => $booking->id
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Gagal mengirim email notifikasi pesanan dikonfirmasi', [
+                    'booking_id' => $booking->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
+        } elseif ($requestedStatus == 'Selesai') {
+            // Trigger the OrderCompleted event which will send the completion email with rating button
+            try {
+                event(new OrderCompleted($booking));
+                Log::info('Event OrderCompleted berhasil dipicu', [
+                    'booking_id' => $booking->id
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Gagal memicu event OrderCompleted', [
+                    'booking_id' => $booking->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
         }
+        
         return redirect()->route('merchant.orders')->with('success', 'Status pesanan berhasil diperbarui');
     }
 
