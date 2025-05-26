@@ -3,16 +3,15 @@
 namespace App\Mail;
 
 use App\Models\Booking;
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use App\Mail\SyncMailTrait;
 
 class NewOrderNotification extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SyncMailTrait;
 
     public $booking;
 

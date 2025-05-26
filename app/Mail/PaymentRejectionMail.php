@@ -3,15 +3,14 @@
 namespace App\Mail;
 
 use App\Models\Pembayaran;
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\SyncMailTrait;
 
 class PaymentRejectionMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SyncMailTrait;
 
     public $pembayaran;
     public $reason;
