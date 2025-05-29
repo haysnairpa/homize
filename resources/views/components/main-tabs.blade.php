@@ -281,7 +281,7 @@
                 @foreach ($wishlists as $item)
                     <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                         <div class="relative">
-                            <img src="{{ asset('placeholder.jpg') }}" alt="{{ $item->nama_layanan }}"
+                            <img src="{{ $item->media_url }}" alt="{{ $item->nama_layanan }}"
                                 class="w-full h-48 object-cover">
                             <button
                                 class="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-full text-red-500">
