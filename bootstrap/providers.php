@@ -5,5 +5,5 @@ return [
     App\Providers\FortifyServiceProvider::class,
     App\Providers\JetstreamServiceProvider::class,
     App\Providers\CloudinaryServiceProvider::class,
-    App\Providers\EmailConfigServiceProvider::class,
+    App\Providers\ProductionMailServiceProvider::class,
 ];
