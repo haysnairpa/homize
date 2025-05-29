@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use App\Mail\SyncMailTrait;
 
-class OrderCompletedNotification extends Mailable
+class OrderAcceptedNotification extends Mailable
 {
     use SyncMailTrait;
 
@@ -22,14 +22,14 @@ class OrderCompletedNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Pesanan #' . $this->booking->id . ' Telah Selesai',
+            subject: 'Pesanan #' . $this->booking->id . ' Telah Dikonfirmasi',
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.orders.completed',
+            markdown: 'emails.orders.accepted',
         );
     }
 }

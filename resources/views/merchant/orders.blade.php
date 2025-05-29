@@ -198,7 +198,7 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $order->booking_date ? \Carbon\Carbon::parse($order->booking_date)->format('d M Y') : '-' }}
+                                            {{ $order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('d M Y') : '-' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             Rp {{ number_format($order->amount, 0, ',', '.') }}
