@@ -11,13 +11,13 @@
 
                 <div class="relative w-full h-48 bg-gray-100 overflow-hidden">
                     <img 
-                        src="{{ asset('images/placeholder.jpg') }}" 
-                        data-src="{{ $aset ? $aset->media_url : asset('images/default-service.jpg') }}" 
+                        src="{{ $aset ? $aset->media_url : asset('images/placeholder.jpg') }}" 
+                        data-src="{{ $aset ? $aset->media_url : asset('images/placeholder.jpg') }}" 
                         alt="{{ $service->nama_layanan }}" 
                         class="w-full h-48 object-contain transition-opacity duration-300 lazy-image" 
                         loading="lazy"
                         onload="this.classList.add('opacity-100'); this.classList.remove('opacity-0');"
-                        onerror="this.src='{{ asset('images/default-service.jpg') }}'; this.classList.add('opacity-100');"
+                        onerror="this.src='{{ asset('images/placeholder.jpg') }}'; this.classList.add('opacity-100');"
                     >
                 </div>
 
