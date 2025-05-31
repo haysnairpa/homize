@@ -178,6 +178,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/rating/{id}', [RatingController::class, 'store'])->name('user.rating.store');
 });
 
+// Customer Approval routes
+Route::middleware(['auth:sanctum'])->prefix('customer')->name('customer.')->group(function () {
+    Route::get('/approval/{id}', [\App\Http\Controllers\CustomerApprovalController::class, 'show'])->name('approval.show');
+    Route::post('/approval/{id}/approve', [\App\Http\Controllers\CustomerApprovalController::class, 'approve'])->name('approval.approve');
+    Route::post('/approval/{id}/protest', [\App\Http\Controllers\CustomerApprovalController::class, 'protest'])->name('approval.protest');
+});
+
 // Tambahkan route ini di bawah route home
 Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filterLayanan'])->name('home.filter');
 
@@ -208,7 +215,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminController::class, 'login'])->name('login.post');
 
-    Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+    Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
         Route::get('/merchants', [AdminMerchantController::class, 'merchants'])->name('merchants');
@@ -223,5 +230,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::post('/payment/{id}/approve', [PembayaranController::class, 'approvePayment'])->name('payment.approve');
         Route::put('/payment/{id}/reject', [PembayaranController::class, 'rejectPayment'])->name('payment.reject');
+        Route::post('/booking/{id}/add-merchant-balance', [\App\Http\Controllers\CustomerApprovalController::class, 'addMerchantBalance'])->name('booking.add-merchant-balance');
     });
 });
