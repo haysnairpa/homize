@@ -51,7 +51,11 @@ class DashboardController extends Controller
                                     b.alamat_pembeli, 
                                     b.catatan, 
                                     b.latitude, 
-                                    b.longitude
+                                    b.longitude,
+                                    b.customer_approval_status,
+                                    b.customer_approval_date,
+                                    b.protest_reason,
+                                    b.protest_date
                                 FROM booking b
                                 JOIN layanan l ON l.id = b.id_layanan
                                 JOIN sub_kategori sk ON sk.id = l.id_sub_kategori
@@ -59,9 +63,12 @@ class DashboardController extends Controller
                                 JOIN booking_schedule bs ON bs.id = b.id_booking_schedule
                                 JOIN pembayaran p ON p.id_booking = b.id
                                 WHERE b.id_user = ?
-                                ORDER BY b.created_at ASC", [$userId]);
+                                ORDER BY b.created_at DESC", [$userId]);
+        
+        // Get orders awaiting approval
+        $ordersNeedingApproval = $this->getOrdersNeedingApproval($userId);
 
-        return view('user.transactions', compact('transactions'));
+        return view('user.transactions', compact('transactions', 'ordersNeedingApproval'));
     }
 
     public function filterTransactions(Request $request)
@@ -228,7 +235,11 @@ class DashboardController extends Controller
                                         b.alamat_pembeli, 
                                         b.catatan, 
                                         b.latitude, 
-                                        b.longitude
+                                        b.longitude,
+                                        b.customer_approval_status,
+                                        b.customer_approval_date,
+                                        b.protest_reason,
+                                        b.protest_date
                                     FROM booking b
                                     JOIN layanan l ON l.id = b.id_layanan
                                     JOIN sub_kategori sk ON sk.id = l.id_sub_kategori
@@ -242,5 +253,29 @@ class DashboardController extends Controller
         }
 
         return view('user.transaction-detail', compact('transaction'));
+    }
+    
+    /**
+     * Get orders that need customer approval (status 'Selesai' but not yet approved)
+     *
+     * @param int $userId
+     * @return array
+     */
+    private function getOrdersNeedingApproval($userId)
+    {
+        return DB::select("SELECT 
+                            b.id, 
+                            l.nama_layanan, 
+                            m.nama_usaha, 
+                            b.updated_at AS tanggal_selesai, 
+                            p.amount
+                        FROM booking b
+                        JOIN layanan l ON l.id = b.id_layanan
+                        JOIN merchant m ON m.id = l.id_merchant
+                        JOIN pembayaran p ON p.id_booking = b.id
+                        WHERE b.id_user = ? 
+                        AND b.status_proses = 'Selesai' 
+                        AND b.customer_approval_status IS NULL
+                        ORDER BY b.updated_at DESC", [$userId]);
     }
 }
