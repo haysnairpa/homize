@@ -53,10 +53,10 @@
 
                 <!-- Bookmark Icon -->
                 <div id="wishlistButton" class="relative group hidden sm:block cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        class="w-5 h-5 fill-white hover:fill-homize-orange cursor-pointer" viewBox="0 0 24 24">
-                        <path
-                            d="M16 2H8a3.003 3.003 0 0 0-3 3v16.5a.5.5 0 0 0 .75.434l6.25-3.6l6.25 3.6A.5.5 0 0 0 19 21.5V5a3.003 3.003 0 0 0-3-3zm2 18.635l-5.75-3.312a.51.51 0 0 0-.5 0L6 20.635V5a2.003 2.003 0 0 1 2-2h8a2.003 2.003 0 0 1 2 2v15.635z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 fill-white hover:fill-homize-orange cursor-pointer text-gray-400" fill="none"
+                    viewBox="0 0 24 24" stroke="none">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </div>
 
@@ -68,12 +68,18 @@
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open"
                                 class="flex items-center space-x-2 text-white hover:text-homize-orange">
-                                <span class="text-sm font-medium capitalize">{{ Auth::user()->nama }}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                    fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                                        clip-rule="evenodd" />
-                                </svg>
+                                @if (Auth::user()->profile_photo_url)
+                                    <img class="h-8 w-8 rounded-full object-cover" src="{{ Auth::user()->profile_photo_url }}"
+                                        alt="{{ Auth::user()->nama }}">
+                                @else
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                @endif
+                                <span class="text-sm font-medium capitalize ml-2">{{ Auth::user()->nama }}</span>
                             </button>
 
                             <div x-show="open" @click.away="open = false"
@@ -95,6 +101,15 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
                                         Profil Saya
+                                    </div>
+                                </a>
+                                <a href="{{ url('/transactions') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                        </svg>
+                                        Transaksi Saya
                                     </div>
                                 </a>
                                 @if(Auth::user()->merchant)
@@ -149,32 +164,41 @@
     <!-- Bottom Navigation Links - Hidden on mobile -->
     <div class="border-t border-homize-blue-second hidden md:block">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex space-x-8 py-2 text-sm">
-                @php
-                    $randomNumbers = [];
-                    if (isset($bottomNavigation) && count($bottomNavigation) > 0) {
-                        while (count($randomNumbers) < 3) {
-                            $randomNumber = rand(0, count($bottomNavigation) - 1);
-                            if (!in_array($randomNumber, $randomNumbers)) {
-                                $randomNumbers[] = $randomNumber;
+            <div class="flex text-sm items-center py-1 justify-between">
+                <div class="flex space-x-8">
+                    @php
+                        $randomNumbers = [];
+                        if (isset($bottomNavigation) && count($bottomNavigation) > 0) {
+                            while (count($randomNumbers) < 3) {
+                                $randomNumber = rand(0, count($bottomNavigation) - 1);
+                                if (!in_array($randomNumber, $randomNumbers)) {
+                                    $randomNumbers[] = $randomNumber;
+                                }
                             }
                         }
-                    }
-                @endphp
-                @if (isset($bottomNavigation) && count($bottomNavigation) > 0)
-                    <a href="{{ route('jasa', [$bottomNavigation[$randomNumbers[0]]->id]) }}"
-                        class="text-white hover:text-homize-orange">
-                        {{ $bottomNavigation[$randomNumbers[0]]->category_name }}
+                    @endphp
+                    @if (isset($bottomNavigation) && count($bottomNavigation) > 0)
+                        <a href="{{ route('jasa', [$bottomNavigation[$randomNumbers[0]]->id]) }}"
+                            class="text-white hover:text-homize-orange">
+                            {{ $bottomNavigation[$randomNumbers[0]]->category_name }}
+                        </a>
+                        <a href="{{ route('jasa', [$bottomNavigation[$randomNumbers[1]]->id]) }}"
+                            class="text-white hover:text-homize-orange">
+                            {{ $bottomNavigation[$randomNumbers[1]]->category_name }}
+                        </a>
+                        <a href="{{ route('jasa', [$bottomNavigation[$randomNumbers[2]]->id]) }}"
+                            class="text-white hover:text-homize-orange">
+                            {{ $bottomNavigation[$randomNumbers[2]]->category_name }}
+                        </a>
+                    @endif
+                </div>
+                <a href="{{ url('/transactions') }}"
+                        class="flex items-center px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        Transaksi Saya
                     </a>
-                    <a href="{{ route('jasa', [$bottomNavigation[$randomNumbers[1]]->id]) }}"
-                        class="text-white hover:text-homize-orange">
-                        {{ $bottomNavigation[$randomNumbers[1]]->category_name }}
-                    </a>
-                    <a href="{{ route('jasa', [$bottomNavigation[$randomNumbers[2]]->id]) }}"
-                        class="text-white hover:text-homize-orange">
-                        {{ $bottomNavigation[$randomNumbers[2]]->category_name }}
-                    </a>
-                @endif
             </div>
         </div>
     </div>
@@ -288,6 +312,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         Profil Saya
+                    </a>
+                    <a href="{{ url('/transactions') }}"
+                        class="flex items-center px-3 py-2 text-white hover:text-homize-orange text-sm font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        Transaksi Saya
                     </a>
                     @if(Auth::user()->merchant)
                     <a href="{{ route('merchant') }}"

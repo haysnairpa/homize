@@ -6,8 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\Booking;
-use App\Http\Controllers\PembayaranController;
 
 class DashboardController extends Controller
 {
@@ -26,6 +24,7 @@ class DashboardController extends Controller
         $totalPesananAktif = DB::select("SELECT COUNT(*) as total_pesanan_aktif FROM booking WHERE id_user = ? AND status_proses = 'aktif'", [$userId]);
         $totalPesananSelesai = DB::select("SELECT COUNT(*) as total_pesanan_selesai FROM booking WHERE id_user = ? AND status_proses = 'selesai'", [$userId]);
         $totalPesananBatal = DB::select("SELECT COUNT(*) as total_pesanan_batal FROM booking WHERE id_user = ? AND status_proses = 'batal'", [$userId]);
+        
         return view('dashboard', compact('bookings', 'totalPesanan', 'totalPesananAktif', 'totalPesananSelesai', 'totalPesananBatal'));
     }
     public function transactions()
@@ -68,6 +67,7 @@ class DashboardController extends Controller
         // Get orders awaiting approval
         $ordersNeedingApproval = $this->getOrdersNeedingApproval($userId);
 
+        
         return view('user.transactions', compact('transactions', 'ordersNeedingApproval'));
     }
 
@@ -140,6 +140,7 @@ class DashboardController extends Controller
                 return response()->json(['success' => true, 'html' => $html]);
             }
             
+            
             return view('user.transactions', compact('transactions'));
         } catch (\Exception $e) {
             Log::error('Error filtering transactions', ['error' => $e->getMessage()]);
@@ -200,6 +201,7 @@ class DashboardController extends Controller
                 return response()->json(['success' => true, 'html' => $html]);
             }
 
+            
             return view('user.transactions', compact('transactions'));
         } catch (\Exception $e) {
             Log::error('Error filtering transactions by date', ['error' => $e->getMessage()]);
@@ -252,6 +254,7 @@ class DashboardController extends Controller
             abort(404, 'Transaction not found');
         }
 
+        
         return view('user.transaction-detail', compact('transaction'));
     }
     
