@@ -197,67 +197,67 @@
 
     <!-- JavaScript for Merchant Detail Modal -->
     <script>
-        // Enhanced JavaScript for Merchant Detail Modal
-document.addEventListener("DOMContentLoaded", () => {
-  // View Detail Button Click Handler
-  document.querySelectorAll(".view-detail-btn").forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const merchantId = this.getAttribute("data-merchant-id")
+                // Enhanced JavaScript for Merchant Detail Modal
+        document.addEventListener("DOMContentLoaded", () => {
+        // View Detail Button Click Handler
+        document.querySelectorAll(".view-detail-btn").forEach((btn) => {
+            btn.addEventListener("click", function () {
+            const merchantId = this.getAttribute("data-merchant-id")
 
-      // Show loading indicator
-      window.dispatchEvent(
-        new CustomEvent("open-merchant-modal", {
-          detail: { merchant: null },
-        }),
-      )
+            // Show loading indicator
+            window.dispatchEvent(
+                new CustomEvent("open-merchant-modal", {
+                detail: { merchant: null },
+                }),
+            )
 
-      // Fetch merchant details from the API
-      fetch(`/admin/merchants/${merchantId}/detail`, {
-        headers: {
-          Accept: "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok")
-          }
-          return response.json()
+            // Fetch merchant details from the API
+            fetch(`/admin/merchants/${merchantId}/detail`, {
+                headers: {
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                },
+            })
+                .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok")
+                }
+                return response.json()
+                })
+                .then((merchant) => {
+                // Format data if needed
+                if (typeof merchant.media_sosial === "string" && merchant.media_sosial.includes("{")) {
+                    try {
+                    merchant.media_sosial = JSON.parse(merchant.media_sosial)
+                    } catch (e) {
+                    console.warn("Could not parse media_sosial JSON", e)
+                    }
+                }
+
+                // Dispatch event to open modal with merchant data
+                window.dispatchEvent(
+                    new CustomEvent("open-merchant-modal", {
+                    detail: { merchant },
+                    }),
+                )
+                })
+                .catch((error) => {
+                console.error("Error fetching merchant details:", error)
+                alert("Failed to load merchant details. Please try again.")
+
+                // Close modal on error
+                window.dispatchEvent(new CustomEvent("close-merchant-modal"))
+                })
+            })
         })
-        .then((merchant) => {
-          // Format data if needed
-          if (typeof merchant.media_sosial === "string" && merchant.media_sosial.includes("{")) {
-            try {
-              merchant.media_sosial = JSON.parse(merchant.media_sosial)
-            } catch (e) {
-              console.warn("Could not parse media_sosial JSON", e)
+
+        // Close modal when clicking Escape key
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+            window.dispatchEvent(new CustomEvent("close-merchant-modal"))
             }
-          }
-
-          // Dispatch event to open modal with merchant data
-          window.dispatchEvent(
-            new CustomEvent("open-merchant-modal", {
-              detail: { merchant },
-            }),
-          )
         })
-        .catch((error) => {
-          console.error("Error fetching merchant details:", error)
-          alert("Failed to load merchant details. Please try again.")
-
-          // Close modal on error
-          window.dispatchEvent(new CustomEvent("close-merchant-modal"))
         })
-    })
-  })
-
-  // Close modal when clicking Escape key
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      window.dispatchEvent(new CustomEvent("close-merchant-modal"))
-    }
-  })
-})
 
     </script>
 </x-admin-layout>

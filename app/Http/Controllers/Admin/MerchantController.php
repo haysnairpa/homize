@@ -113,7 +113,7 @@ class MerchantController extends Controller
      */
     public function getTransactionHistory($id, Request $request)
     {
-        $limit = $request->query('limit', 10);
+        $limit = $request->query('limit', 5);
         
         $merchant = Merchant::findOrFail($id);
         
@@ -139,5 +139,15 @@ class MerchantController extends Controller
             'success' => true,
             'transactions' => $transactions
         ]);
+    }
+
+    public function showTransactionHistory($id)
+    {
+        $merchant = Merchant::with('user')->findOrFail($id);
+        $transactions = RiwayatSaldoMerchant::where('id_merchant', $id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('admin.merchant-transactions', compact('merchant', 'transactions'));
     }
 }

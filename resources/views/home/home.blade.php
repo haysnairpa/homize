@@ -294,7 +294,7 @@
                     <div class="md:w-1/2 text-center md:text-left">
                         <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight">
                             Selesaikan masalah anda,<br>
-                            Dari <span class="text-homize-orange">rumah</span>
+                            Dari <span class="text-homize-orange">Rumah</span>
                         </h1>
                         <p class="mt-4 text-xl text-white opacity-90">
                             Layanan rumahan professional dari jari anda. Pesan layanan terpercaya untuk kebutuhan rumah
@@ -310,8 +310,6 @@
                     </div>
                 </div>
             </div>
-            <div class="absolute -bottom-1 w-full h-16 bg-homize-white"
-                style="clip-path: polygon(0 100%, 100% 100%, 100% 0);"></div>
         </div>
 
         <!-- Categories Section -->
