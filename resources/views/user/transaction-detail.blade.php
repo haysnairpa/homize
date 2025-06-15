@@ -141,6 +141,9 @@
                         @if (($transaction->status_pembayaran ?? null) === 'Pending')
                             <div class="flex justify-between items-center mt-4 pt-3 border-t">
                                 <p class="text-md font-medium text-yellow-700">Pembayaran anda sedang diverifikasi oleh admin!</p>
+                                <a href="{{ route('pembayaran.show', $transaction->id) }}" class="px-4 py-2 bg-homize-blue text-white rounded-lg hover:bg-homize-blue-second transition duration-200">
+                                    Kembali ke Pembayaran
+                                </a>
                             </div>
                         @elseif (($transaction->status_pembayaran ?? null) === null)
                             <div class="flex justify-between items-center mt-4 pt-3 border-t">
