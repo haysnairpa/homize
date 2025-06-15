@@ -18,4 +18,17 @@ class BookingSchedule extends Model
     {
         return $this->belongsTo(Booking::class, "id", "id_booking_schedule");
     }
+
+    /**
+     * Scope a query to only include schedules between two dates.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $startDate
+     * @param  string  $endDate
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeBetweenDates($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('waktu_mulai', [$startDate, $endDate]);
+    }
 }

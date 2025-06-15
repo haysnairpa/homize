@@ -63,17 +63,17 @@
                             <div>
                                 <span class="text-gray-600">Tanggal Booking:</span>
                                 <p class="font-medium">
-                                    {{ \Carbon\Carbon::parse($transaction->tanggal_booking)->format('d M Y') }}</p>
+                                    {{ \Carbon\Carbon::parse($transaction->waktu_mulai)->format('d M Y') }}</p>
                             </div>
                             <div>
-                                <span class="text-gray-600">Waktu Mulai:</span>
-                                <p class="font-medium">{{ optional($transaction->waktu_mulai)->format('H:i') ?? '-' }}
+                                <span class="text-gray-600">Selesai:</span>
+                                <p> 
+                                    @if (($transaction->status_proses ?? null) === 'Selesai' && !empty($transaction->waktu_selesai))
+                                        {{ \Carbon\Carbon::parse($transaction->waktu_selesai)->format('d M Y') }}
+                                    @else
+                                        Layanan anda belum selesai
+                                    @endif
                                 </p>
-                            </div>
-                            <div>
-                                <span class="text-gray-600">Waktu Selesai:</span>
-                                <p class="font-medium">
-                                    {{ optional($transaction->waktu_selesai)->format('H:i') ?? '-' }}</p>
                             </div>
                             <div>
                                 <span class="text-gray-600">Alamat Anda:</span>

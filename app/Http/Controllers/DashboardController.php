@@ -89,7 +89,7 @@ class DashboardController extends Controller
                     m.profile_url, 
                     m.alamat as alamat_merchant, 
                     b.status_proses,
-                    b.tanggal_booking, 
+                    bs.waktu_mulai, 
                     b.updated_at, 
                     p.amount, 
                     p.status_pembayaran,
@@ -171,7 +171,7 @@ class DashboardController extends Controller
                     m.profile_url, 
                     m.alamat as alamat_merchant, 
                     b.status_proses,
-                    b.tanggal_booking, 
+                    bs.waktu_mulai, 
                     b.updated_at, 
                     p.amount, 
                     p.status_pembayaran,
@@ -189,7 +189,7 @@ class DashboardController extends Controller
                 JOIN merchant m ON m.id = l.id_merchant
                 JOIN booking_schedule bs ON bs.id = b.id_booking_schedule
                 JOIN pembayaran p ON p.id_booking = b.id
-                WHERE b.id_user = ? AND b.tanggal_booking BETWEEN ? AND ?
+                WHERE b.id_user = ? AND bs.waktu_mulai BETWEEN ? AND ?
                 ORDER BY b.created_at DESC";
 
         try {
@@ -227,7 +227,7 @@ class DashboardController extends Controller
                                         m.profile_url, 
                                         m.alamat as alamat_merchant, 
                                         b.status_proses,
-                                        b.tanggal_booking, 
+                                        bs.waktu_mulai, 
                                         p.amount, 
                                         p.unique_code,
                                         p.rejection_reason,
