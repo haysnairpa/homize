@@ -209,6 +209,13 @@
                                 <span class="font-bold">Pesanan Disetujui:</span> Anda telah menyetujui pesanan ini pada {{ \Carbon\Carbon::parse($transaction->customer_approval_date)->format('d M Y H:i') }}.
                             </p>
                         </div>
+                        @if ($transaction->status_proses === 'Selesai')
+                            <div class="mt-4 flex justify-end">
+                                <a href="{{ route('user.rating.create', $transaction->id) }}" class="px-5 py-2 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition duration-200">
+                                    Nilai Layanan
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 @elseif ($transaction->customer_approval_status === 'protested')
                     <div class="mt-8 border-t pt-6">

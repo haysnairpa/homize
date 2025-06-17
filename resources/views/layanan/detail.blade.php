@@ -129,23 +129,7 @@
                                 <p class="text-lg font-semibold text-homize-blue">
                                     Rp {{ number_format($layanan->harga, 0, ',', '.') }} / 
                                     @php
-                                        $satuanText = '';
-                                        switch($layanan->satuan) {
-                                            case '1':
-                                                $satuanText = 'Kilogram';
-                                                break;
-                                            case '2':
-                                                $satuanText = 'Unit';
-                                                break;
-                                            case '3':
-                                                $satuanText = 'Pieces';
-                                                break;
-                                            case '4':
-                                                $satuanText = 'Pertemuan';
-                                                break;
-                                            default:
-                                                $satuanText = $layanan->satuan;
-                                        }
+                                        $satuanText = ucfirst($layanan->satuan);
                                     @endphp
                                     {{ $satuanText }}
                                 </p>

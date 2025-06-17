@@ -157,10 +157,10 @@
                                     class="text-red-500">*</span></label>
                             <select name="satuan" id="satuan_input_kgs"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
-                                <option value="1" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '1' ? 'selected' : '' }}>Per Kilogram</option>
-                                <option value="2" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '2' ? 'selected' : '' }}>Per Unit</option>
-                                <option value="3" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '3' ? 'selected' : '' }}>Per Pieces (pcs)</option>
-                                <option value="4" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '4' ? 'selected' : '' }}>Per Pertemuan</option>
+                                <option value="kilogram" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == 'kilogram' ? 'selected' : '' }}>Per Kilogram</option>
+                                <option value="unit" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == 'unit' ? 'selected' : '' }}>Per Unit</option>
+                                <option value="pcs" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == 'pcs' ? 'selected' : '' }}>Per Pieces (pcs)</option>
+                                <option value="pertemuan" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == 'pertemuan' ? 'selected' : '' }}>Per Pertemuan</option>
                             </select>
                         </div>
 
@@ -245,18 +245,18 @@
                             <label for="revisi_satuan" class="block text-sm font-medium text-gray-700">Satuan Revisi</label>
                             <select name="revisi_satuan" id="revisi_satuan_input"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
-                                <option value="kg"
-                                    {{ old('revisi_satuan') == 'kg' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '1')) ? 'selected' : '' }}>
-                                    Per Kilogram (kg)</option>
-                                <option value="unit"
-                                    {{ old('revisi_satuan') == 'unit' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '2')) ? 'selected' : '' }}>
-                                    Per Unit</option>
-                                <option value="pcs"
-                                    {{ old('revisi_satuan') == 'pcs' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '3')) ? 'selected' : '' }}>
-                                    Per Pieces (pcs)</option>
-                                <option value="pertemuan"
-                                    {{ old('revisi_satuan') == 'pertemuan' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '4')) ? 'selected' : '' }}>
-                                    Per Pertemuan</option>
+                                <option value="kilogram"
+                                {{ old('revisi_satuan') == 'kilogram' || (isset($editLayanan) && isset($editLayanan->revisi) && $editLayanan->revisi->satuan == 'kilogram') ? 'selected' : '' }}>
+                                Per Kilogram</option>
+                            <option value="unit"
+                                {{ old('revisi_satuan') == 'unit' || (isset($editLayanan) && isset($editLayanan->revisi) && $editLayanan->revisi->satuan == 'unit') ? 'selected' : '' }}>
+                                Per Unit</option>
+                            <option value="pcs"
+                                {{ old('revisi_satuan') == 'pcs' || (isset($editLayanan) && isset($editLayanan->revisi) && $editLayanan->revisi->satuan == 'pcs') ? 'selected' : '' }}>
+                                Per Pieces (pcs)</option>
+                            <option value="pertemuan"
+                                {{ old('revisi_satuan') == 'pertemuan' || (isset($editLayanan) && isset($editLayanan->revisi) && $editLayanan->revisi->satuan == 'pertemuan') ? 'selected' : '' }}>
+                                Per Pertemuan</option>
                             </select>
                         </div>
 

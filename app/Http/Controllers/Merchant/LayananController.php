@@ -89,11 +89,10 @@ class LayananController extends Controller
                 $revisiId = $revisi->id;
             }
 
-            // Validate satuan as integer (1,2,3,4)
+            // Validate satuan as string value
             $request->validate([
-                'satuan' => 'required|in:1,2,3,4',
+                'satuan' => 'required|in:kilogram,unit,pcs,pertemuan',
             ]);
-            $satuanInt = (int) $request->satuan;
 
             // Create tarif_layanan record with id_revisi
             TarifLayanan::create([
@@ -101,7 +100,7 @@ class LayananController extends Controller
                 'harga' => $request->harga,
                 'durasi' => $request->durasi,
                 'tipe_durasi' => $request->tipe_durasi,
-                'satuan' => $satuanInt,
+                'satuan' => $request->satuan,
                 'id_revisi' => $revisiId
             ]);
 
@@ -214,11 +213,10 @@ class LayananController extends Controller
                 'pengalaman' => $request->pengalaman ?? 0
             ]);
 
-            // Validate satuan as integer (1,2,3,4)
+            // Validate satuan as string value
             $request->validate([
-                'satuan' => 'required|in:1,2,3,4',
+                'satuan' => 'required|in:kilogram,unit,pcs,pertemuan',
             ]);
-            $satuanInt = (int) $request->satuan;
 
             // Update tarif layanan
             $tarifLayanan = $layanan->tarif_layanan;
@@ -227,7 +225,7 @@ class LayananController extends Controller
                     'harga' => $request->harga,
                     'durasi' => $request->durasi,
                     'tipe_durasi' => $request->tipe_durasi,
-                    'satuan' => $satuanInt
+                    'satuan' => $request->satuan
                 ]);
             }
 

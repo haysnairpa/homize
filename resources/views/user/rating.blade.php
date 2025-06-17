@@ -6,12 +6,12 @@
                 <div class="mb-6">
                     <h3 class="text-lg font-medium text-gray-900">Pesanan #{{ $booking->id }}</h3>
                     <div class="mt-2 flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10">
-                            @if($booking->merchant->profile_url)
-                                <img class="h-10 w-10 rounded-full object-cover" src="{{ Storage::url($booking->merchant->profile_url) }}" alt="{{ $booking->merchant->nama_usaha }}">
+                        <div class="flex-shrink-0 h-14 w-14">
+                            @if(isset($booking->layanan->aset) && $booking->layanan->aset && $booking->layanan->aset->media_url)
+                                <img class="h-14 w-14 rounded object-cover" src="{{ $booking->layanan->aset->media_url }}" alt="{{ $booking->layanan->nama_layanan }}">
                             @else
-                                <div class="h-10 w-10 rounded-full bg-homize-blue flex items-center justify-center">
-                                    <span class="text-white font-medium">{{ substr($booking->merchant->nama_usaha, 0, 1) }}</span>
+                                <div class="h-14 w-14 rounded bg-gray-200 flex items-center justify-center">
+                                    <span class="text-gray-500 font-medium text-xl">?</span>
                                 </div>
                             @endif
                         </div>

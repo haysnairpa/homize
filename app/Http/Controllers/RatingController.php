@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Rating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Cloudinary\Cloudinary;
 
 class RatingController extends Controller
 {
@@ -56,7 +57,15 @@ class RatingController extends Controller
         
         $mediaPath = null;
         if ($request->hasFile('media_url')) {
-            $mediaPath = $request->file('media_url')->store('rating-images', 'public');
+            // Upload to Cloudinary
+            $cloudinary = new Cloudinary(config('cloudinary.cloud_url'));
+            $result = $cloudinary->uploadApi()->upload(
+                $request->file('media_url')->getRealPath(),
+                [
+                    'upload_preset' => config('cloudinary.user_rating_upload_preset'),
+                ],
+            );
+            $mediaPath = $result['secure_url'];
         }
         
         Rating::create([
