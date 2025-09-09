@@ -22,6 +22,7 @@ use App\Http\Controllers\XenditCallbackController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Merchant\PenarikanController;
 use App\Http\Controllers\Admin\PenarikanController as AdminPenarikanController;
+use App\Http\Controllers\AdminPromoController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\MerchantController as AdminMerchantController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -74,6 +75,8 @@ Route::middleware([
     // Booking routes
     Route::get('/booking/{id}', [BookingController::class, 'create'])->name('booking.create');
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+    Route::post('/booking/validate-promo', [BookingController::class, 'validatePromo'])->name('booking.validate-promo');
+    Route::post('/booking/remove-promo', [BookingController::class, 'removePromo'])->name('booking.remove-promo');
 
     // Pembayaran routes
     Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
@@ -231,5 +234,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/payment/{id}/approve', [PembayaranController::class, 'approvePayment'])->name('payment.approve');
         Route::put('/payment/{id}/reject', [PembayaranController::class, 'rejectPayment'])->name('payment.reject');
         Route::post('/booking/{id}/add-merchant-balance', [\App\Http\Controllers\CustomerApprovalController::class, 'addMerchantBalance'])->name('booking.add-merchant-balance');
+        
+        // Promo Code Management
+        Route::resource('promo', AdminPromoController::class);
+        Route::get('/promo/services-by-category/{categoryId}', [AdminPromoController::class, 'getServicesByCategory'])->name('promo.services-by-category');
+        Route::patch('/promo/{id}/toggle-status', [AdminPromoController::class, 'toggleStatus'])->name('promo.toggle-status');
+        Route::post('/promo/validate', [AdminPromoController::class, 'validatePromo'])->name('promo.validate');
     });
 });

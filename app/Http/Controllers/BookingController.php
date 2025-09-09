@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\BookingSchedule;
 use App\Models\Layanan;
-
 use App\Models\Pembayaran;
+use App\Services\PromoCodeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +14,12 @@ use Carbon\Carbon;
 
 class BookingController extends Controller
 {
+    protected $promoService;
+
+    public function __construct(PromoCodeService $promoService)
+    {
+        $this->promoService = $promoService;
+    }
     public function create($id)
     {
         // Check if layanan exists first
@@ -114,6 +120,7 @@ class BookingController extends Controller
             'latitude' => 'nullable',
             'longitude' => 'nullable',
             'tanggal_booking' => 'required|date',
+            'kode_promo' => 'nullable|string|max:50',
         ]);
 
         // Format phone number to ensure it has +62 prefix
@@ -134,6 +141,46 @@ class BookingController extends Controller
             $tarifLayanan = DB::table('tarif_layanan')
                 ->where('id_layanan', $request->id_layanan)
                 ->first();
+
+            if (!$tarifLayanan) {
+                throw new \Exception('Tarif layanan tidak ditemukan');
+            }
+
+            // Initialize promo variables
+            $originalAmount = $tarifLayanan->harga;
+            $finalAmount = $originalAmount;
+            $diskonAmount = 0;
+            $diskonPercentage = 0;
+            $kodePromoId = null;
+            $promoValidation = null;
+
+            // Validate and apply promo code if provided
+            if ($request->filled('kode_promo')) {
+                $promoValidation = $this->promoService->validatePromoCode(
+                    $request->kode_promo,
+                    Auth::id(),
+                    $request->id_layanan,
+                    $originalAmount
+                );
+
+                if (!$promoValidation['valid']) {
+                    DB::rollBack();
+                    return redirect()->back()
+                        ->with('error', 'Kode promo tidak valid: ' . $promoValidation['message'])
+                        ->withInput();
+                }
+
+                // Apply discount
+                $discountResult = $this->promoService->calculateDiscount(
+                    $promoValidation['promo'],
+                    $originalAmount
+                );
+
+                $kodePromoId = $promoValidation['promo']->id;
+                $diskonAmount = $discountResult['discount_amount'];
+                $diskonPercentage = $discountResult['discount_percentage'];
+                $finalAmount = $discountResult['final_amount'];
+            }
 
             $waktuSelesai = clone $waktuMulai;
 
@@ -172,16 +219,35 @@ class BookingController extends Controller
                 'catatan' => $request->catatan ?? '',
                 'latitude' => $request->latitude ?: null,
                 'longitude' => $request->longitude ?: null,
+                'kode_promo_id' => $kodePromoId,
+                'original_amount' => $originalAmount,
+                'diskon_amount' => $diskonAmount,
+                'diskon_percentage' => $diskonPercentage,
+                'final_amount' => $finalAmount,
             ]);
 
             // Buat pembayaran dengan status_pembayaran string enum
             Pembayaran::create([
                 'id_booking' => $booking->id,
-                'amount' => $tarifLayanan->harga,
+                'amount' => $finalAmount,
+                'original_amount' => $originalAmount,
+                'discount_amount' => $diskonAmount,
                 'method' => 'Belum dipilih',
                 'status_pembayaran' => 'Pending',
                 'payment_date' => now(),
             ]);
+
+            // Record promo usage if promo was applied
+            if ($kodePromoId && $promoValidation) {
+                $this->promoService->recordUsage(
+                    $promoValidation['promo'],
+                    Auth::id(),
+                    $booking->id,
+                    $originalAmount,
+                    $diskonAmount,
+                    $finalAmount
+                );
+            }
 
             DB::commit();
 
@@ -191,5 +257,82 @@ class BookingController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Validate promo code via AJAX
+     */
+    public function validatePromo(Request $request)
+    {
+        $request->validate([
+            'kode_promo' => 'required|string|max:50',
+            'id_layanan' => 'required|exists:layanan,id',
+            'amount' => 'required|numeric|min:0'
+        ]);
+
+        try {
+            $result = $this->promoService->validatePromoCode(
+                $request->kode_promo,
+                Auth::id(),
+                $request->id_layanan,
+                $request->amount
+            );
+
+            if ($result['valid']) {
+                // Calculate discount for preview
+                $discountResult = $this->promoService->calculateDiscount(
+                    $result['promo'],
+                    $request->amount
+                );
+
+                return response()->json([
+                    'valid' => true,
+                    'message' => 'Kode promo valid!',
+                    'promo' => [
+                        'nama' => $result['promo']->nama,
+                        'tipe_diskon' => $result['promo']->tipe_diskon,
+                        'nilai_diskon' => $result['promo']->nilai_diskon,
+                        'is_exclusive' => $result['promo']->is_exclusive
+                    ],
+                    'discount' => [
+                        'original_amount' => $request->amount,
+                        'discount_amount' => $discountResult['discount_amount'],
+                        'discount_percentage' => $discountResult['discount_percentage'],
+                        'final_amount' => $discountResult['final_amount']
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'valid' => false,
+                    'message' => $result['message']
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Terjadi kesalahan saat memvalidasi kode promo'
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove promo code via AJAX
+     */
+    public function removePromo(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kode promo dihapus',
+            'discount' => [
+                'original_amount' => $request->amount,
+                'discount_amount' => 0,
+                'discount_percentage' => 0,
+                'final_amount' => $request->amount
+            ]
+        ]);
     }
 }

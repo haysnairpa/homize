@@ -23,3 +23,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Admin user migration (contains sensitive credentials)
+/database/migrations/2025_09_09_154022_create_admin_user.php
