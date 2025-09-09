@@ -11,7 +11,7 @@ class UserController extends Controller
     public function transactions()
     {
         $userId = Auth::id();
-        $transactions = DB::select("SELECT b.id, l.nama_layanan, m.nama_usaha, b.status_proses, b.tanggal_booking, p.amount, p.status_pembayaran
+        $transactions = DB::select("SELECT b.id, l.nama_layanan, m.nama_usaha, b.status_proses, bs.waktu_mulai, p.amount, p.status_pembayaran
                                 FROM booking b
                                 JOIN layanan l ON l.id = b.id_layanan
                                 JOIN merchant m ON m.id = b.id_merchant
@@ -26,7 +26,7 @@ class UserController extends Controller
     {
         $userId = Auth::id();
         $transaction = DB::selectOne("SELECT b.id, l.nama_layanan, l.deskripsi_layanan, m.nama_usaha, m.alamat as alamat_merchant, 
-                                    b.status_proses, b.tanggal_booking, p.amount, p.status_pembayaran, bs.waktu_mulai, bs.waktu_selesai, 
+                                    b.status_proses, bs.waktu_mulai, p.amount, p.status_pembayaran, bs.waktu_mulai, bs.waktu_selesai, 
                                     b.alamat_pembeli, b.catatan, b.latitude, b.longitude
                                 FROM booking b
                                 JOIN layanan l ON l.id = b.id_layanan

@@ -44,6 +44,12 @@ class Merchant extends Model
         return $this->hasMany(Booking::class, 'id_merchant');
     }
 
+    // one to many from merchant to riwayat_saldo_merchant
+    public function riwayatSaldo()
+    {
+        return $this->hasMany(RiwayatSaldoMerchant::class, 'id_merchant');
+    }
+
     // one to one from merchant to user
     public function user()
     {

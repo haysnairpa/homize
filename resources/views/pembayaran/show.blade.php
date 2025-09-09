@@ -192,15 +192,22 @@
                                     </div>
                                     
                                     @if($booking->pembayaran->status_pembayaran == 'Pending')
-                                    <div class="mt-4">
+                                    <div class="mt-4 space-y-3">
+                                        <a href="{{ route('pembayaran.bsi-transfer', $booking->id) }}" class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                            </svg>
+                                            Bayar Sekarang
+                                        </a>
+                                        
                                         <form action="{{ route('pembayaran.process', $booking->id) }}" method="GET" id="payment-form">
                                             <input type="hidden" name="payment_method" value="bank_transfer">
                                             
-                                            <button type="submit" class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                                            <button type="submit" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
                                                 </svg>
-                                                Bayar Sekarang
+                                                Metode Pembayaran Lainnya
                                             </button>
                                         </form>
                                     </div>
@@ -383,7 +390,7 @@
     </script>
 
     <!-- Tambahkan modal konfirmasi pembayaran -->
-    <div id="payment-confirmation-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div id="payment-confirmation-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Konfirmasi Pembayaran</h3>
             <p class="text-gray-600 mb-4">Anda akan melakukan pembayaran sebesar:</p>
@@ -414,18 +421,21 @@
                 payButton.addEventListener('click', function(e) {
                     e.preventDefault();
                     confirmationModal.classList.remove('hidden');
+                    confirmationModal.style.display = 'flex';
                 });
             }
             
             if (cancelButton) {
                 cancelButton.addEventListener('click', function() {
                     confirmationModal.classList.add('hidden');
+                    confirmationModal.style.display = 'none';
                 });
             }
             
             if (confirmButton) {
                 confirmButton.addEventListener('click', function() {
                     confirmationModal.classList.add('hidden');
+                    confirmationModal.style.display = 'none';
                     // Lanjutkan dengan proses pembayaran
                     document.getElementById('payment-form').submit();
                 });

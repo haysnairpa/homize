@@ -83,8 +83,8 @@
                 <h3 class="text-lg font-semibold text-gray-800">Edit Layanan</h3>
                 <button id="closeEditModal" class="text-gray-400 hover:text-gray-500">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
             </div>
@@ -121,5 +121,5 @@
     </div>
 
     @include('merchant.components.service-script')
-    
+
 </x-merchant-layout>

@@ -66,6 +66,9 @@ class LayananController extends Controller
                 'tl.id_revisi'
             ])
             ->first();
+        if (!$layanan) {
+            abort(404, 'Service not found or incomplete related data');
+        }
 
         // Ambil rating terpisah untuk menghindari masalah GROUP BY
         $ratings = DB::table('rating as r')

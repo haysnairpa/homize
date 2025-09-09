@@ -27,11 +27,18 @@ class Booking extends Model
         "catatan",
         "longitude",
         "latitude",
+        "customer_approval_status",
+        "customer_approval_date",
+        "protest_reason",
+        "protest_date",
+        "merchant_balance_added",
     ];
 
     protected $dates = [
         "created_at",
         "updated_at",
+        "customer_approval_date",
+        "protest_date",
     ];
 
     // one to one from booking to pembayaran
@@ -83,5 +90,45 @@ class Booking extends Model
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Check if the order is awaiting customer approval
+     * 
+     * @return bool
+     */
+    public function needsCustomerApproval()
+    {
+        return $this->status_proses === 'Selesai' && $this->customer_approval_status === null;
+    }
+
+    /**
+     * Check if the order has been approved by the customer
+     * 
+     * @return bool
+     */
+    public function isApprovedByCustomer()
+    {
+        return $this->customer_approval_status === 'approved';
+    }
+
+    /**
+     * Check if the order has been protested by the customer
+     * 
+     * @return bool
+     */
+    public function isProtestedByCustomer()
+    {
+        return $this->customer_approval_status === 'protested';
+    }
+
+    /**
+     * Check if the merchant balance has been added for this order
+     * 
+     * @return bool
+     */
+    public function isMerchantBalanceAdded()
+    {
+        return $this->merchant_balance_added;
     }
 }

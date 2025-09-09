@@ -1,10 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-homize-blue leading-tight">
-            {{ __('Transaksi Saya') }}
-        </h2>
-    </x-slot>
-
+    <x-navigation />
     @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
@@ -220,6 +215,31 @@
                         <li>5 = Dibatalkan</li>
                     </ul>
                 </div>
+                
+                <!-- Orders Needing Approval -->
+                @if(count($ordersNeedingApproval) > 0)
+                <div class="mb-6 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <h3 class="text-lg font-semibold text-yellow-800 mb-2">Pesanan Menunggu Persetujuan</h3>
+                    <p class="text-yellow-700 mb-4">Berikut adalah pesanan yang telah diselesaikan oleh merchant dan memerlukan persetujuan Anda:</p>
+                    
+                    <div class="space-y-3">
+                        @foreach($ordersNeedingApproval as $order)
+                        <div class="bg-white p-3 rounded-lg border border-yellow-100 flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <div>
+                                <p class="font-medium">{{ $order->nama_layanan }}</p>
+                                <p class="text-sm text-gray-600">Merchant: {{ $order->nama_usaha }}</p>
+                                <p class="text-sm text-gray-600">Selesai pada: {{ \Carbon\Carbon::parse($order->tanggal_selesai)->format('d M Y H:i') }}</p>
+                            </div>
+                            <div class="mt-3 md:mt-0">
+                                <a href="{{ route('user.transaction.detail', $order->id) }}" class="inline-block px-4 py-2 bg-homize-blue text-white rounded-md hover:bg-homize-blue-second transition-colors">
+                                    Tinjau & Setujui
+                                </a>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
 
                 <!-- Search and Date Filter -->
                 <div class="flex justify-between mb-6">

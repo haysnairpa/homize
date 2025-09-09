@@ -1,10 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-homize-blue leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
-
     <div class="py-12 bg-homize-gray">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Profile Info -->
@@ -15,7 +9,7 @@
                         
                         <!-- Photo Upload Overlay -->
                         <div class="absolute inset-0 flex items-center justify-center rounded-full bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" 
-                             onclick="document.getElementById('profile-photo-input').click()">
+                            onclick="document.getElementById('profile-photo-input').click()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -88,22 +82,6 @@
                     </div>
                 </div>
             @endif
-
-            {{-- Two-Factor Authentication section removed --}}
-
-            <div class="bg-white shadow-xl sm:rounded-lg mb-6">
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-homize-blue">
-                        {{ __('Sesi Browser') }}
-                    </h3>
-                    <p class="mt-1 text-sm text-gray-600">
-                        {{ __('Kelola dan logout dari sesi aktif Anda pada browser dan perangkat lain.') }}
-                    </p>
-                </div>
-                <div class="p-6">
-                    @livewire('profile.logout-other-browser-sessions-form')
-                </div>
-            </div>
 
             @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
                 <div class="bg-white shadow-xl sm:rounded-lg">

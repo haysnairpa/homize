@@ -36,10 +36,12 @@ class HomeController extends Controller
                 'tl.satuan',
                 'a.media_url',
                 DB::raw('COALESCE(AVG(r.rate), 0) as rating_avg'),
-                DB::raw('COUNT(DISTINCT r.id) as rating_count')
+                DB::raw('COUNT(DISTINCT r.id) as rating_count'),
+                DB::raw('COUNT(DISTINCT b.id) as order_count')
             ])
             ->leftJoin('tarif_layanan as tl', 'l.id', '=', 'tl.id_layanan')
             ->leftJoin('rating as r', 'l.id', '=', 'r.id_layanan')
+            ->leftJoin('booking as b', 'l.id', '=', 'b.id_layanan')
             ->leftJoin(DB::raw('(
                                     SELECT id_layanan, MIN(media_url) as media_url
                                     FROM aset
@@ -59,6 +61,7 @@ class HomeController extends Controller
                 'tl.satuan',
                 'a.media_url'
             ])
+            ->orderBy('order_count', 'desc')
             ->orderBy('rating_avg', 'desc')
             ->limit(8)
             ->get();

@@ -127,7 +127,11 @@
                             <div>
                                 <p class="text-sm text-gray-500">Harga</p>
                                 <p class="text-lg font-semibold text-homize-blue">
-                                    Rp {{ number_format($layanan->harga, 0, ',', '.') }} / {{ $layanan->satuan }}
+                                    Rp {{ number_format($layanan->harga, 0, ',', '.') }} / 
+                                    @php
+                                        $satuanText = ucfirst($layanan->satuan);
+                                    @endphp
+                                    {{ $satuanText }}
                                 </p>
                             </div>
                         </div>

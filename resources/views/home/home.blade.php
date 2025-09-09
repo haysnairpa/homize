@@ -21,19 +21,58 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        
+        /* Skeleton loading animation */
+        .skeleton-pulse {
+            animation: skeleton-pulse 0.5s infinite ease-in-out;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+        }
+        
+        @keyframes skeleton-pulse {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+        
+        /* Lazy loading image transitions */
+        .lazy-image {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .lazy-image.opacity-100 {
+            opacity: 1;
+        }
     </style>
 </head>
 <div class="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
     @include('components.navigation')
 </div>
 
-<body class="font-sans antialiased bg-homize-gray">
+<body class="font-sans antialiased bg-homize-gray" x-data="{ dataLoaded: false }" x-init="setTimeout(() => { dataLoaded = true }, 1000)">
     @auth
         <!-- Main Content -->
         <main class="max-w-7xl mx-auto px-4 my-5 pt-24 md:pt-20 pb-16">
             <!-- Welcome Banner -->
             <div class="mb-6 mt-4 md:mt-8">
-                <div class="bg-gradient-to-r from-homize-blue to-blue-600 rounded-xl overflow-hidden">
+                <!-- Skeleton for Welcome Banner -->
+                <template x-if="!dataLoaded">
+                    <div class="bg-white rounded-xl overflow-hidden shadow-sm">
+                        <div class="relative px-6 py-8 md:px-10 md:py-12">
+                            <div class="max-w-lg relative z-10">
+                                <div class="h-8 w-3/4 skeleton-pulse rounded mb-2"></div>
+                                <div class="h-4 w-full skeleton-pulse rounded mb-4"></div>
+                                <div class="flex gap-3">
+                                    <div class="h-12 w-40 skeleton-pulse rounded"></div>
+                                    <div class="h-12 w-40 skeleton-pulse rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                
+                <!-- Actual Welcome Banner -->
+                <div x-show="dataLoaded" x-cloak class="bg-gradient-to-r from-homize-blue to-blue-600 rounded-xl overflow-hidden">
                     <div class="relative px-6 py-8 md:px-10 md:py-12">
                         <div class="max-w-lg relative z-10">
                             <h1 class="text-2xl md:text-3xl font-bold text-white mb-2">
@@ -78,7 +117,26 @@
             @if (Auth::user()->merchant)
                 <!-- Merchant Info Banner -->
                 <div class="mb-6">
-                    <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                    <!-- Skeleton for Merchant Banner -->
+                    <template x-if="!dataLoaded">
+                        <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="h-12 w-12 skeleton-pulse rounded-full mr-4"></div>
+                                    <div>
+                                        <div class="h-5 w-40 skeleton-pulse rounded mb-2"></div>
+                                        <div class="h-4 w-60 skeleton-pulse rounded"></div>
+                                    </div>
+                                    <div class="ml-auto">
+                                        <div class="h-10 w-10 skeleton-pulse rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <!-- Actual Merchant Banner -->
+                    <div x-show="dataLoaded" x-cloak class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
                         <div class="p-5">
                             <div class="flex items-center">
                                 <div class="p-3 rounded-full bg-homize-blue/10 mr-4">
@@ -113,7 +171,18 @@
             <!-- Categories Scrollable -->
             <div class="mb-8">
                 <h2 class="text-xl font-bold mb-4">Kategori Populer</h2>
-                <div class="flex overflow-x-auto pb-2 gap-3 hide-scrollbar">
+                
+                <!-- Skeleton for Categories -->
+                <template x-if="!dataLoaded">
+                    <div class="flex overflow-x-auto pb-2 gap-3 hide-scrollbar">
+                        @for ($i = 0; $i < 6; $i++)
+                            <div class="flex-shrink-0 w-32 h-24 rounded-lg skeleton-pulse"></div>
+                        @endfor
+                    </div>
+                </template>
+                
+                <!-- Actual Categories -->
+                <div x-show="dataLoaded" x-cloak class="flex overflow-x-auto pb-2 gap-3 hide-scrollbar">
                     @foreach ($kategori as $index => $kat)
                         @if ($index < 6)
                             <a href="{{ route('service', $kat->id) }}"
@@ -225,7 +294,7 @@
                     <div class="md:w-1/2 text-center md:text-left">
                         <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight">
                             Selesaikan masalah anda,<br>
-                            Dari <span class="text-homize-orange">rumah</span>
+                            Dari <span class="text-homize-orange">Rumah</span>
                         </h1>
                         <p class="mt-4 text-xl text-white opacity-90">
                             Layanan rumahan professional dari jari anda. Pesan layanan terpercaya untuk kebutuhan rumah
@@ -241,8 +310,6 @@
                     </div>
                 </div>
             </div>
-            <div class="absolute -bottom-1 w-full h-16 bg-homize-white"
-                style="clip-path: polygon(0 100%, 100% 100%, 100% 0);"></div>
         </div>
 
         <!-- Categories Section -->
@@ -256,7 +323,38 @@
                     <p class="text-gray-600">Temukan layanan terbaik untuk kebutuhan Anda</p>
                 </div>
 
-                <x-service-card :layanan="$layanan" />
+                <!-- Skeleton for Service Cards -->
+                <template x-if="!dataLoaded">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        @for ($i = 0; $i < 8; $i++)
+                            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                                <div class="relative">
+                                    <div class="h-48 w-full skeleton-pulse"></div>
+                                    <div class="absolute top-3 left-3">
+                                        <div class="h-6 w-24 bg-white/80 skeleton-pulse rounded-full"></div>
+                                    </div>
+                                </div>
+                                <div class="p-5">
+                                    <div class="h-6 w-3/4 skeleton-pulse rounded mb-2"></div>
+                                    <div class="h-4 w-full skeleton-pulse rounded mb-1"></div>
+                                    <div class="h-4 w-2/3 skeleton-pulse rounded mb-4"></div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center gap-1">
+                                            <div class="h-4 w-4 skeleton-pulse rounded-full"></div>
+                                            <div class="h-4 w-8 skeleton-pulse rounded"></div>
+                                        </div>
+                                        <div class="h-6 w-20 skeleton-pulse rounded"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endfor
+                    </div>
+                </template>
+                
+                <!-- Actual Service Cards -->
+                <div x-show="dataLoaded" x-cloak>
+                    <x-service-card :layanan="$layanan" />
+                </div>
             </div>
         </div>
     @endauth
@@ -267,6 +365,41 @@
     @auth
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                // Lazy load images
+                function lazyLoadImages() {
+                    const lazyImages = document.querySelectorAll('img.lazy-image');
+                    
+                    if ('IntersectionObserver' in window) {
+                        const imageObserver = new IntersectionObserver(function(entries, observer) {
+                            entries.forEach(function(entry) {
+                                if (entry.isIntersecting) {
+                                    const img = entry.target;
+                                    img.src = img.dataset.src;
+                                    img.classList.add('opacity-0');
+                                    observer.unobserve(img);
+                                }
+                            });
+                        });
+                        
+                        lazyImages.forEach(function(image) {
+                            imageObserver.observe(image);
+                        });
+                    } else {
+                        // Fallback for browsers that don't support IntersectionObserver
+                        lazyImages.forEach(function(img) {
+                            img.src = img.dataset.src;
+                        });
+                    }
+                }
+                
+                // Call lazy load after content is loaded
+                setTimeout(lazyLoadImages, 100);
+                // Add x-cloak directive style for Alpine.js
+                document.head.insertAdjacentHTML('beforeend', `
+                    <style>
+                        [x-cloak] { display: none !important; }
+                    </style>
+                `);
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                 const applyFilter = document.getElementById('apply-filter');
                 const layananGrid = document.getElementById('layanan-grid');

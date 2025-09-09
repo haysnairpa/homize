@@ -7,7 +7,7 @@
     
     <link rel="icon" href="{{ asset('homizeiconblue.ico') }}" type="image/x-icon">
 
-    <title>Homze - Admin Panel</title>
+    <title>Homize - Admin Panel</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -39,13 +39,13 @@
                                 {{ __('Dashboard') }}
                             </x-nav-link>
                             <x-nav-link href="{{ route('admin.users') }}" :active="request()->routeIs('admin.users')">
-                                {{ __('Users') }}
+                                {{ __('User') }}
                             </x-nav-link>
                             <x-nav-link href="{{ route('admin.merchants') }}" :active="request()->routeIs('admin.merchants')">
-                                {{ __('Merchants') }}
+                                {{ __('Merchant') }}
                             </x-nav-link>
                             <x-nav-link href="{{ route('admin.transactions') }}" :active="request()->routeIs('admin.transactions')">
-                                {{ __('Transactions') }}
+                                {{ __('Transaksi') }}
                             </x-nav-link>
                             <x-nav-link href="{{ route('admin.penarikan') }}" :active="request()->routeIs('admin.penarikan')">
                                 {{ __('Penarikan') }}

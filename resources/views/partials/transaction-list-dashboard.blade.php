@@ -59,11 +59,11 @@
     </span>
 </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ \Carbon\Carbon::parse($transaction->tanggal_booking)->format('d M Y') }}
+                            {{ \Carbon\Carbon::parse($transaction->waktu_mulai)->format('d M Y') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-left">
-                            @if (($transaction->status_proses ?? null) === 'Selesai' && !empty($transaction->tanggal_selesai))
-                                {{ \Carbon\Carbon::parse($transaction->tanggal_selesai)->format('d M Y') }}
+                            @if (($transaction->status_proses ?? null) === 'Selesai' && !empty($transaction->waktu_selesai))
+                                {{ \Carbon\Carbon::parse($transaction->waktu_selesai)->format('d M Y') }}
                             @else
                                 <p class="py-4 whitespace-nowrap text-sm text-gray-500 text-left">Layanan anda
                                     belum selesai</p>

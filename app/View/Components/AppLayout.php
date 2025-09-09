@@ -12,6 +12,7 @@ class AppLayout extends Component
      */
     public function render(): View
     {
+        app(\App\Http\Controllers\HomeController::class)->navigation_data();
         return view('layouts.app');
     }
 }

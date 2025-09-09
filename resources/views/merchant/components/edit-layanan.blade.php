@@ -59,19 +59,20 @@
                     <label for="edit_satuan"
                         class="block text-sm font-medium text-gray-700">Satuan</label>
                     <select name="satuan" id="edit_satuan"
-                        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-homize-blue focus:border-homize-blue sm:text-sm">
-                        <option value="kg"
-                            {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->satuan == 'kg' ? 'selected' : '' }}>
-                            Per Kilogram (kg)</option>
+                        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-homize-blue focus:border-homize-blue sm:text-sm"
+                        required>
+                        <option value="kilogram"
+                            {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->satuan == 'kilogram' ? 'selected' : '' }}>
+                            Per Kilogram</option>
                         <option value="unit"
                             {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->satuan == 'unit' ? 'selected' : '' }}>
                             Per Unit</option>
                         <option value="pcs"
                             {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->satuan == 'pcs' ? 'selected' : '' }}>
                             Per Pieces (pcs)</option>
-                        <option value="jam"
-                            {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->satuan == 'jam' ? 'selected' : '' }}>
-                            Per Jam</option>
+                        <option value="pertemuan"
+                            {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->satuan == 'pertemuan' ? 'selected' : '' }}>
+                            Per Pertemuan</option>
                     </select>
                     <div>
                         <label for="edit_durasi"
@@ -86,15 +87,15 @@
                         <select name="tipe_durasi" id="edit_tipe_durasi"
                             class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-homize-blue focus:border-homize-blue sm:text-sm"
                             required>
+                            <option value="Menit"
+                                {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->tipe_durasi == 'Menit' ? 'selected' : '' }}>
+                                Menit</option>
                             <option value="Jam"
                                 {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->tipe_durasi == 'Jam' ? 'selected' : '' }}>
                                 Jam</option>
                             <option value="Hari"
                                 {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->tipe_durasi == 'Hari' ? 'selected' : '' }}>
                                 Hari</option>
-                            <option value="Pertemuan"
-                                {{ isset($editLayanan) && $editLayanan->tarif_layanan && $editLayanan->tarif_layanan->tipe_durasi == 'Pertemuan' ? 'selected' : '' }}>
-                                Pertemuan</option>
                         </select>
                     </div>
                 </div>

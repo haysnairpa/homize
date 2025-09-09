@@ -17,13 +17,14 @@ use App\Http\Controllers\TokoFavoritController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PembayaranController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\XenditCallbackController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Merchant\PenarikanController;
 use App\Http\Controllers\Admin\PenarikanController as AdminPenarikanController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\MerchantController as AdminMerchantController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 
 Route::get('/', function () {
     return redirect()->route('home');
@@ -50,12 +51,6 @@ Route::middleware([
 ])->group(function () {
     // User Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])->name('dashboard');
-
-    // Admin Merchant Deletion Route
-    Route::delete('/admin/merchants/{id}', [\App\Http\Controllers\Admin\MerchantController::class, 'destroy'])->name('admin.merchants.destroy');
-
-    // Admin User Deletion Route
-    Route::delete('/admin/users/{id}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
     
     // User Profile Photo Upload
     Route::post('/user/profile-photo', [\App\Http\Controllers\UserProfilePhotoController::class, 'update'])->name('user-profile-photo.update');
@@ -83,6 +78,8 @@ Route::middleware([
     // Pembayaran routes
     Route::get('/pembayaran/{id}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::get('/pembayaran/{id}/process', [PembayaranController::class, 'process'])->name('pembayaran.process');
+    Route::get('/pembayaran/{id}/bsi-transfer', [PembayaranController::class, 'showBsiTransfer'])->name('pembayaran.bsi-transfer');
+    Route::post('/pembayaran/{id}/save-order', [PembayaranController::class, 'saveOrder'])->name('pembayaran.save-order');
 
     // Xendit callback - without middleware required
     Route::post('pembayaran/callback', [XenditCallbackController::class, 'handle'])
@@ -143,7 +140,6 @@ Route::middleware(['auth'])->group(function () {
 
 // Merchant Dashboard Routes (pastikan tidak menggunakan middleware prevent-merchant-reregistration)
 Route::middleware(['auth', \App\Http\Middleware\MerchantMiddleware::class])->prefix('merchant')->name('merchant.')->group(function () {
-    // Penarikan merchant
     Route::get('/penarikan', [PenarikanController::class, 'index'])->name('penarikan');
     Route::get('/penarikan/riwayat', [PenarikanController::class, 'riwayat'])->name('penarikan.riwayat');
     Route::post('/penarikan/ajukan', [PenarikanController::class, 'ajukan'])->name('penarikan.ajukan');
@@ -182,6 +178,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/rating/{id}', [RatingController::class, 'store'])->name('user.rating.store');
 });
 
+// Customer Approval routes
+Route::middleware(['auth:sanctum'])->prefix('customer')->name('customer.')->group(function () {
+    Route::get('/approval/{id}', [\App\Http\Controllers\CustomerApprovalController::class, 'show'])->name('approval.show');
+    Route::post('/approval/{id}/approve', [\App\Http\Controllers\CustomerApprovalController::class, 'approve'])->name('approval.approve');
+    Route::post('/approval/{id}/protest', [\App\Http\Controllers\CustomerApprovalController::class, 'protest'])->name('approval.protest');
+});
+
 // Tambahkan route ini di bawah route home
 Route::post('/home/filter', [App\Http\Controllers\HomeController::class, 'filterLayanan'])->name('home.filter');
 
@@ -212,14 +215,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminController::class, 'login'])->name('login.post');
 
-    // Protected admin routes
-    Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+    Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
-        Route::get('/merchants', [AdminController::class, 'merchants'])->name('merchants');
+        Route::get('/merchants', [AdminMerchantController::class, 'merchants'])->name('merchants');
+        Route::get('/merchants/{id}/detail', [AdminMerchantController::class, 'getMerchantDetail'])->name('merchants.detail');
+        Route::get('/merchants/{id}/transactions', [AdminMerchantController::class, 'showTransactionHistory'])->name('admin.merchants.transactions');
+        Route::post('/merchants/{id}/adjust-balance', [AdminMerchantController::class, 'adjustBalance'])->name('merchants.adjust-balance');
         Route::post('/merchant/{id}/approve', [AdminController::class, 'approveMerchant'])->name('merchant.approve');
         Route::post('/merchant/{id}/reject', [AdminController::class, 'rejectMerchant'])->name('merchant.reject');
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
         Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions');
+        Route::delete('/merchants/{id}', [AdminMerchantController::class, 'destroy'])->name('merchants.destroy');
+        Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        Route::post('/payment/{id}/approve', [PembayaranController::class, 'approvePayment'])->name('payment.approve');
+        Route::put('/payment/{id}/reject', [PembayaranController::class, 'rejectPayment'])->name('payment.reject');
+        Route::post('/booking/{id}/add-merchant-balance', [\App\Http\Controllers\CustomerApprovalController::class, 'addMerchantBalance'])->name('booking.add-merchant-balance');
     });
 });

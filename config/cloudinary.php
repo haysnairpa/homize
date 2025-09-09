@@ -40,6 +40,7 @@ return [
     'layanan_upload_preset' => env('CLOUDINARY_LAYANAN_UPLOAD_PRESET'),
     'sertifikasi_upload_preset' => env('CLOUDINARY_SERTIFIKASI_UPLOAD_PRESET'),
     'user_profile_upload_preset' => env('CLOUDINARY_USER_PROFILE_UPLOAD_PRESET'),
+    'user_rating_upload_preset' => env('CLOUDINARY_USER_RATING_UPLOAD_PRESET'),
 
     /**
      * Route to get cloud_image_url from Blade Upload Widget

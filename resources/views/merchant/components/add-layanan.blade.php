@@ -157,49 +157,11 @@
                                     class="text-red-500">*</span></label>
                             <select name="satuan" id="satuan_input_kgs"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
-                                <option value="1" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '1' ? 'selected' : '' }}>Per Kilogram (kg)</option>
-<option value="2" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '2' ? 'selected' : '' }}>Per Unit</option>
-<option value="3" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '3' ? 'selected' : '' }}>Per Pieces (pcs)</option>
-<option id="selected_jam" value="4" style="display:none;" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == '4' ? 'selected' : '' }}>Per Jam</option>
+                                <option value="kilogram" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == 'kilogram' ? 'selected' : '' }}>Per Kilogram</option>
+                                <option value="unit" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == 'unit' ? 'selected' : '' }}>Per Unit</option>
+                                <option value="pcs" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == 'pcs' ? 'selected' : '' }}>Per Pieces (pcs)</option>
+                                <option value="pertemuan" {{ old('satuan', $editLayanan->tarif_layanan->satuan ?? '') == 'pertemuan' ? 'selected' : '' }}>Per Pertemuan</option>
                             </select>
-                            <style>
-                                .readonly-satuan {
-                                    background-color: #f3f4f6;
-                                    color: #6b7280;
-                                    cursor: not-allowed;
-                                }
-                            </style>
-
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const tipeDurasi = document.getElementById('tipe_durasi');
-                                    const satuan = document.getElementById('satuan_input_kgs');
-
-                                    function handleTipeDurasiChange() {
-                                        const jamOption = document.getElementById('selected_jam');
-                                        if (tipeDurasi.value === 'Pertemuan') {
-    satuan.value = '4'; // integer for 'jam'
-    satuan.classList.add('readonly-satuan');
-    satuan.setAttribute('readonly', true);
-    satuan.style.pointerEvents = 'none'; // Prevent interaction
-    if (jamOption) jamOption.style.display = '';
-} else {
-    if (satuan.value === '4') {
-        satuan.value = '1'; // Default to 'kg' if leaving pertemuan
-    }
-    satuan.classList.remove('readonly-satuan');
-    satuan.removeAttribute('readonly');
-    satuan.style.pointerEvents = '';
-    if (jamOption) jamOption.style.display = 'none';
-                                        }
-                                    }
-
-                                    // Initial run (in case of old() value after validation error)
-                                    handleTipeDurasiChange();
-
-                                    tipeDurasi.addEventListener('change', handleTipeDurasiChange);
-                                });
-                            </script>
                         </div>
 
                         <div class="space-y-2">
@@ -218,12 +180,9 @@
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
                                     <option value="" disabled {{ old('tipe_durasi') ? '' : 'selected' }}>Pilih
                                         tipe lama durasi</option>
-                                    <option value="Jam" {{ old('tipe_durasi') == 'Jam' ? 'selected' : '' }}>Jam
-                                    </option>
-                                    <option value="Hari" {{ old('tipe_durasi') == 'Hari' ? 'selected' : '' }}>Hari
-                                    </option>
-                                    <option value="Pertemuan"
-                                        {{ old('tipe_durasi') == 'Pertemuan' ? 'selected' : '' }}>Pertemuan</option>
+                                    <option value="Menit" {{ old('tipe_durasi') == 'Menit' ? 'selected' : '' }}>Menit</option>
+                                    <option value="Jam" {{ old('tipe_durasi') == 'Jam' ? 'selected' : '' }}>Jam</option>
+                                    <option value="Hari" {{ old('tipe_durasi') == 'Hari' ? 'selected' : '' }}>Hari</option>
                                 </select>
                                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
@@ -286,18 +245,18 @@
                             <label for="revisi_satuan" class="block text-sm font-medium text-gray-700">Satuan Revisi</label>
                             <select name="revisi_satuan" id="revisi_satuan_input"
                                 class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
-                                <option value="kg"
-                                    {{ old('revisi_satuan') == 'kg' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '1')) ? 'selected' : '' }}>
-                                    Per Kilogram (kg)</option>
-                                <option value="unit"
-                                    {{ old('revisi_satuan') == 'unit' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '2')) ? 'selected' : '' }}>
-                                    Per Unit</option>
-                                <option value="pcs"
-                                    {{ old('revisi_satuan') == 'pcs' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '3')) ? 'selected' : '' }}>
-                                    Per Pieces (pcs)</option>
-                                <option value="jam"
-                                    {{ old('revisi_satuan') == 'jam' || (isset($editLayanan) && isset($editLayanan->revisi) && (strval($editLayanan->revisi->satuan) === '4')) ? 'selected' : '' }}>
-                                    Per Jam</option>
+                                <option value="kilogram"
+                                {{ old('revisi_satuan') == 'kilogram' || (isset($editLayanan) && isset($editLayanan->revisi) && $editLayanan->revisi->satuan == 'kilogram') ? 'selected' : '' }}>
+                                Per Kilogram</option>
+                            <option value="unit"
+                                {{ old('revisi_satuan') == 'unit' || (isset($editLayanan) && isset($editLayanan->revisi) && $editLayanan->revisi->satuan == 'unit') ? 'selected' : '' }}>
+                                Per Unit</option>
+                            <option value="pcs"
+                                {{ old('revisi_satuan') == 'pcs' || (isset($editLayanan) && isset($editLayanan->revisi) && $editLayanan->revisi->satuan == 'pcs') ? 'selected' : '' }}>
+                                Per Pieces (pcs)</option>
+                            <option value="pertemuan"
+                                {{ old('revisi_satuan') == 'pertemuan' || (isset($editLayanan) && isset($editLayanan->revisi) && $editLayanan->revisi->satuan == 'pertemuan') ? 'selected' : '' }}>
+                                Per Pertemuan</option>
                             </select>
                         </div>
 
@@ -317,13 +276,12 @@
                                     class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none bg-white">
                                     <option value="" disabled {{ old('revisi_tipe_durasi') ? '' : 'selected' }}>
                                         Pilih tipe durasi</option>
+                                    <option value="Menit" {{ old('revisi_tipe_durasi') == 'Menit' ? 'selected' : '' }}>
+                                        Menit</option>
                                     <option value="Jam" {{ old('revisi_tipe_durasi') == 'Jam' ? 'selected' : '' }}>
                                         Jam</option>
                                     <option value="Hari"
                                         {{ old('revisi_tipe_durasi') == 'Hari' ? 'selected' : '' }}>Hari</option>
-                                    <option value="Pertemuan"
-                                        {{ old('revisi_tipe_durasi') == 'Pertemuan' ? 'selected' : '' }}>Pertemuan
-                                    </option>
                                 </select>
                                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"

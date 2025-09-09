@@ -9,8 +9,11 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use App\Events\OrderCompleted;
+use App\Mail\OrderAcceptedNotification;
 
 class OrderController extends Controller
 {
@@ -32,13 +35,30 @@ class OrderController extends Controller
             'merchant_orders_search' => $search,
         ]);
 
-        $query = "SELECT b.id, u.nama AS nama_user, l.nama_layanan, b.status_proses, p.status_pembayaran, b.created_at AS booking_date, b.created_at, bs.updated_at, p.amount, b.alamat_pembeli, b.catatan
+        // Log the merchant order request for debugging
+        Log::info('Merchant viewing orders', [
+            'merchant_id' => $merchant->id,
+            'merchant_name' => $merchant->nama_usaha,
+            'filters' => [
+                'status' => $status,
+                'start_date' => $start,
+                'end_date' => $end,
+                'search' => $search
+            ]
+        ]);
+
+        // Only show orders where payment has been completed (status_pembayaran = 'Selesai')
+        // This ensures merchants only see orders that have been approved by admin
+        $query = "SELECT b.id, u.nama AS nama_user, l.nama_layanan, b.status_proses, p.status_pembayaran, 
+                    b.created_at AS booking_date, b.created_at, bs.updated_at, p.amount, 
+                    b.alamat_pembeli, b.catatan, p.id as payment_id
                     FROM booking b
                     JOIN users u ON u.id = b.id_user
                     JOIN layanan l ON l.id = b.id_layanan
                     JOIN booking_schedule bs ON bs.id = b.id_booking_schedule
                     JOIN pembayaran p ON p.id_booking = b.id 
-                    WHERE b.id_merchant = ?";
+                    WHERE b.id_merchant = ? 
+                    AND p.status_pembayaran = 'Selesai'";
         $params = [$merchant->id];
         if ($status && $status !== 'all') {
             $query .= " AND b.status_proses = ?";
@@ -103,10 +123,50 @@ class OrderController extends Controller
         }
         $booking->status_proses = $validated['status_proses'];
         $booking->save();
-        if ($requestedStatus == 'Selesai') {
-            $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
-            event(new OrderCompleted($booking));
+        
+        // Load all necessary relations for email notifications
+        $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
+        
+        // Send email notification based on the new status
+        if ($requestedStatus == 'Dikonfirmasi') {
+            try {
+                // Send email to user that their order has been accepted
+                if ($booking->user && $booking->user->email) {
+                    Mail::to($booking->user->email)
+                        ->send(new OrderAcceptedNotification($booking));
+                    
+                    Log::info('Email notifikasi pesanan dikonfirmasi berhasil dikirim', [
+                        'booking_id' => $booking->id,
+                        'user_email' => $booking->user->email
+                    ]);
+                } else {
+                    Log::warning('Tidak dapat mengirim email notifikasi: data user tidak lengkap', [
+                        'booking_id' => $booking->id
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Gagal mengirim email notifikasi pesanan dikonfirmasi', [
+                    'booking_id' => $booking->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
+        } elseif ($requestedStatus == 'Selesai') {
+            // Trigger the OrderCompleted event which will send the completion email with rating button
+            try {
+                event(new OrderCompleted($booking));
+                Log::info('Event OrderCompleted berhasil dipicu', [
+                    'booking_id' => $booking->id
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Gagal memicu event OrderCompleted', [
+                    'booking_id' => $booking->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
         }
+        
         return redirect()->route('merchant.orders')->with('success', 'Status pesanan berhasil diperbarui');
     }
 

@@ -12,11 +12,13 @@ class Pembayaran extends Model
         "id_booking",
         "order_id",
         "amount",
+        "unique_code",
         "method",
         "status_pembayaran",
         "snap_token",
         "payment_date",
         "otp_attempts",
+        "rejection_reason",
     ];
 
     // one to one from pembayaran to booking
@@ -46,6 +48,24 @@ class Pembayaran extends Model
     public function getFormattedAmountAttribute()
     {
         return 'Rp ' . number_format($this->amount, 0, ',', '.');
+    }
+    
+    // Get total amount with unique code
+    public function getTotalAmountAttribute()
+    {
+        return $this->amount + ($this->unique_code ?? 0);
+    }
+    
+    // Format total amount to rupiah
+    public function getFormattedTotalAmountAttribute()
+    {
+        return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
+    }
+    
+    // Generate a unique code between 500-999
+    public static function generateUniqueCode()
+    {
+        return rand(500, 999);
     }
     
     // OTP attempts tracking
