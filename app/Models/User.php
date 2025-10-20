@@ -94,4 +94,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Wishlist::class, 'id_user');
     }
+
+    // one to many from user to conversations
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class, 'id_user');
+    }
 }

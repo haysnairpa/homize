@@ -72,4 +72,10 @@ class Merchant extends Model
     {
         return $this->hasMany(RekeningMerchant::class, 'id_merchant');
     }
+
+    // one to many from merchant to conversations
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class, 'id_merchant');
+    }
 }

@@ -131,4 +131,10 @@ class Booking extends Model
     {
         return $this->merchant_balance_added;
     }
+
+    // one to one from booking to conversation
+    public function conversation()
+    {
+        return $this->hasOne(Conversation::class, 'id_booking');
+    }
 }
