@@ -175,53 +175,74 @@
 
             <!-- Merchant Info -->
             <div class="border-t border-gray-200 px-8 py-8 ">
-                <div class="grid grid-cols-12 gap-4">
-                    <!-- Merchant Info Link -->
-                    <div class="col-span-8 bg-gray-100 rounded-2xl"
-                        style="background: rgba(243, 244, 246, 0.25);
+                <div class="flex gap-4">
+                    @php
+                        $isFollowing = Auth::check()
+                            ? App\Models\TokoFavorit::where('id_user', Auth::id())
+                                ->where('id_merchant', $layanan->id_merchant)
+                                ->exists()
+                            : false;
+                    @endphp
+                    
+                    <!-- Merchant and Follow Section -->
+                    <div class="flex w-full bg-gray-100 rounded-2xl overflow-hidden px-3"
+                         style="background: rgba(243, 244, 246, 0.25);
                                 box-shadow: 0 .5rem 3rem rgba(0, 0, 0, 0.1);
                                 backdrop-filter: blur(.25rem);
                                 -webkit-backdrop-filter: blur(.25rem);">
+                        <!-- Merchant Info Link -->
                         <a href="{{ route('merchant.detail', $layanan->id_merchant) }}"
-                            class="block rounded-lg transition duration-200 p-3 ">
-                            <div class="flex items-center gap-4 ">
+                           class="flex-grow block rounded-lg transition duration-200 p-4">
+                            <div class="flex items-center h-full">
                                 <div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
                                     <img src="{{ $layanan->profile_url }}"
-                                        alt="{{ $layanan->nama_usaha }}" class="w-full h-full object-contain">
+                                         alt="{{ $layanan->nama_usaha }}" class="w-full h-full object-contain">
                                 </div>
-                                <div class="flex-1 min-w-0">
-                                    <h2 class="text-lg font-bold text-gray-900 truncate">{{ $layanan->nama_usaha }}
-                                    </h2>
-                                    <p class="text-sm text-gray-600 mt-1 truncate">{{ $layanan->nama_sub_kategori }}
-                                    </p>
+                                <div class="flex-1 min-w-0 ml-4">
+                                    <h2 class="text-lg font-bold text-gray-900 truncate">{{ $layanan->nama_usaha }}</h2>
+                                    <p class="text-sm text-gray-600 mt-1 truncate">{{ $layanan->nama_sub_kategori }}</p>
                                 </div>
                             </div>
                         </a>
-                    </div>
-
-                    <!-- Follow Button -->
-                    <div class="col-span-4 flex items-center justify-center">
-                        @php
-                            $isFollowing = Auth::check()
-                                ? App\Models\TokoFavorit::where('id_user', Auth::id())
-                                    ->where('id_merchant', $layanan->id_merchant)
-                                    ->exists()
-                                : false;
-                        @endphp
-
-                        <button id="followBtn" data-merchant-id="{{ $layanan->id_merchant }}"
-                            class="w-full px-4 py-4 border-2 border-homize-blue {{ $isFollowing ? 'bg-homize-blue text-white' : 'bg-white text-homize-blue' }}  hover:bg-homize-blue hover:text-white rounded-full transition duration-300 flex items-center justify-center gap-2 text-md">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="{{ $isFollowing ? 'M5 13l4 4L19 7' : 'M12 4v16m8-8H4' }}" />
-                            </svg>
-                            {{ $isFollowing ? 'Following' : 'Follow' }}
-                        </button>
+                        
+                        <!-- Action Buttons (Follow & Chat) -->
+                        <div class="flex items-center gap-5 px-2">
+                            <!-- Follow Button -->
+                            <button id="followBtn" data-merchant-id="{{ $layanan->id_merchant }}"
+                                class="h-12 px-4 {{ $isFollowing ? 'bg-homize-blue text-white' : 'bg-white text-homize-blue border border-homize-blue' }} hover:bg-homize-blue hover:text-white rounded-md transition duration-300 flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="{{ $isFollowing ? 'M5 13l4 4L19 7' : 'M12 4v16m8-8H4' }}" />
+                                </svg>
+                                <span>{{ $isFollowing ? 'Following' : 'Follow' }}</span>
+                            </button>
+                            
+                            @if($layanan->id_merchant)
+                                @auth
+                                    <!-- Direct form instead of component for testing -->
+                                    <form action="{{ route('chat.start') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="merchant_id" value="{{ $layanan->id_merchant }}">
+                                        <button type="submit" class="h-12 px-5 bg-transparent text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-300 flex items-center justify-center">
+                                            <span class="text-base">Chat</span>
+                                        </button>
+                                    </form>
+                                @else
+                                    <!-- Login link for unauthenticated users -->
+                                    <a href="{{ route('login') }}?redirect_url={{ url()->current() }}" 
+                                       class="h-12 px-5 bg-transparent text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-300 flex items-center justify-center">
+                                        <span class="text-base">Chat</span>
+                                    </a>
+                                @endauth
+                            @else
+                                <span class="text-red-500">Error: Merchant not found</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="grid grid-cols-2 gap-8 mt-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                     <a href="{{ route('booking.create', $layanan->id) }}"
                         class="w-full bg-homize-blue hover:bg-homize-blue-second text-white font-medium py-4 px-6 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

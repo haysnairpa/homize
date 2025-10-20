@@ -233,3 +233,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/booking/{id}/add-merchant-balance', [\App\Http\Controllers\CustomerApprovalController::class, 'addMerchantBalance'])->name('booking.add-merchant-balance');
     });
 });
+
+// Include chat routes
+require __DIR__.'/chat.php';
