@@ -92,12 +92,31 @@ class ChatService
         return $query->recent()->paginate($perPage);
     }
 
+    public function getConversationsForBoth(int $userId, int $merchantId, int $perPage = 20)
+    {
+        return Conversation::with([
+                'user',
+                'merchant',
+                'latestMessage.attachments',
+                'booking'
+            ])
+            ->where(function ($q) use ($userId, $merchantId) {
+                $q->where('id_user', $userId)
+                  ->orWhere('id_merchant', $merchantId);
+            })
+            ->recent()
+            ->paginate($perPage);
+    }
+
     /**
      * Get messages for a conversation
      */
-    public function getMessages(int $conversationId, int $perPage = 50)
+    public function getMessages(int $conversationId, int $perPage = 50, ?int $afterId = null)
     {
         return Message::forConversation($conversationId)
+            ->when($afterId, function ($q) use ($afterId) {
+                $q->where('id', '>', $afterId);
+            })
             ->with(['attachments'])
             ->orderBy('created_at', 'asc')
             ->paginate($perPage);

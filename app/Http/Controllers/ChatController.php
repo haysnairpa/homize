@@ -28,14 +28,17 @@ class ChatController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $userType = $user->merchant ? 'merchant' : 'user';
-        $userId = $userType === 'merchant' ? $user->merchant->id : $user->id;
-
-        // Get conversations
-        $conversations = $this->chatService->getConversations($userType, $userId);
-
-        // Get unread count
-        $unreadCount = $this->chatService->getUnreadCount($userType, $userId);
+        if ($user->merchant) {
+            // User has merchant profile; show both sides
+            $conversations = $this->chatService->getConversationsForBoth($user->id, $user->merchant->id);
+            $unreadCount = $this->chatService->getUnreadCount('user', $user->id)
+                + $this->chatService->getUnreadCount('merchant', $user->merchant->id);
+            $userType = 'both';
+        } else {
+            $conversations = $this->chatService->getConversations('user', $user->id);
+            $unreadCount = $this->chatService->getUnreadCount('user', $user->id);
+            $userType = 'user';
+        }
 
         return view('chat.index', compact('conversations', 'unreadCount', 'userType'));
     }
@@ -56,12 +59,17 @@ class ChatController extends Controller
         $messages = $this->chatService->getMessages($conversation->id);
 
         // Mark messages as read
-        $userType = $user->merchant ? 'merchant' : 'user';
+        $userType = ($user->merchant && $conversation->id_merchant === $user->merchant->id)
+            ? 'merchant'
+            : 'user';
         $this->chatService->markMessagesAsRead($conversation->id, $userType);
 
         // Get conversations for the sidebar
-        $userId = $userType === 'merchant' ? $user->merchant->id : $user->id;
-        $conversations = $this->chatService->getConversations($userType, $userId);
+        if ($user->merchant) {
+            $conversations = $this->chatService->getConversationsForBoth($user->id, $user->merchant->id);
+        } else {
+            $conversations = $this->chatService->getConversations('user', $user->id);
+        }
 
         // Broadcast read event
         broadcast(new MessageRead($conversation->id, $userType));
@@ -179,7 +187,7 @@ class ChatController extends Controller
     /**
      * Get messages for a conversation (AJAX)
      */
-    public function messages(Conversation $conversation)
+    public function messages(Request $request, Conversation $conversation)
     {
         $user = Auth::user();
 
@@ -191,7 +199,9 @@ class ChatController extends Controller
             ], 403);
         }
 
-        $messages = $this->chatService->getMessages($conversation->id);
+        $lastId = $request->query('last_message_id');
+        $afterId = $lastId ? intval($lastId) : null;
+        $messages = $this->chatService->getMessages($conversation->id, 50, $afterId);
 
         return response()->json([
             'success' => true,
@@ -248,10 +258,12 @@ class ChatController extends Controller
     public function unreadCount()
     {
         $user = Auth::user();
-        $userType = $user->merchant ? 'merchant' : 'user';
-        $userId = $userType === 'merchant' ? $user->merchant->id : $user->id;
-
-        $count = $this->chatService->getUnreadCount($userType, $userId);
+        if ($user->merchant) {
+            $count = $this->chatService->getUnreadCount('user', $user->id)
+                + $this->chatService->getUnreadCount('merchant', $user->merchant->id);
+        } else {
+            $count = $this->chatService->getUnreadCount('user', $user->id);
+        }
 
         return response()->json([
             'success' => true,

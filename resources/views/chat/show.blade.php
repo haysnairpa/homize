@@ -30,7 +30,7 @@
 
                     <!-- Message Area -->
                     <div class="w-full md:w-2/3 flex flex-col bg-gray-50" 
-                         x-data="chatMessages({ conversationId: {{ $conversation->id }}, userType: '{{ $userType }}' })"
+                         x-data="chatMessages({ conversationId: {{ $conversation->id }}, userType: '{{ $userType }}', currentUserId: {{ auth()->id() }}, currentMerchantId: {{ auth()->user()->merchant->id ?? 'null' }} })"
                          x-init="init()">
 
                         <!-- Chat Header -->
@@ -73,7 +73,7 @@
 
                         <!-- Messages -->
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50" x-ref="messagesContainer">
-                            <template x-for="message in messages" :key="message.id">
+                            <template x-for="(message, i) in messages" :key="message.id ?? ('tmp-' + i)">
                                 <div :class="`flex ${message.sender_type === userType ? 'justify-end' : 'justify-start'}`">
                                     <div :class="`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.sender_type === userType ? 'bg-homize-blue text-white' : 'bg-white border border-gray-200'}`"
                                          style="word-break: break-word;">
@@ -185,16 +185,24 @@
     @push('scripts')
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('chatMessages', ({ conversationId, userType }) => ({
+            Alpine.data('chatMessages', ({ conversationId, userType, currentUserId, currentMerchantId }) => ({
                 messages: @json($messages->items()),
                 messageContent: '',
                 conversationId,
                 userType,
+                currentUserId,
+                currentMerchantId,
                 isSubmitting: false,
                 attachments: [],
                 lastMessageId: {{ $messages->count() > 0 ? $messages->last()->id : 0 }},
+                seenIds: {},
                 
                 init() {
+                    if (Array.isArray(this.messages)) {
+                        this.messages.forEach(m => { if (m && m.id != null) { this.seenIds[Number(m.id)] = true; } });
+                    } else {
+                        this.messages = [];
+                    }
                     this.scrollToBottom();
                     this.setupPusher();
                     this.markAsRead();
@@ -203,6 +211,21 @@
                     setInterval(() => {
                         this.checkNewMessages();
                     }, 3000);
+                },
+                
+                addMessageIfNew(msg) {
+                    if (!msg || msg.id == null) return;
+                    const idNum = Number(msg.id);
+                    if (!Array.isArray(this.messages)) this.messages = [];
+                    if (this.seenIds[idNum]) return;
+                    this.seenIds[idNum] = true;
+                    const exists = this.messages.some(m => m && Number(m.id) === idNum);
+                    if (!exists) {
+                        this.messages.push(msg);
+                        if (!this.lastMessageId || idNum > Number(this.lastMessageId)) {
+                            this.lastMessageId = idNum;
+                        }
+                    }
                 },
                 
                 scrollToBottom() {
@@ -218,10 +241,11 @@
                     if (window.Echo) {
                         window.Echo.private(`conversation.${this.conversationId}`)
                             .listen('.message.sent', (e) => {
-                                // Don't add messages from ourselves
-                                if (e.message.sender_type !== this.userType || e.message.id_sender !== {{ auth()->id() }}) {
-                                    this.messages.push(e.message);
-                                    this.lastMessageId = e.message.id;
+                                const isMine = (e.sender_type === 'user' && e.id_sender === this.currentUserId)
+                                    || (e.sender_type === 'merchant' && this.currentMerchantId && e.id_sender === this.currentMerchantId);
+
+                                if (!isMine) {
+                                    this.addMessageIfNew(e);
                                     this.markAsRead();
                                     this.scrollToBottom();
                                 }
@@ -269,14 +293,22 @@
                         const data = await response.json();
                         
                         if (data.success) {
-                            // Add message to our list
-                            this.messages.push(data.message);
-                            this.lastMessageId = data.message.id;
-                            
+                            // Add message to our list (avoid duplicates)
+                            this.addMessageIfNew(data.message);
+
                             // Clear inputs
                             this.messageContent = '';
                             this.attachments = [];
-                            
+
+                            // Notify sidebar items to update preview immediately
+                            window.dispatchEvent(new CustomEvent('chat:self-sent', {
+                                detail: {
+                                    conversationId: this.conversationId,
+                                    content: data.message.content,
+                                    created_at: data.message.created_at
+                                }
+                            }));
+
                             this.scrollToBottom();
                         } else {
                             console.error('Failed to send message:', data);
@@ -301,11 +333,8 @@
                             
                             // Check if we have any new messages
                             if (newMessages.length > 0) {
-                                // Add messages to our list
-                                this.messages = [...this.messages, ...newMessages];
-                                
-                                // Update last message id
-                                this.lastMessageId = newMessages[newMessages.length - 1].id;
+                                // Add messages to our list without duplicates
+                                newMessages.forEach(msg => this.addMessageIfNew(msg));
                                 
                                 // Mark as read
                                 this.markAsRead();
