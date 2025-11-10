@@ -236,7 +236,10 @@ class ChatController extends Controller
             ], 403);
         }
 
-        $userType = $user->merchant ? 'merchant' : 'user';
+        // Determine side for this specific conversation
+        $userType = ($user->merchant && $conversation->id_merchant === $user->merchant->id)
+            ? 'merchant'
+            : 'user';
         $this->chatService->markMessagesAsRead($conversation->id, $userType);
 
         // Broadcast read event

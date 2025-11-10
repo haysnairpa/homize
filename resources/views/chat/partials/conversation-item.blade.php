@@ -26,6 +26,10 @@
                     }
                 });
             }
+            // If this item is the active conversation, clear unread on load
+            if (activeId && activeId === conversationId) {
+                unread = 0;
+            }
             window.addEventListener('chat:self-sent', (ev) => {
                 if (!ev.detail) return;
                 if (ev.detail.conversationId !== conversationId) return;

@@ -114,10 +114,43 @@
                                             </template>
                                         </div>
 
-                                        <!-- Time -->
-                                        <div class="text-xs mt-1 text-right" 
-                                             :class="message.sender_type === userType ? 'text-blue-100' : 'text-gray-500'"
-                                             x-text="formatTime(message.created_at)">
+                                        <!-- Pending Files Preview (optimistic) -->
+                                        <div class="mt-2 space-y-1" x-show="message.pendingFiles && message.pendingFiles.length > 0">
+                                            <template x-for="(file, idx) in message.pendingFiles" :key="idx">
+                                                <div class="text-xs" :class="message.sender_type === userType ? 'text-white' : 'text-gray-600'">
+                                                    <span x-text="file.name"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+
+                                        <!-- Time + Status (sending/sent/failed/read) -->
+                                        <div class="text-xs mt-1 flex items-center gap-1" :class="message.sender_type === userType ? 'justify-end text-blue-100' : 'justify-end text-gray-500'">
+                                            <span x-text="formatTime(message.created_at)"></span>
+                                            <template x-if="isOwn(message)">
+                                                <span class="inline-flex items-center">
+                                                    <template x-if="message.status === 'sending'">
+                                                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v2m0 12v2m8-8h2M2 12H4m13.657-6.343l1.414 1.414M4.929 19.071l1.414-1.414m0-10.314L4.93 6.343M18.364 19.071l-1.414-1.414" />
+                                                        </svg>
+                                                    </template>
+                                                    <template x-if="message.status === 'failed'">
+                                                        <button type="button" class="ml-1 text-red-300 hover:text-red-500" @click.stop="retryMessage(message)">
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                        </button>
+                                                    </template>
+                                                    <template x-if="!message.status || message.status === 'sent'">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path x-show="!message.is_read" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                            <g x-show="message.is_read">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l4 4L14 5" />
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l4 4L21 5" />
+                                                            </g>
+                                                        </svg>
+                                                    </template>
+                                                </span>
+                                            </template>
                                         </div>
                                     </div>
                                 </div>
@@ -196,6 +229,7 @@
                 attachments: [],
                 lastMessageId: {{ $messages->count() > 0 ? $messages->last()->id : 0 }},
                 seenIds: {},
+                _markTimer: null,
                 
                 init() {
                     if (Array.isArray(this.messages)) {
@@ -211,6 +245,29 @@
                     setInterval(() => {
                         this.checkNewMessages();
                     }, 3000);
+
+                    // Mark as read when window/tab regains focus
+                    window.addEventListener('focus', () => this.markAsReadDebounced());
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') this.markAsReadDebounced();
+                    });
+
+                    // Mark as read when scrolled near bottom
+                    this.$nextTick(() => {
+                        const c = this.$refs.messagesContainer;
+                        if (!c) return;
+                        c.addEventListener('scroll', () => {
+                            const nearBottom = c.scrollHeight - c.scrollTop - c.clientHeight < 40;
+                            if (nearBottom) this.markAsReadDebounced();
+                        });
+                    });
+                },
+                
+                isOwn(message) {
+                    return message && message.sender_type === this.userType;
+                },
+                generateClientId() {
+                    return 'c' + Math.random().toString(36).slice(2) + Date.now().toString(36);
                 },
                 
                 addMessageIfNew(msg) {
@@ -221,7 +278,7 @@
                     this.seenIds[idNum] = true;
                     const exists = this.messages.some(m => m && Number(m.id) === idNum);
                     if (!exists) {
-                        this.messages.push(msg);
+                        this.messages.push({ ...msg, status: 'sent' });
                         if (!this.lastMessageId || idNum > Number(this.lastMessageId)) {
                             this.lastMessageId = idNum;
                         }
@@ -271,6 +328,21 @@
                     }
                     
                     this.isSubmitting = true;
+                    const clientId = this.generateClientId();
+                    const temp = {
+                        id: null,
+                        client_id: clientId,
+                        sender_type: this.userType,
+                        id_sender: this.userType === 'merchant' ? this.currentMerchantId : this.currentUserId,
+                        content: this.messageContent,
+                        attachments: [],
+                        is_read: false,
+                        created_at: new Date().toISOString(),
+                        status: 'sending',
+                        pendingFiles: [...this.attachments]
+                    };
+                    this.messages.push(temp);
+                    this.scrollToBottom();
                     
                     try {
                         const formData = new FormData();
@@ -293,10 +365,15 @@
                         const data = await response.json();
                         
                         if (data.success) {
-                            // Add message to our list (avoid duplicates)
-                            this.addMessageIfNew(data.message);
+                            const idx = this.messages.findIndex(m => m.client_id === clientId);
+                            if (idx !== -1) {
+                                this.messages[idx] = { ...data.message, status: 'sent' };
+                                this.seenIds[Number(data.message.id)] = true;
+                                this.lastMessageId = Number(data.message.id);
+                            } else {
+                                this.addMessageIfNew(data.message);
+                            }
 
-                            // Clear inputs
                             this.messageContent = '';
                             this.attachments = [];
 
@@ -311,12 +388,53 @@
 
                             this.scrollToBottom();
                         } else {
-                            console.error('Failed to send message:', data);
+                            const idx = this.messages.findIndex(m => m.client_id === clientId);
+                            if (idx !== -1) this.messages[idx].status = 'failed';
                         }
                     } catch (error) {
-                        console.error('Error sending message:', error);
+                        const idx = this.messages.findIndex(m => m.client_id === clientId);
+                        if (idx !== -1) this.messages[idx].status = 'failed';
                     } finally {
                         this.isSubmitting = false;
+                    }
+                },
+
+                async retryMessage(message) {
+                    if (!message || message.status !== 'failed') return;
+                    message.status = 'sending';
+                    try {
+                        const formData = new FormData();
+                        formData.append('conversation_id', this.conversationId);
+                        formData.append('content', message.content || '');
+                        if (message.pendingFiles && message.pendingFiles.length) {
+                            message.pendingFiles.forEach(file => formData.append('attachments[]', file));
+                        }
+                        const response = await fetch('/chat/send', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            },
+                            body: formData
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            const idx = this.messages.findIndex(m => m.client_id === message.client_id);
+                            if (idx !== -1) {
+                                this.messages[idx] = { ...data.message, status: 'sent' };
+                                this.seenIds[Number(data.message.id)] = true;
+                                this.lastMessageId = Number(data.message.id);
+                            } else {
+                                this.addMessageIfNew(data.message);
+                            }
+                            window.dispatchEvent(new CustomEvent('chat:self-sent', {
+                                detail: { conversationId: this.conversationId, content: data.message.content, created_at: data.message.created_at }
+                            }));
+                            this.scrollToBottom();
+                        } else {
+                            message.status = 'failed';
+                        }
+                    } catch (e) {
+                        message.status = 'failed';
                     }
                 },
                 
