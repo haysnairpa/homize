@@ -10,6 +10,7 @@
 /vendor
 .env
 .env.backup
+.env.development
 .env.production
 .env.production.example
 .phpactor.json
