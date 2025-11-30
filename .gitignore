@@ -10,6 +10,7 @@
 /vendor
 .env
 .env.backup
+.env.development
 .env.production
 .env.production.example
 .phpactor.json
@@ -25,3 +26,6 @@ yarn-error.log
 /.vscode
 /.zed
 # /docs
+
+# Admin user migration (contains sensitive credentials)
+/database/migrations/2025_09_09_154022_create_admin_user.php
