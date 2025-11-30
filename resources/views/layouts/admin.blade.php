@@ -50,6 +50,9 @@
                             <x-nav-link href="{{ route('admin.penarikan') }}" :active="request()->routeIs('admin.penarikan')">
                                 {{ __('Penarikan') }}
                             </x-nav-link>
+                            <x-nav-link href="{{ route('admin.promo.index') }}" :active="request()->routeIs('admin.promo.*')">
+                                {{ __('Kode Promo') }}
+                            </x-nav-link>
                         </div>
                     </div>
 
@@ -111,6 +114,9 @@
                     <x-responsive-nav-link href="{{ route('admin.transactions') }}" :active="request()->routeIs('admin.transactions')">
                         {{ __('Transactions') }}
                     </x-responsive-nav-link>
+                    <x-responsive-nav-link href="{{ route('admin.promo.index') }}" :active="request()->routeIs('admin.promo.*')">
+                        {{ __('Kode Promo') }}
+                    </x-responsive-nav-link>
                 </div>
 
                 <!-- Responsive Settings Options -->
@@ -156,4 +162,4 @@
 
     @livewireScripts
 </body>
-</html> 
+</html>

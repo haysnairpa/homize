@@ -133,14 +133,14 @@
                             <p class="text-sm text-gray-600">Users who are Merchants</p>
                             <p class="text-xl font-bold text-green-600">{{ $merchantCount }}</p>
                             <p class="text-sm text-gray-500">
-                                ({{ number_format(($merchantCount / $userCount) * 100, 1) }}%)
+                                ({{ $userCount > 0 ? number_format(($merchantCount / $userCount) * 100, 1) : 0 }}%)
                             </p>
                         </div>
                         <div class="text-center p-3 bg-orange-50 rounded-lg">
                             <p class="text-sm text-gray-600">Regular Users (Not Merchants)</p>
                             <p class="text-xl font-bold text-orange-600">{{ $regularUserCount }}</p>
                             <p class="text-sm text-gray-500">
-                                ({{ number_format(($regularUserCount / $userCount) * 100, 1) }}%)
+                                ({{ $userCount > 0 ? number_format(($regularUserCount / $userCount) * 100, 1) : 0 }}%)
                             </p>
                         </div>
                     </div>

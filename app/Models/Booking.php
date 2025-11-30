@@ -12,6 +12,11 @@ class Booking extends Model
         "id_user",
         "id_merchant",
         "id_layanan",
+        "kode_promo_id",
+        "original_amount",
+        "diskon_amount",
+        "diskon_percentage",
+        "final_amount",
         "status_proses",
         "id_booking_schedule",
         "contact_email",
@@ -63,6 +68,18 @@ class Booking extends Model
     public function layanan()
     {
         return $this->belongsTo(Layanan::class, "id_layanan", "id");
+    }
+
+    // many to one from booking to kode_promo
+    public function kodePromo()
+    {
+        return $this->belongsTo(KodePromo::class, "kode_promo_id", "id");
+    }
+
+    // one to one from booking to penggunaan_kode_promo
+    public function penggunaanKodePromo()
+    {
+        return $this->hasOne(PenggunaanKodePromo::class, "booking_id", "id");
     }
 
 
