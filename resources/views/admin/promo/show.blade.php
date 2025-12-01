@@ -125,9 +125,9 @@
                                     <label class="block text-sm font-medium text-gray-700">Target</label>
                                     <p class="text-sm text-gray-900">
                                         @if($promo->target_type === 'category')
-                                            {{ $promo->targetKategori->nama ?? 'Kategori Tidak Ditemukan' }}
+                                            {{ $promo->target_kategori?->nama ?? 'Kategori Tidak Ditemukan' }}
                                         @elseif($promo->target_type === 'service')
-                                            {{ $promo->targetLayanan->nama ?? 'Layanan Tidak Ditemukan' }}
+                                            {{ $promo->target_layanan?->nama_layanan ?? 'Layanan Tidak Ditemukan' }}
                                         @endif
                                     </p>
                                 </div>

@@ -163,20 +163,24 @@ class BookingController extends Controller
                     $originalAmount
                 );
 
-                if (!$promoValidation['valid']) {
+                // Fix: Use 'success' key instead of 'valid'
+                if (!$promoValidation['success']) {
                     DB::rollBack();
                     return redirect()->back()
                         ->with('error', 'Kode promo tidak valid: ' . $promoValidation['message'])
                         ->withInput();
                 }
 
+                // Get promo from validation data
+                $kodePromo = $promoValidation['data']['kode_promo'];
+
                 // Apply discount
                 $discountResult = $this->promoService->calculateDiscount(
-                    $promoValidation['promo'],
+                    $kodePromo,
                     $originalAmount
                 );
 
-                $kodePromoId = $promoValidation['promo']->id;
+                $kodePromoId = $kodePromo->id;
                 $diskonAmount = $discountResult['discount_amount'];
                 $diskonPercentage = $discountResult['discount_percentage'];
                 $finalAmount = $discountResult['final_amount'];
@@ -237,17 +241,10 @@ class BookingController extends Controller
                 'payment_date' => now(),
             ]);
 
-            // Record promo usage if promo was applied
-            if ($kodePromoId && $promoValidation) {
-                $this->promoService->recordUsage(
-                    $promoValidation['promo'],
-                    Auth::id(),
-                    $booking->id,
-                    $originalAmount,
-                    $diskonAmount,
-                    $finalAmount
-                );
-            }
+            // NOTE: Promo usage is NOT recorded here.
+            // It will be recorded ONLY after payment is completed.
+            // This is handled in PembayaranController or XenditCallbackController
+            // when payment status changes to 'Selesai'
 
             DB::commit();
 
@@ -278,21 +275,26 @@ class BookingController extends Controller
                 $request->amount
             );
 
-            if ($result['valid']) {
+            // Fix: Use 'success' key instead of 'valid'
+            if ($result['success']) {
+                $kodePromo = $result['data']['kode_promo'];
+                
                 // Calculate discount for preview
                 $discountResult = $this->promoService->calculateDiscount(
-                    $result['promo'],
+                    $kodePromo,
                     $request->amount
                 );
 
                 return response()->json([
-                    'valid' => true,
+                    'success' => true,
                     'message' => 'Kode promo valid!',
                     'promo' => [
-                        'nama' => $result['promo']->nama,
-                        'tipe_diskon' => $result['promo']->tipe_diskon,
-                        'nilai_diskon' => $result['promo']->nilai_diskon,
-                        'is_exclusive' => $result['promo']->is_exclusive
+                        'kode' => $kodePromo->kode,
+                        'nama' => $kodePromo->nama,
+                        'tipe_diskon' => $kodePromo->tipe_diskon,
+                        'nilai_diskon' => $kodePromo->nilai_diskon,
+                        'is_exclusive' => $kodePromo->is_exclusive,
+                        'discount_amount' => $discountResult['discount_amount']
                     ],
                     'discount' => [
                         'original_amount' => $request->amount,
@@ -303,14 +305,14 @@ class BookingController extends Controller
                 ]);
             } else {
                 return response()->json([
-                    'valid' => false,
+                    'success' => false,
                     'message' => $result['message']
                 ]);
             }
         } catch (\Exception $e) {
             return response()->json([
-                'valid' => false,
-                'message' => 'Terjadi kesalahan saat memvalidasi kode promo'
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memvalidasi kode promo: ' . $e->getMessage()
             ], 500);
         }
     }

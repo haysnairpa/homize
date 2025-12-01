@@ -98,8 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({
                 kode_promo: promoCode,
-                layanan_id: {{ $layanan->id }},
-                kategori_id: {{ $layanan->id_kategori }},
+                id_layanan: {{ $layanan->id }},
                 amount: originalPrice
             })
         })

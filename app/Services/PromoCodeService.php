@@ -89,6 +89,8 @@ class PromoCodeService
 
     /**
      * Apply promo code to a booking
+     * NOTE: This method only updates the booking with promo info.
+     * Promo usage is NOT recorded here - it's recorded after payment confirmation.
      */
     public function applyPromoToBooking($promoCode, $userId, $bookingId, $originalAmount)
     {
@@ -120,16 +122,9 @@ class PromoCodeService
                 'final_amount' => $finalAmount
             ]);
 
-            // Record promo usage
-            PenggunaanKodePromo::create([
-                'kode_promo_id' => $kodePromo->id,
-                'user_id' => $userId,
-                'booking_id' => $bookingId,
-                'diskon_amount' => $discountAmount,
-                'original_amount' => $originalAmount,
-                'final_amount' => $finalAmount,
-                'tanggal_digunakan' => Carbon::now()
-            ]);
+            // NOTE: Promo usage is NOT recorded here.
+            // It will be recorded ONLY after payment is confirmed.
+            // See PembayaranController::approvePayment() and callback()
 
             DB::commit();
 
@@ -233,6 +228,41 @@ class PromoCodeService
         });
 
         return $this->successResponse('Kode promo tersedia berhasil diambil.', $promos->values());
+    }
+
+    /**
+     * Calculate discount for a promo code
+     * This method is called separately from validation for UI preview
+     */
+    public function calculateDiscount(KodePromo $promo, $originalAmount)
+    {
+        $discountAmount = $promo->calculateDiscount($originalAmount);
+        $finalAmount = $originalAmount - $discountAmount;
+        $discountPercentage = $originalAmount > 0 ? round(($discountAmount / $originalAmount) * 100, 2) : 0;
+
+        return [
+            'discount_amount' => $discountAmount,
+            'final_amount' => $finalAmount,
+            'discount_percentage' => $discountPercentage,
+            'original_amount' => $originalAmount
+        ];
+    }
+
+    /**
+     * Record promo usage after payment is completed
+     * NOTE: This should only be called AFTER payment is confirmed, not during booking creation
+     */
+    public function recordUsage(KodePromo $promo, $userId, $bookingId, $originalAmount, $discountAmount, $finalAmount)
+    {
+        return PenggunaanKodePromo::create([
+            'kode_promo_id' => $promo->id,
+            'user_id' => $userId,
+            'booking_id' => $bookingId,
+            'diskon_amount' => $discountAmount,
+            'original_amount' => $originalAmount,
+            'final_amount' => $finalAmount,
+            'tanggal_digunakan' => Carbon::now()
+        ]);
     }
 
     /**

@@ -191,7 +191,13 @@ class AdminPromoController extends Controller
         $statsResponse = $this->promoService->getPromoStatistics($id);
         $stats = $statsResponse['success'] ? $statsResponse['data'] : [];
         
-        return view('admin.promo.show', compact('promo', 'stats'));
+        // Extract stats to individual variables for the view
+        $totalUsage = $stats['total_usage'] ?? 0;
+        $uniqueUsers = $stats['unique_users'] ?? 0;
+        $totalDiscount = $stats['total_discount_given'] ?? 0;
+        $averageDiscount = $stats['average_discount'] ?? 0;
+        
+        return view('admin.promo.show', compact('promo', 'stats', 'totalUsage', 'uniqueUsers', 'totalDiscount', 'averageDiscount'));
     }
 
     /**

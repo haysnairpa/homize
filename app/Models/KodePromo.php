@@ -55,15 +55,39 @@ class KodePromo extends Model
         return $this->hasMany(Booking::class, 'kode_promo_id');
     }
 
-    // Target relationships (polymorphic-like behavior)
+    // Target relationships
+    // Note: These return the related model only if target_type matches
     public function targetKategori()
     {
-        return $this->belongsTo(Kategori::class, 'target_id')->where('target_type', 'category');
+        if ($this->target_type !== 'category') {
+            return null;
+        }
+        return $this->belongsTo(Kategori::class, 'target_id');
     }
 
     public function targetLayanan()
     {
-        return $this->belongsTo(Layanan::class, 'target_id')->where('target_type', 'service');
+        if ($this->target_type !== 'service') {
+            return null;
+        }
+        return $this->belongsTo(Layanan::class, 'target_id');
+    }
+    
+    // Accessor methods for safe access
+    public function getTargetKategoriAttribute()
+    {
+        if ($this->target_type === 'category' && $this->target_id) {
+            return Kategori::find($this->target_id);
+        }
+        return null;
+    }
+    
+    public function getTargetLayananAttribute()
+    {
+        if ($this->target_type === 'service' && $this->target_id) {
+            return Layanan::find($this->target_id);
+        }
+        return null;
     }
 
     // Scopes

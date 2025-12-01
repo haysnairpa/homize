@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\NewOrderNotification;
 use App\Mail\PaymentConfirmationMail;
 use App\Mail\PaymentRejectionMail;
+use App\Services\PromoCodeService;
+use App\Models\KodePromo;
 use Carbon\Carbon;
 use Xendit\Configuration;
 use Xendit\Invoice\InvoiceApi;
@@ -303,7 +305,43 @@ class PembayaranController extends Controller
                     ]);
 
                     // Load relasi yang dibutuhkan
-                    $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule']);
+                    $booking->load(['user', 'merchant', 'merchant.user', 'layanan', 'pembayaran', 'booking_schedule', 'kodePromo']);
+
+                    // Record promo usage if booking has a promo code (callback payment success)
+                    // Check if usage already exists to prevent double recording
+                    if ($booking->kode_promo_id && $booking->kodePromo) {
+                        try {
+                            // Prevent double recording
+                            $existingUsage = \App\Models\PenggunaanKodePromo::where('booking_id', $booking->id)->exists();
+                            
+                            if (!$existingUsage) {
+                                $promoService = app(PromoCodeService::class);
+                                $promoService->recordUsage(
+                                    $booking->kodePromo,
+                                    $booking->id_user,
+                                    $booking->id,
+                                    $booking->original_amount,
+                                    $booking->diskon_amount,
+                                    $booking->final_amount
+                                );
+                                
+                                Log::info('Promo usage recorded after Xendit callback payment success', [
+                                    'booking_id' => $booking->id,
+                                    'promo_code' => $booking->kodePromo->kode,
+                                    'discount_amount' => $booking->diskon_amount
+                                ]);
+                            } else {
+                                Log::info('Promo usage already recorded for booking (callback)', [
+                                    'booking_id' => $booking->id
+                                ]);
+                            }
+                        } catch (\Exception $e) {
+                            Log::error('Error recording promo usage in callback: ' . $e->getMessage(), [
+                                'booking_id' => $booking->id,
+                                'promo_id' => $booking->kode_promo_id
+                            ]);
+                        }
+                    }
 
                     // Tambahkan pengecekan merchant lebih detail
                     Log::info('Detail merchant untuk booking #' . $booking->id, [
@@ -1144,7 +1182,48 @@ class PembayaranController extends Controller
             $stmt->execute([$bookingId]);
             
             // Refresh pembayaran data to get the latest status
-            $pembayaran = Pembayaran::with(['booking', 'booking.user', 'booking.merchant', 'booking.merchant.user', 'booking.layanan', 'booking.booking_schedule'])->findOrFail($id);
+            $pembayaran = Pembayaran::with(['booking', 'booking.user', 'booking.merchant', 'booking.merchant.user', 'booking.layanan', 'booking.booking_schedule', 'booking.kodePromo'])->findOrFail($id);
+            
+            // Record promo usage if booking has a promo code
+            // This is the ONLY place where promo usage should be recorded (after payment is confirmed)
+            // Check if usage already exists to prevent double recording
+            if ($pembayaran->booking->kode_promo_id) {
+                try {
+                    // Prevent double recording
+                    $existingUsage = \App\Models\PenggunaanKodePromo::where('booking_id', $pembayaran->booking->id)->exists();
+                    
+                    if (!$existingUsage) {
+                        $promoService = app(PromoCodeService::class);
+                        $kodePromo = $pembayaran->booking->kodePromo;
+                        
+                        if ($kodePromo) {
+                            $promoService->recordUsage(
+                                $kodePromo,
+                                $pembayaran->booking->id_user,
+                                $pembayaran->booking->id,
+                                $pembayaran->booking->original_amount,
+                                $pembayaran->booking->diskon_amount,
+                                $pembayaran->booking->final_amount
+                            );
+                            
+                            Log::info('Promo usage recorded after payment approval', [
+                                'booking_id' => $bookingId,
+                                'promo_code' => $kodePromo->kode,
+                                'discount_amount' => $pembayaran->booking->diskon_amount
+                            ]);
+                        }
+                    } else {
+                        Log::info('Promo usage already recorded for booking', [
+                            'booking_id' => $pembayaran->booking->id
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error recording promo usage: ' . $e->getMessage(), [
+                        'booking_id' => $bookingId,
+                        'promo_id' => $pembayaran->booking->kode_promo_id
+                    ]);
+                }
+            }
             
             // Trigger payment status changed event for customer notification
             try {

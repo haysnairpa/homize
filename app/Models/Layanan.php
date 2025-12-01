@@ -64,10 +64,17 @@ class Layanan extends Model
         return $this->belongsTo(JamOperasional::class, "id_jam_operasional", "id");
     }
 
-    // one to one from layanan to sub_kategori
+    // many to one from layanan to sub_kategori
+    // Layanan belongs to SubKategori (layanan has id_sub_kategori foreign key)
+    public function subKategori()
+    {
+        return $this->belongsTo(SubKategori::class, "id_sub_kategori", "id");
+    }
+
+    // Alias for backward compatibility (snake_case)
     public function sub_kategori()
     {
-        return $this->hasOne(SubKategori::class, "id_sub_kategori", "id");
+        return $this->subKategori();
     }
 
     public function wishlist()
