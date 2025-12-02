@@ -322,19 +322,10 @@ class BookingController extends Controller
      */
     public function removePromo(Request $request)
     {
-        $request->validate([
-            'amount' => 'required|numeric|min:0'
-        ]);
-
+        // Amount is optional - frontend may not send it
         return response()->json([
             'success' => true,
-            'message' => 'Kode promo dihapus',
-            'discount' => [
-                'original_amount' => $request->amount,
-                'discount_amount' => 0,
-                'discount_percentage' => 0,
-                'final_amount' => $request->amount
-            ]
+            'message' => 'Kode promo dihapus'
         ]);
     }
 }

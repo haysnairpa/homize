@@ -123,29 +123,29 @@ class AdminPromoController extends Controller
                 $validator->errors()->add('nilai_diskon', 'Persentase diskon tidak boleh lebih dari 100%');
             }
 
+            // Get the actual target_id based on target_type
+            $targetId = null;
+            if ($request->target_type === 'category') {
+                $targetId = $request->input('target_kategori_id');
+            } elseif ($request->target_type === 'service') {
+                $targetId = $request->input('target_layanan_id');
+            }
+
             // Validate target_id requirement
-            if (in_array($request->target_type, ['category', 'service']) && !$request->target_id) {
-                $validator->errors()->add('target_id', 'Target ID wajib diisi untuk tipe target yang dipilih');
+            if (in_array($request->target_type, ['category', 'service']) && !$targetId) {
+                $validator->errors()->add('target_id', 'Target wajib dipilih untuk tipe target yang dipilih');
             }
 
             // Validate target_id existence
-            if ($request->target_type === 'category' && $request->target_id) {
-                if (!Kategori::find($request->target_id)) {
-                    $validator->errors()->add('target_id', 'Kategori yang dipilih tidak ditemukan');
+            if ($request->target_type === 'category' && $targetId) {
+                if (!Kategori::find($targetId)) {
+                    $validator->errors()->add('target_kategori_id', 'Kategori yang dipilih tidak ditemukan');
                 }
             }
 
-            if ($request->target_type === 'service' && $request->target_id) {
-                if (!Layanan::find($request->target_id)) {
-                    $validator->errors()->add('target_id', 'Layanan yang dipilih tidak ditemukan');
-                }
-            }
-
-            // Validate maximum discount for percentage type
-            if ($request->tipe_diskon === 'percentage' && $request->maksimum_diskon && $request->minimum_pembelian) {
-                $maxPossibleDiscount = ($request->minimum_pembelian * $request->nilai_diskon) / 100;
-                if ($request->maksimum_diskon > $maxPossibleDiscount) {
-                    // This is just a warning, not an error
+            if ($request->target_type === 'service' && $targetId) {
+                if (!Layanan::find($targetId)) {
+                    $validator->errors()->add('target_layanan_id', 'Layanan yang dipilih tidak ditemukan');
                 }
             }
         });
@@ -159,9 +159,13 @@ class AdminPromoController extends Controller
         try {
             $data = $request->all();
             
-            // Set target_id to null if target_type is 'all'
+            // Map target_kategori_id or target_layanan_id to target_id based on target_type
             if ($data['target_type'] === 'all') {
                 $data['target_id'] = null;
+            } elseif ($data['target_type'] === 'category') {
+                $data['target_id'] = $request->input('target_kategori_id');
+            } elseif ($data['target_type'] === 'service') {
+                $data['target_id'] = $request->input('target_layanan_id');
             }
 
             // Convert boolean fields
@@ -255,19 +259,27 @@ class AdminPromoController extends Controller
                 $validator->errors()->add('nilai_diskon', 'Persentase diskon tidak boleh lebih dari 100%');
             }
 
-            if (in_array($request->target_type, ['category', 'service']) && !$request->target_id) {
-                $validator->errors()->add('target_id', 'Target ID wajib diisi untuk tipe target yang dipilih');
+            // Get the actual target_id based on target_type
+            $targetId = null;
+            if ($request->target_type === 'category') {
+                $targetId = $request->input('target_kategori_id');
+            } elseif ($request->target_type === 'service') {
+                $targetId = $request->input('target_layanan_id');
             }
 
-            if ($request->target_type === 'category' && $request->target_id) {
-                if (!Kategori::find($request->target_id)) {
-                    $validator->errors()->add('target_id', 'Kategori yang dipilih tidak ditemukan');
+            if (in_array($request->target_type, ['category', 'service']) && !$targetId) {
+                $validator->errors()->add('target_id', 'Target wajib dipilih untuk tipe target yang dipilih');
+            }
+
+            if ($request->target_type === 'category' && $targetId) {
+                if (!Kategori::find($targetId)) {
+                    $validator->errors()->add('target_kategori_id', 'Kategori yang dipilih tidak ditemukan');
                 }
             }
 
-            if ($request->target_type === 'service' && $request->target_id) {
-                if (!Layanan::find($request->target_id)) {
-                    $validator->errors()->add('target_id', 'Layanan yang dipilih tidak ditemukan');
+            if ($request->target_type === 'service' && $targetId) {
+                if (!Layanan::find($targetId)) {
+                    $validator->errors()->add('target_layanan_id', 'Layanan yang dipilih tidak ditemukan');
                 }
             }
         });
@@ -281,9 +293,13 @@ class AdminPromoController extends Controller
         try {
             $data = $request->all();
             
-            // Set target_id to null if target_type is 'all'
+            // Map target_kategori_id or target_layanan_id to target_id based on target_type
             if ($data['target_type'] === 'all') {
                 $data['target_id'] = null;
+            } elseif ($data['target_type'] === 'category') {
+                $data['target_id'] = $request->input('target_kategori_id');
+            } elseif ($data['target_type'] === 'service') {
+                $data['target_id'] = $request->input('target_layanan_id');
             }
 
             // Convert boolean fields

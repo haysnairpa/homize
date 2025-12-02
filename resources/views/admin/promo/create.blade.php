@@ -26,7 +26,7 @@
                                        name="kode" 
                                        id="kode" 
                                        value="{{ old('kode') }}"
-                                       class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kode') border-red-500 @enderror"
+                                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors @error('kode') border-red-500 @enderror"
                                        placeholder="Contoh: DISKON50"
                                        required>
                                 @error('kode')
@@ -41,7 +41,7 @@
                                        name="nama" 
                                        id="nama" 
                                        value="{{ old('nama') }}"
-                                       class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nama') border-red-500 @enderror"
+                                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors @error('nama') border-red-500 @enderror"
                                        placeholder="Contoh: Diskon Akhir Tahun"
                                        required>
                                 @error('nama')
@@ -54,7 +54,7 @@
                                 <label for="tipe_diskon" class="block text-sm font-medium text-gray-700 mb-2">Tipe Diskon *</label>
                                 <select name="tipe_diskon" 
                                         id="tipe_diskon" 
-                                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('tipe_diskon') border-red-500 @enderror"
+                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors bg-white @error('tipe_diskon') border-red-500 @enderror"
                                         required>
                                     <option value="">Pilih Tipe Diskon</option>
                                     <option value="percentage" {{ old('tipe_diskon') === 'percentage' ? 'selected' : '' }}>Persentase (%)</option>
@@ -73,7 +73,7 @@
                                            name="nilai_diskon" 
                                            id="nilai_diskon" 
                                            value="{{ old('nilai_diskon') }}"
-                                           class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nilai_diskon') border-red-500 @enderror"
+                                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors @error('nilai_diskon') border-red-500 @enderror"
                                            placeholder="0"
                                            min="0"
                                            step="0.01"
@@ -94,7 +94,7 @@
                                        name="tanggal_mulai" 
                                        id="tanggal_mulai" 
                                        value="{{ old('tanggal_mulai') }}"
-                                       class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('tanggal_mulai') border-red-500 @enderror"
+                                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors @error('tanggal_mulai') border-red-500 @enderror"
                                        required>
                                 @error('tanggal_mulai')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -108,7 +108,7 @@
                                        name="tanggal_berakhir" 
                                        id="tanggal_berakhir" 
                                        value="{{ old('tanggal_berakhir') }}"
-                                       class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('tanggal_berakhir') border-red-500 @enderror"
+                                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors @error('tanggal_berakhir') border-red-500 @enderror"
                                        required>
                                 @error('tanggal_berakhir')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -122,7 +122,7 @@
                                        name="batas_penggunaan_global" 
                                        id="batas_penggunaan_global" 
                                        value="{{ old('batas_penggunaan_global') }}"
-                                       class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('batas_penggunaan_global') border-red-500 @enderror"
+                                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors @error('batas_penggunaan_global') border-red-500 @enderror"
                                        placeholder="Kosongkan untuk tidak terbatas"
                                        min="1">
                                 <p class="mt-1 text-xs text-gray-500">Total maksimal penggunaan kode promo ini oleh semua user</p>
@@ -138,7 +138,7 @@
                                        name="batas_penggunaan_per_user" 
                                        id="batas_penggunaan_per_user" 
                                        value="{{ old('batas_penggunaan_per_user', 1) }}"
-                                       class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('batas_penggunaan_per_user') border-red-500 @enderror"
+                                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors @error('batas_penggunaan_per_user') border-red-500 @enderror"
                                        placeholder="1"
                                        min="1">
                                 <p class="mt-1 text-xs text-gray-500">Maksimal penggunaan per user (default: 1)</p>
@@ -146,6 +146,57 @@
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
+
+                            <!-- Minimum Pembelian -->
+                            <div>
+                                <label for="minimum_pembelian" class="block text-sm font-medium text-gray-700 mb-2">Minimum Pembelian</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm">Rp</span>
+                                    <input type="number" 
+                                           name="minimum_pembelian" 
+                                           id="minimum_pembelian" 
+                                           value="{{ old('minimum_pembelian') }}"
+                                           class="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors @error('minimum_pembelian') border-red-500 @enderror"
+                                           placeholder="0"
+                                           min="0">
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Minimal nilai transaksi untuk menggunakan promo (kosongkan jika tidak ada)</p>
+                                @error('minimum_pembelian')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Maksimum Diskon -->
+                            <div>
+                                <label for="maksimum_diskon" class="block text-sm font-medium text-gray-700 mb-2">Maksimum Diskon</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm">Rp</span>
+                                    <input type="number" 
+                                           name="maksimum_diskon" 
+                                           id="maksimum_diskon" 
+                                           value="{{ old('maksimum_diskon') }}"
+                                           class="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors @error('maksimum_diskon') border-red-500 @enderror"
+                                           placeholder="0"
+                                           min="0">
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Batas maksimal diskon yang diberikan (untuk tipe persentase)</p>
+                                @error('maksimum_diskon')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Deskripsi -->
+                        <div class="mt-6">
+                            <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                            <textarea name="deskripsi" 
+                                      id="deskripsi" 
+                                      rows="3"
+                                      class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors @error('deskripsi') border-red-500 @enderror"
+                                      placeholder="Deskripsi promo (opsional)">{{ old('deskripsi') }}</textarea>
+                            @error('deskripsi')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Target Section -->
@@ -158,7 +209,7 @@
                                     <label for="target_type" class="block text-sm font-medium text-gray-700 mb-2">Berlaku Untuk *</label>
                                     <select name="target_type" 
                                             id="target_type" 
-                                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('target_type') border-red-500 @enderror"
+                                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors bg-white @error('target_type') border-red-500 @enderror"
                                             required>
                                         <option value="">Pilih Target</option>
                                         <option value="all" {{ old('target_type') === 'all' ? 'selected' : '' }}>Semua Layanan</option>
@@ -175,7 +226,7 @@
                                     <label for="target_kategori_id" class="block text-sm font-medium text-gray-700 mb-2">Pilih Kategori</label>
                                     <select name="target_kategori_id" 
                                             id="target_kategori_id" 
-                                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors bg-white">
                                         <option value="">Pilih Kategori</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->id }}" {{ old('target_kategori_id') == $category->id ? 'selected' : '' }}>
@@ -193,9 +244,13 @@
                                     <label for="target_layanan_id" class="block text-sm font-medium text-gray-700 mb-2">Pilih Layanan</label>
                                     <select name="target_layanan_id" 
                                             id="target_layanan_id" 
-                                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors bg-white">
                                         <option value="">Pilih Layanan</option>
-                                        <!-- Options will be populated via AJAX -->
+                                        @foreach($services as $service)
+                                            <option value="{{ $service->id }}" {{ old('target_layanan_id') == $service->id ? 'selected' : '' }}>
+                                                {{ $service->nama_layanan }} {{ $service->merchant ? '(' . $service->merchant->nama_usaha . ')' : '' }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                     @error('target_layanan_id')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -289,20 +344,17 @@
                 }
             });
 
-            // Load services when category is selected
+            // Load services when category is selected (for filtering purposes)
             targetKategoriSelect.addEventListener('change', function() {
                 const categoryId = this.value;
                 if (categoryId) {
                     fetch(`/admin/promo/services-by-category/${categoryId}`)
                         .then(response => response.json())
                         .then(data => {
-                            targetLayananSelect.innerHTML = '<option value="">Pilih Layanan</option>';
-                            data.services.forEach(service => {
-                                const option = document.createElement('option');
-                                option.value = service.id;
-                                option.textContent = service.nama;
-                                targetLayananSelect.appendChild(option);
-                            });
+                            if (data.success && data.services) {
+                                // This is just for reference, services are already loaded
+                                console.log('Services in category:', data.services.length);
+                            }
                         })
                         .catch(error => {
                             console.error('Error loading services:', error);

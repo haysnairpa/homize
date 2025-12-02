@@ -94,7 +94,7 @@
                     <form method="GET" action="{{ route('admin.promo.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select name="status" class="w-full border-gray-300 rounded-md shadow-sm">
+                            <select name="status" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors bg-white">
                                 <option value="">Semua Status</option>
                                 <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif</option>
                                 <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
@@ -103,7 +103,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Diskon</label>
-                            <select name="tipe_diskon" class="w-full border-gray-300 rounded-md shadow-sm">
+                            <select name="tipe_diskon" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors bg-white">
                                 <option value="">Semua Tipe</option>
                                 <option value="percentage" {{ request('tipe_diskon') === 'percentage' ? 'selected' : '' }}>Persentase</option>
                                 <option value="fixed" {{ request('tipe_diskon') === 'fixed' ? 'selected' : '' }}>Nominal Tetap</option>
@@ -111,7 +111,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Target</label>
-                            <select name="target_type" class="w-full border-gray-300 rounded-md shadow-sm">
+                            <select name="target_type" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:ring-1 transition-colors bg-white">
                                 <option value="">Semua Target</option>
                                 <option value="all" {{ request('target_type') === 'all' ? 'selected' : '' }}>Semua Layanan</option>
                                 <option value="category" {{ request('target_type') === 'category' ? 'selected' : '' }}>Kategori Tertentu</option>
@@ -119,7 +119,7 @@
                             </select>
                         </div>
                         <div class="flex items-end">
-                            <button type="submit" class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors">
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg shadow-sm transition-colors font-medium">
                                 Filter
                             </button>
                         </div>
@@ -188,9 +188,9 @@
                                                 @if($promo->target_type === 'all')
                                                     Semua Layanan
                                                 @elseif($promo->target_type === 'category')
-                                                    {{ $promo->targetKategori->nama ?? 'Kategori Tidak Ditemukan' }}
+                                                    {{ $promo->target_kategori?->nama ?? 'Kategori Tidak Ditemukan' }}
                                                 @elseif($promo->target_type === 'service')
-                                                    {{ $promo->targetLayanan->nama ?? 'Layanan Tidak Ditemukan' }}
+                                                    {{ $promo->target_layanan?->nama_layanan ?? 'Layanan Tidak Ditemukan' }}
                                                 @endif
                                             </div>
                                         </td>
